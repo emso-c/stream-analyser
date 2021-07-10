@@ -1,0 +1,284 @@
+[
+    {
+        "reaction_to": "funny moment",
+        "triggers": [
+            {"phrase": "lol", "is_exact": false},
+            {"phrase": "lmao", "is_exact": false},
+            {"phrase": "hahaha", "is_exact": false},
+            {"phrase": "kusa", "is_exact": false},
+            {"phrase": "草", "is_exact": false},
+            {"phrase": "笑", "is_exact": false},
+            {"phrase": "w", "is_exact": true},
+            {"phrase": "www", "is_exact": true}
+        ]
+    },
+    {
+        "reaction_to": "scary moment",
+        "triggers": [
+            {"phrase": "scary", "is_exact": false},
+            {"phrase": "scared", "is_exact": false},
+            {"phrase": "こわい", "is_exact": false},
+            {"phrase": "こっわ", "is_exact": false},
+            {"phrase": "怖い", "is_exact": false}
+        ]
+    },
+    {
+        "reaction_to": "shocked or suprised",
+        "triggers": [
+            {"phrase": "え", "is_exact": true},
+            {"phrase": "え？", "is_exact": true},
+            {"phrase": "え!？", "is_exact": true},
+            {"phrase": "え？！", "is_exact": true},
+            {"phrase": "ええ", "is_exact": true},
+            {"phrase": "えええ", "is_exact": false},
+            {"phrase": "！？", "is_exact": true},
+            {"phrase": "！！", "is_exact": true},
+            {"phrase": "！！!", "is_exact": true},
+            {"phrase": "？？？", "is_exact": true},
+            {"phrase": "???", "is_exact": false},
+            {"phrase": "あ", "is_exact": true},
+            {"phrase": "あっ", "is_exact": true},
+            {"phrase": "あｗ", "is_exact": true},
+            {"phrase": "what", "is_exact": false},
+            {"phrase": "wow", "is_exact": false}
+        ]
+    },
+    {
+        "reaction_to": "sad moment",
+        "triggers": [
+            {"phrase": "sad", "is_exact": false},
+            {"phrase": "cry", "is_exact": false},
+            {"phrase": "nooo", "is_exact": false},
+            {"phrase": "泣いた", "is_exact": false}
+        ]
+    },
+    {
+        "reaction_to": "amazing moment",
+        "triggers": [
+            {"phrase": "すごい", "is_exact": false},
+            {"phrase": "すっご", "is_exact": false},
+            {"phrase": "wow", "is_exact": true},
+            {"phrase": "holy", "is_exact": true}
+        ]
+    },
+    {
+        "reaction_to": "cool moment",
+        "triggers": [
+            {"phrase": "かっこいい", "is_exact": false},
+            {"phrase": "かっけえ", "is_exact": false},
+            {"phrase": "​カッコいい", "is_exact": false},
+            {"phrase": "カッコイイ", "is_exact": false},
+            {"phrase": "cool", "is_exact": false}
+        ]
+    },
+    {
+        "reaction_to": "curious",
+        "triggers": [
+            {"phrase": "ん？", "is_exact": true},
+            {"phrase": "お？", "is_exact": true},
+            {"phrase": "?", "is_exact": true},
+            {"phrase": "？", "is_exact": true}
+        ]
+    },
+    {
+        "reaction_to": "anticipated event",
+        "triggers": [
+            {"phrase": "きた", "is_exact": false},
+            {"phrase": "きちゃ", "is_exact": false},
+            {"phrase": "きｔら", "is_exact": false}
+        ]
+    },
+    {
+        "reaction_to": "pumped up",
+        "triggers": [
+            {"phrase": "おおお", "is_exact": false},
+            {"phrase": "うおお", "is_exact": false},
+            {"phrase": "lets go", "is_exact": false},
+            {"phrase": "let's go", "is_exact": false}
+        ]
+    },
+    {
+        "reaction_to": "cute moment",
+        "triggers": [
+            {"phrase": "cute", "is_exact": false},
+            {"phrase": "kawaii", "is_exact": false},
+            {"phrase": "かわいい", "is_exact": false},
+            {"phrase": "かわええ", "is_exact": false},
+            {"phrase": "かわえー", "is_exact": false},
+            {"phrase": "可愛", "is_exact": false}
+        ]
+    },
+    {
+        "reaction_to": "wholesome/てえてえ moment",
+        "triggers": [
+            {"phrase": "tee tee", "is_exact": false},
+            {"phrase": "teetee", "is_exact": false},
+            {"phrase": "awww", "is_exact": false},
+            {"phrase": "てえてえ", "is_exact": false}
+        ]
+    },
+    {
+        "reaction_to": "story-telling",
+        "triggers": [
+            {"phrase": "うんうん", "is_exact": true},
+            {"phrase": "うん", "is_exact": true},
+            {"phrase": "ほう", "is_exact": true},
+            {"phrase": "ほうほう", "is_exact": true},
+            {"phrase": "なるほど", "is_exact": false},
+            {"phrase": "そうなんだ", "is_exact": false}
+        ]
+    },
+    {
+        "reaction_to": "backchanneling",
+        "triggers": [
+            {"phrase": "だね", "is_exact": true},
+            {"phrase": "だねー", "is_exact": true},
+            {"phrase": "だねぇ", "is_exact": true},
+            {"phrase": "そうね", "is_exact": false},
+            {"phrase": "そうだね", "is_exact": false},
+            {"phrase": "それはそう", "is_exact": true},
+            {"phrase": "わかる", "is_exact": false},
+            {"phrase": "分かる", "is_exact": false},
+            {"phrase": "いいね", "is_exact": false}
+        ]
+    },
+    {
+        "reaction_to": "greeting",
+        "triggers": [
+            {"phrase": "こん", "is_exact": false},
+            {"phrase": "hi", "is_exact": true},
+            {"phrase": "hello", "is_exact": true}
+        ]
+    },
+    {
+        "reaction_to": "stream end",
+        "triggers": [
+            {"phrase": "おつ", "is_exact": false},
+            {"phrase": "bye", "is_exact": false}
+        ]
+    },
+    {
+        "reaction_to": "incoherent speech",
+        "triggers": [
+            {"phrase": "なんて", "is_exact": false}
+        ]
+    },
+    {
+        "reaction_to": "blessed moment",
+        "triggers": [
+            {"phrase": "blessed", "is_exact": false},
+            {"phrase": "tskr", "is_exact": false},
+            {"phrase": "thank you", "is_exact": false},
+            {"phrase": "助かる", "is_exact": false},
+            {"phrase": "たすかる", "is_exact": false},
+            {"phrase": "ありがとう", "is_exact": false}
+        ]
+    },
+    {
+        "reaction_to": "sneeze",
+        "triggers": [
+            {"phrase": "bless you", "is_exact": true},
+            {"phrase": "くしゃみ", "is_exact": false}
+        ]
+    },
+    {
+        "reaction_to": "yawn",
+        "triggers": [
+            {"phrase": "yawn", "is_exact": true},
+            {"phrase": "あくび", "is_exact": false}
+        ]
+    },
+    {
+        "reaction_to": "good move or play",
+        "triggers": [
+            {"phrase": "nice", "is_exact": false},
+            {"phrase": "pog", "is_exact": false},
+            {"phrase": "うまい", "is_exact": false},
+            {"phrase": "上手い", "is_exact": false},
+            {"phrase": "うっま", "is_exact": false},
+            {"phrase": "ないす", "is_exact": false},
+            {"phrase": "ナイス", "is_exact": false}
+        ]
+    },
+    {
+        "reaction_to": "close to lose something",
+        "triggers": [
+            {"phrase": "close", "is_exact": false},
+            {"phrase": "危な", "is_exact": false},
+            {"phrase": "あぶな", "is_exact": false},
+            {"phrase": "あぶね", "is_exact": false},
+            {"phrase": "あっぶ", "is_exact": false}
+        ]
+    },
+    {
+        "reaction_to": "close to achieve something",
+        "triggers": [
+            {"phrase": "almost", "is_exact": false},
+            {"phrase": "おしい", "is_exact": false},
+            {"phrase": "おっし", "is_exact": false}
+        ]
+    },
+    {
+        "reaction_to": "understood",
+        "triggers": [
+            {"phrase": "ok", "is_exact": true},
+            {"phrase": "了解", "is_exact": false},
+            {"phrase": "はーい", "is_exact": false}
+        ]
+    },
+    {
+        "reaction_to": "looking forward",
+        "triggers": [
+            {"phrase": "looking forward", "is_exact": false},
+            {"phrase": "楽しみ", "is_exact": false},
+            {"phrase": "たのしみ", "is_exact": false}
+        ]
+    },
+    {
+        "reaction_to": "streamer going somewhere",
+        "triggers": [
+            {"phrase": "いってら", "is_exact": false}
+        ]
+    },
+    {
+        "reaction_to": "streamer coming back",
+        "triggers": [
+            {"phrase": "おかえり", "is_exact": false},
+            {"phrase": "welcome back", "is_exact": false}
+        ]
+    },
+    {
+        "reaction_to": "looking forward",
+        "triggers": [
+            {"phrase": "looking forward", "is_exact": false},
+            {"phrase": "楽しみ", "is_exact": false},
+            {"phrase": "たのしみ", "is_exact": false}
+        ]
+    },
+    {
+        "reaction_to": "congratulating",
+        "triggers": [
+            {"phrase": "congrat", "is_exact": false},
+            {"phrase": "おめでとう", "is_exact": false},
+            {"phrase": "👏👏👏", "is_exact": false}
+        ]
+    },
+    {
+        "reaction_to": "FAQ",
+        "triggers": [
+            {"phrase": "FAQ", "is_exact": false}
+        ]
+    },
+    {
+        "reaction_to": "pun",
+        "triggers": [
+            {"phrase": "inaff", "is_exact": false}
+        ]
+    },
+    {
+        "reaction_to": "amelia hiccup",
+        "triggers": [
+            {"phrase": "hic", "is_exact": false}
+        ]
+    }
+]
