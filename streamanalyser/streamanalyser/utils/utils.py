@@ -113,3 +113,24 @@ def filenames(path) -> list[str]:
         return [fname.split(os.extsep)[0] for fname in os.listdir(path)]
     except Exception as e:
         logger.error(e)
+
+
+def file_amount(folder_path) -> int:
+    """ Returns file amount in a folder """
+    
+    _, _, files = next(os.walk(folder_path))
+    logger.debug(f"File amount of {folder_path} is {len(files)}")
+    return len(files)
+
+def largest_folder(*args) -> str:
+    """ Finds folder which has the most amount of files among a list of paths. """
+    
+    logger.debug(f"Finding largest folder")
+    
+    largest_folder = args[0]
+    for i in range(1, len(args)):
+        if file_amount(args[i]) > file_amount(largest_folder):
+            largest_folder = args[i]
+    logger.debug(f"Largest folder: {largest_folder}")
+    return largest_folder
+    

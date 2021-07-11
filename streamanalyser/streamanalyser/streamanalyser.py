@@ -40,6 +40,7 @@ class StreamAnalyser():
             res_lvl=2,
             clear_cache=False,
             ignore_warnings=False,
+            enforce_integrity=False,
             verbose=False
         ):
         """
@@ -64,6 +65,9 @@ class StreamAnalyser():
                 process if the data will be used more than once.
             
             ignore_warnings (bool, optional): Ignore warnings. Defaults to False.
+
+            enforce_integrity (bool, optional): Enforces file integrity by clearing 
+                caches of id's with missing files. Use with caution. Defaults to False.
 
             verbose (bool, optional): Whether the functions should be verbose or not. Defaults to False.
         """
@@ -129,6 +133,11 @@ class StreamAnalyser():
         self.highlights = [] #list[Highlight]
         self.fig = [] #list[plt.Line2D]
 
+        if enforce_integrity:
+            self.enforce_file_integrity()
+        else:
+            self.check_file_integrity()
+
 
     def collect_stream_info(self) -> dict:
         """ Collects info of the stream such as title and author """
@@ -139,15 +148,17 @@ class StreamAnalyser():
         url = "https://www.youtube.com/oembed"
         query_string = urllib.parse.urlencode(params)
         url = url + "?" + query_string
+        data = {}
         try:
             with urllib.request.urlopen(url) as response:
                 response_text = response.read()
                 data = json.loads(response_text.decode())
+                self.logger.info(f"{data=}")
         except Exception as e:
             self.logger.error(e)
+            raise requests.HTTPError('Bad request: 400')
         if self.verbose:
             print(f"Collecting stream data... done")
-        self.logger.info(f"{data=}")
         return data
 
 
@@ -299,8 +310,7 @@ class StreamAnalyser():
                     pass
             utils.compress_file(f"{self.config['path-to']['cache']}\\{self.stream_id}.json")
         # delete the least recently used cache file if there are large amount of files
-        _, _, files = next(os.walk(self.config['path-to']['cache']))
-        file_amount = len(files)
+        file_amount = utils.file_amount(self.config['path-to']['cache'])
         if file_amount > self.config['cache-size']:
             self.logger.warning('Cache limit reached')
             self.logger.debug(f'{file_amount=}')
@@ -1091,6 +1101,7 @@ and put the 'NotoSansCJKjp-regular.otf' file into {self.config['path-to']['fonts
             Deletes cache of the current id if id is None. """
         if not id:
             id = self.stream_id
+        self.logger.info(f"Clearing cache of {id}")
         utils.delete_file(f"{self.config['path-to']['cache']}\\{id}.json.gz")
         utils.delete_file(f"{self.config['path-to']['metadata']}\\{id}.yaml")
         utils.delete_file(f"{self.config['path-to']['thumbnails']}\\{id}.jpg")
@@ -1155,11 +1166,46 @@ and put the 'NotoSansCJKjp-regular.otf' file into {self.config['path-to']['fonts
         """ Returns list of cached ids """
         return [fname.split(os.extsep)[0] for fname in os.listdir(self.config['path-to']['cache'])]
 
-    #TODO implement this
+    #TODO Improve integrity checking and point out to missing files
+    # themselves directly, and even fix them if possible
     def check_file_integrity(self) -> list[str]:
         """ Checks file integrity and points out any id that has missing files.
 
         Returns:
             list[str]: List of id's with missing files
         """
-        pass
+        self.logger.info("Checking missing files.")
+        cache_folders = [
+            self.config['path-to']['cache'],
+            self.config['path-to']['metadata'],
+            self.config['path-to']['thumbnails']
+        ]
+        largest_folder = utils.largest_folder(
+            self.config['path-to']['cache'],
+            self.config['path-to']['metadata'],
+            self.config['path-to']['thumbnails']
+        )
+
+        id_difference = set([])
+        for cache_folder in cache_folders:
+            if largest_folder == cache_folder:
+                continue
+            
+            self.logger.debug(f'Checking difference between {largest_folder} and {cache_folder}')
+            diffs = list(set(utils.filenames(largest_folder)) - set(utils.filenames(cache_folder)))
+            for diff in diffs:
+                id_difference.add(diff)
+            self.logger.debug(f"Difference is: {diffs}")
+        if id_difference:
+            __msg = f"Missing files detected for following id's: {id_difference}, consider clearing cache"
+            self.logger.warning(__msg)
+        else:
+            self.logger.debug("No missing files detected.")
+        return list(id_difference)
+
+    def enforce_file_integrity(self):
+        """ Checks and automatically clears cache of corrupted id's. Use with caution. """
+        
+        self.logger.info("Enforcing file integrity")
+        for corrupted_id in self.check_file_integrity():
+            self.__clear_cache(corrupted_id)
