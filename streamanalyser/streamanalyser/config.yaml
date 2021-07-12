@@ -13,6 +13,6 @@ intensity:
 interval: 30
 keyword-limit: 4
 keyword-filters: ['of', 'a', 'the', 'i', 'be', 'am', 'and', 'it', 'is', "isnt", 'was', 'you', 'can', "can't"]
-cache-size: 15
+cache-size: 40
 log-duration-days: 7
 min-hl-duration: 10
