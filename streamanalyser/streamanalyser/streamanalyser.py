@@ -99,7 +99,12 @@ class StreamAnalyser():
         self.logger.info('=============================================================')
         self.logger.info('===================== Session start =========================')
         self.logger.info('=============================================================')
-
+        
+        if enforce_integrity:
+            self.enforce_file_integrity()
+        else:
+            self.check_file_integrity()
+        
         try:
             self.metadata = yaml.load(open(f"{self.config['path-to']['metadata']}\\{stream_id}.yaml", 'r'), Loader=yaml.Loader)
         except FileNotFoundError:
@@ -132,11 +137,6 @@ class StreamAnalyser():
         self.highlight_annotation = [] #list[int]
         self.highlights = [] #list[Highlight]
         self.fig = [] #list[plt.Line2D]
-
-        if enforce_integrity:
-            self.enforce_file_integrity()
-        else:
-            self.check_file_integrity()
 
 
     def collect_stream_info(self) -> dict:
@@ -234,7 +234,7 @@ class StreamAnalyser():
                         author=Author(raw_message['author']['id'], raw_message['author']['name']))
                     )
             
-            self.logger.debug([msg.colorless_str for msg in messages])
+            self.logger.debug(f"{len(messages)} messages has been found")
         except Exception as e:
             self.logger.error(e)
         finally:
@@ -256,6 +256,8 @@ class StreamAnalyser():
 
             Also checks if there are large amount of cached files and asks permission to delete the the least
             recently used one.
+
+            DO NOT CLOSE THE PROGRAM DURING THE PROCESS
         """            
         
         if self.clear_cache or not os.path.isfile(f"{self.config['path-to']['cache']}/{self.stream_id}.json.gz"):
@@ -287,7 +289,6 @@ class StreamAnalyser():
                     if self.verbose:
                         print(f'Missing messages detected in {self.stream_id}.json ({self.limit-len(message_data)} messages)')
                     self.logger.warning("Missing messages detected")
-                    
                     for counter, raw_message in enumerate(ChatDownloader().get_chat(self.__youtube_url, start_time=latest_message_time), start=len(message_data)):
                         if counter == self.limit:
                             break
@@ -338,7 +339,7 @@ class StreamAnalyser():
         if self.verbose:
             print(f"Getting authors... done")
         self.authors = list(authors)
-        self.logger.debug(self.authors)
+        self.logger.debug(f"{len(self.authors)} authors has been found")
         return self.authors
 
 
