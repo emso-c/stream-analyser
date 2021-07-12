@@ -70,8 +70,6 @@ Links:
 
 **Important:** Please see [possible issues](#Possible-issues) if you can't see Japanese characters in console.
 
-###### Side note: Notice that the first two highlights will most likely be at the start and the end of the stream when highlights are sorted.
-
 ### with CLI
 You can also use a simple pre-built CLI 
 
@@ -92,8 +90,8 @@ python cli.py --help
   - title, author, thumbnail etc.
 - Fetch live messages of the stream
 - Create frequency table of messages
+- Find keywords
 - Detect highlights
-- Get keywords
 - Guess contexts
 - Show highlights
   - Summary
@@ -103,8 +101,8 @@ python cli.py --help
 - Find messages
 - Find authors
 - Find messages made by an author
-- Visualize the data
-- Export the data
+- Visualize data
+- Export data
 
 ## About detecting highlights
 
