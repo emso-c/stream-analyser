@@ -1,6 +1,6 @@
 [
     {
-        "reaction_to": "funny moment",
+        "reaction_to": "funny",
         "triggers": [
             {"phrase": "lol", "is_exact": false},
             {"phrase": "lmao", "is_exact": false},
@@ -13,7 +13,7 @@
         ]
     },
     {
-        "reaction_to": "scary moment",
+        "reaction_to": "scary",
         "triggers": [
             {"phrase": "scary", "is_exact": false},
             {"phrase": "scared", "is_exact": false},
@@ -33,18 +33,23 @@
             {"phrase": "えええ", "is_exact": false},
             {"phrase": "！？", "is_exact": true},
             {"phrase": "！！", "is_exact": true},
-            {"phrase": "！！!", "is_exact": true},
+            {"phrase": "！！！", "is_exact": true},
             {"phrase": "？？？", "is_exact": true},
+            {"phrase": "!!", "is_exact": true},
+            {"phrase": "!!!", "is_exact": true},
             {"phrase": "???", "is_exact": false},
             {"phrase": "あ", "is_exact": true},
             {"phrase": "あっ", "is_exact": true},
             {"phrase": "あｗ", "is_exact": true},
+            {"phrase": "あれ", "is_exact": true},
+            {"phrase": "あれ？", "is_exact": true},
+            {"phrase": "ん？", "is_exact": true},
             {"phrase": "what", "is_exact": false},
             {"phrase": "wow", "is_exact": false}
         ]
     },
     {
-        "reaction_to": "sad moment",
+        "reaction_to": "sad",
         "triggers": [
             {"phrase": "sad", "is_exact": false},
             {"phrase": "cry", "is_exact": false},
@@ -53,7 +58,7 @@
         ]
     },
     {
-        "reaction_to": "amazing moment",
+        "reaction_to": "amazing",
         "triggers": [
             {"phrase": "すごい", "is_exact": false},
             {"phrase": "すっご", "is_exact": false},
@@ -62,7 +67,7 @@
         ]
     },
     {
-        "reaction_to": "cool moment",
+        "reaction_to": "cool",
         "triggers": [
             {"phrase": "かっこいい", "is_exact": false},
             {"phrase": "かっけえ", "is_exact": false},
@@ -98,7 +103,7 @@
         ]
     },
     {
-        "reaction_to": "cute moment",
+        "reaction_to": "cute",
         "triggers": [
             {"phrase": "cute", "is_exact": false},
             {"phrase": "kawaii", "is_exact": false},
@@ -109,12 +114,13 @@
         ]
     },
     {
-        "reaction_to": "wholesome/てえてえ moment",
+        "reaction_to": "wholesome",
         "triggers": [
             {"phrase": "tee tee", "is_exact": false},
             {"phrase": "teetee", "is_exact": false},
             {"phrase": "awww", "is_exact": false},
-            {"phrase": "てえてえ", "is_exact": false}
+            {"phrase": "てえてえ", "is_exact": false},
+            {"phrase": "てぇてぇ", "is_exact": false}
         ]
     },
     {
@@ -164,11 +170,10 @@
         ]
     },
     {
-        "reaction_to": "blessed moment",
+        "reaction_to": "blessed",
         "triggers": [
             {"phrase": "blessed", "is_exact": false},
             {"phrase": "tskr", "is_exact": false},
-            {"phrase": "thank you", "is_exact": false},
             {"phrase": "助かる", "is_exact": false},
             {"phrase": "たすかる", "is_exact": false},
             {"phrase": "ありがとう", "is_exact": false}
@@ -186,6 +191,12 @@
         "triggers": [
             {"phrase": "yawn", "is_exact": true},
             {"phrase": "あくび", "is_exact": false}
+        ]
+    },
+    {
+        "reaction_to": "pressure",
+        "triggers": [
+            {"phrase": "圧", "is_exact": false}
         ]
     },
     {
@@ -259,8 +270,21 @@
         "reaction_to": "congratulating",
         "triggers": [
             {"phrase": "congrat", "is_exact": false},
-            {"phrase": "おめでとう", "is_exact": false},
+            {"phrase": "おめでとう", "is_exact": false}
+        ]
+    },
+    {
+        "reaction_to": "applause",
+        "triggers": [
             {"phrase": "👏👏👏", "is_exact": false}
+        ]
+    },
+    {
+        "reaction_to": "loud",
+        "triggers": [
+            {"phrase": "耳ないなった", "is_exact": false},
+            {"phrase": "鼓膜ないなった", "is_exact": false},
+            {"phrase": "my ears", "is_exact": false}
         ]
     },
     {
