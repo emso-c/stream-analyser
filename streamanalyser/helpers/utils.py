@@ -70,7 +70,7 @@ def delete_file_if_exists(path):
             os.remove(path)
             logger.debug(f"{path} deleted")
         except Exception as e:
-            logger.error(f"Couldn't delete file: {e}")  
+            logger.error(f"Couldn't delete file: {e}")
 
 
 def normalize(text) -> str:

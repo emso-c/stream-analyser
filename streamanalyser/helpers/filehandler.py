@@ -1,14 +1,17 @@
 import os
 
-#TODO implement other functions
+#TODO Find a way to log without circular imports
 class FileHandler():
     """ A class to manage files like logs and cached files """
-
-    def __init__(self, project_title, cache_fname, log_fname) -> None:
-        self.project_name = project_title
-        self.project_path = os.path.join(os.environment['LOCALAPPDATA'], project_title)
-        self.cache_path = os.path.join(self.project_path, cache_fname)
-        self.log_path = os.path.join(self.project_path, log_fname)
+    
+    def __init__(self,
+            storage_path,
+            cache_fname='Cache',
+            log_fname='Logs'
+        ):
+        self.storage_path = storage_path
+        self.cache_path = os.path.join(self.storage_path, cache_fname)
+        self.log_path = os.path.join(self.storage_path, log_fname)
 
     def __repr__(self) -> str:
         return "Storing files into "+self.project_path
@@ -29,8 +32,8 @@ class FileHandler():
         pass
 
 
-streamanalyser_filemanager = FileHandler(
-    'Stream Analyser',
-    'Cache',
-    'Logs'
+streamanalyser_filehandler = FileHandler(
+    storage_path='C:\\Stream Analyser',
+    cache_fname='Cache',
+    log_fname='Logs',
 )

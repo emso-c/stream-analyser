@@ -15,3 +15,15 @@ class StreamAnalyser():
         #    cache_path,
         #    log_path
         #)
+    
+    def __enter__(self):
+        return self
+
+    def __exit__(self):
+        # delete object
+        for file in self.files:
+            os.unlink(file)
+
+#usage
+with StreamAnalyser() as sa:
+    sa.do_stuff()
