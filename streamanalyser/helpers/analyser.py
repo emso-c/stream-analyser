@@ -30,7 +30,6 @@ from .utils.structures import (
 )
 
 class StreamAnalyser():
-    #TODO docstrings
     def __init__(
             self,
             stream_id,
@@ -73,20 +72,12 @@ class StreamAnalyser():
         """
         init() # for colorama
 
-        path = os.path.abspath(__file__).split('\streamanalyser.py')[0]
-        self.config = yaml.load(open(f"{path}\\config.yaml", 'r'), Loader=yaml.Loader)
-        for fname in self.config['path-to']:
-            if fname == "default-export":
-                continue
-            self.config['path-to'][fname] = f"{path}\\{self.config['path-to'][fname]}"
-
-        # delete dummy files
-        for fname in ['cache','logs','metadata','thumbnails','fonts']:
-            utils.delete_file_if_exists(f"{self.config['path-to'][fname]}\\delete.this")
-
+        _path = os.path.abspath(__file__).split('\streamanalyser.py')[0]
+        self.config = yaml.load(open(f"{_path}\\config.yaml", 'r'), Loader=yaml.Loader)
+        self._cache_path = os.path.join(os.environ('LOCALAPPDATA'), 'Stream Analyser')
         # logging configuration
         utils.delete_old_files(
-            self.config['path-to']['logs'],
+            os.path.join(self.cache_path, 'src\\logs'),
             self.config['log-duration-days']
         )
         self.logger = logger_setup.create_logger(
@@ -121,7 +112,7 @@ class StreamAnalyser():
         self.ignore_warnings = ignore_warnings
         self.verbose = verbose
 
-        self.__youtube_url = f'https://www.youtube.com/watch?v={stream_id}'
+        self._youtube_url = f'https://www.youtube.com/watch?v={stream_id}'
         self.info = self.collect_stream_info()
         self.thumbnail_url = self.set_thumbnail_url(res_lvl)
         self.download_thumbnail()
@@ -170,7 +161,7 @@ class StreamAnalyser():
         utils.delete_file(f"{self.config['path-to']['cache']}\\{self.stream_id}.json.gz")
         raw_messages = []
         try:
-            for counter, raw_message in enumerate(ChatDownloader().get_chat(self.__youtube_url, start_time=0), start=1):
+            for counter, raw_message in enumerate(ChatDownloader().get_chat(self._youtube_url, start_time=0), start=1):
                 if self.verbose:
                     print(f"Writing messages to {self.stream_id}.json...{str(utils.percentage(counter, self.limit))+'%' if self.limit else counter}", end='\r')
                 try:
@@ -289,7 +280,7 @@ class StreamAnalyser():
                     if self.verbose:
                         print(f'Missing messages detected in {self.stream_id}.json ({self.limit-len(message_data)} messages)')
                     self.logger.warning("Missing messages detected")
-                    for counter, raw_message in enumerate(ChatDownloader().get_chat(self.__youtube_url, start_time=latest_message_time), start=len(message_data)):
+                    for counter, raw_message in enumerate(ChatDownloader().get_chat(self._youtube_url, start_time=latest_message_time), start=len(message_data)):
                         if counter == self.limit:
                             break
                         if self.verbose:
@@ -321,7 +312,7 @@ class StreamAnalyser():
             WARNING: There are too many cached files in '{self.config['path-to']['cache']}'
             (You can either delete a file yourself or increase the cache size in config.yaml if you want)
             The least recently used file ({self.least_recently_used_id}.json) is going to be deleted.""")
-            self.__clear_cache(self.least_recently_used_id)
+            self._clear_cache(self.least_recently_used_id)
 
         return self.get_messages_from_json()
 
@@ -474,7 +465,7 @@ class StreamAnalyser():
         return mov_avg
 
 
-    def __smoothen(self, mov_avg, w=40) -> list:
+    def _smoothen(self, mov_avg, w=40) -> list:
         return list(np.convolve(list(mov_avg.values()), np.ones(w)/w, mode='same'))
 
 
@@ -845,7 +836,7 @@ and put the 'NotoSansCJKjp-regular.otf' file into {self.config['path-to']['fonts
         self.get_authors()
         self.get_frequency()
         self.fre_mov_avg = self.calculate_moving_average(self.message_frequency)
-        self.smooth_avg = self.__smoothen(self.fre_mov_avg)
+        self.smooth_avg = self._smoothen(self.fre_mov_avg)
         self.create_highlight_annotation()
         self.init_intensity()
         self.get_highlights()
@@ -1097,7 +1088,7 @@ and put the 'NotoSansCJKjp-regular.otf' file into {self.config['path-to']['fonts
         return len(self.messages) 
 
 
-    def __clear_cache(self, id=None):
+    def _clear_cache(self, id=None):
         """ Deletes cached files of the specified stream.
             Deletes cache of the current id if id is None. """
         if not id:
@@ -1198,8 +1189,8 @@ and put the 'NotoSansCJKjp-regular.otf' file into {self.config['path-to']['fonts
                 id_difference.add(diff)
             self.logger.debug(f"Difference is: {diffs}")
         if id_difference:
-            __msg = f"Missing files detected for following id's: {id_difference}, consider clearing cache"
-            self.logger.warning(__msg)
+            _msg = f"Missing files detected for following id's: {id_difference}, consider clearing cache"
+            self.logger.warning(_msg)
         else:
             self.logger.debug("No missing files detected.")
         return list(id_difference)
@@ -1209,4 +1200,4 @@ and put the 'NotoSansCJKjp-regular.otf' file into {self.config['path-to']['fonts
         
         self.logger.info("Enforcing file integrity")
         for corrupted_id in self.check_file_integrity():
-            self.__clear_cache(corrupted_id)
+            self._clear_cache(corrupted_id)

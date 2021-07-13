@@ -1,7 +1,2 @@
-include streamanalyser/streamanalyser/src/*.json
-include streamanalyser/streamanalyser/*.yaml
-include streamanalyser/streamanalyser/src/cache/delete.this
-include streamanalyser/streamanalyser/src/logs/delete.this
-include streamanalyser/streamanalyser/src/metadata/delete.this
-include streamanalyser/streamanalyser/src/thumbnails/delete.this
-include streamanalyser/streamanalyser/src/fonts/delete.this
+include streamanalyser/data/*.json
+include streamanalyser/data/*.yaml

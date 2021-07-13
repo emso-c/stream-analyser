@@ -1,15 +1,5 @@
 # Project related files
 *.gz
-streamanalyser/streamanalyser/src/cache/*
-!streamanalyser/streamanalyser/src/cache/delete.this
-streamanalyser/streamanalyser/src/metadata/*
-!streamanalyser/streamanalyser/src/metadata/delete.this
-streamanalyser/streamanalyser/src/logs/*
-!streamanalyser/streamanalyser/src/logs/delete.this
-streamanalyser/streamanalyser/src/thumbnails/*
-!streamanalyser/streamanalyser/src/thumbnails/delete.this
-streamanalyser/streamanalyser/src/fonts/*
-!streamanalyser/streamanalyser/src/fonts/delete.this
 streamanalyser/stream_analyser.egg-info/
 
 # Byte-compiled / optimized / DLL files

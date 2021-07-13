@@ -1,11 +1,13 @@
 path-to:
-  cache: src\cache
-  metadata: src\metadata
-  contexts: src\context.json
-  default-export: C:\Stream analyser\Exports
+  cache:
+    messages: cache\messages
+    metadata: cache\metadata
+    fonts: cache\fonts
+    thumbnails: cache\thumbnails
+  data:
+    contexts: data\context.json
   logs: src\logs
-  thumbnails: src\thumbnails
-  fonts: src\fonts
+  default-export: Exports
 intensity:
   levels: [low, medium, high, very high, ultra high]
   constants: [0, 0.5, 1, 1.5, 2.5]

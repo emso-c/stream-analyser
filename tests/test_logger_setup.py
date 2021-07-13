@@ -1,6 +1,6 @@
 import logging
 
-def create_logger(name, logpath, sid=None, format=None, level=logging.ERROR):
+def create_logger(name, logpath, sid=None, format=None, def_level=logging.ERROR, level=logging.DEBUG):
     for handler in logging.root.handlers[:]:
         logging.root.removeHandler(handler)
 
@@ -10,13 +10,15 @@ def create_logger(name, logpath, sid=None, format=None, level=logging.ERROR):
         else:
             format = f'%(asctime)s:%(module)s[%(lineno)d]:%(levelname)s:%(message)s'
     logging.basicConfig(
-        level=level,
+        level=def_level,
         format=format,
         filename=logpath,
         encoding='utf-8',
     )
     console = logging.StreamHandler()
-    console.setLevel(level)
+    console.setLevel(def_level)
     console.setFormatter(logging.Formatter(format))
     logging.getLogger(name).addHandler(console)
-    return logging.getLogger(name)
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+    return logger

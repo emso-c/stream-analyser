@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name = "stream-analyser",
-    version = "v0.1.1",
+    version = "v1.0.0",
     author = "emso-c",
     author_email = "emsoc192@gmail.com",
     description = ("Live stream analyser"),
