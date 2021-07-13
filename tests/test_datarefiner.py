@@ -51,7 +51,6 @@ class test(unittest.TestCase):
             expected_messages[:3]
         )
 
-        # skip corrupt
         result_messages = self.refiner.refine_raw_messages(
             [{'corrupt_data':'test'}],
         )
@@ -59,7 +58,39 @@ class test(unittest.TestCase):
             result_messages,
             []
         )
-        
+
+    def test_get_authors(self):
+        result_authors = self.refiner.get_authors()
+        self.assertEqual(
+            result_authors,
+            []
+        )
+
+        sample_raw_messages = []
+        for i in range(6):
+            sample_raw_messages.append({
+                'message_id': i,
+                'message': 'msg'+str(i),
+                'time_in_seconds': i,
+                'author': {
+                    'id': i,
+                    'name': 'name'+str(i)
+                }
+            })
+        self.refiner.refine_raw_messages(sample_raw_messages)
+        result_authors = self.refiner.get_authors()
+        expected_authors = [
+            Author(
+                id=i,
+                name='name'+str(i)
+            ) for i in range(6)
+        ]
+        self.assertEqual(
+            result_authors,
+            expected_authors
+        )
+
+
     def setUp(self):
         self.refiner = DataRefiner()
 

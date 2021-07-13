@@ -12,6 +12,7 @@ class DataRefiner():
     def __init__(self, verbose=False):
         self.verbose = verbose
 
+        self.messages = []
         self.logger = loggersetup.create_logger(__file__)
 
     def refine_raw_messages(self, raw_messages, msglimit=None) -> list[Message]:
@@ -37,13 +38,34 @@ class DataRefiner():
                     )
                 )
         except Exception as e:
-            self.logger.error(e)
-            raise Exception(e)
+            self.logger.error(f'{e.__class__.__name__}:{e}')
+            raise Exception(f'{e.__class__.__name__}:{e}')
         finally:
-            self.logger.debug(f"{len(messages)} messages has been found")
+            self.logger.debug(f"{len(messages)} messages has been refined")
             if self.verbose:
                 print(f"Reading messages... done")
+            self.messages = messages
             return messages
+
+    def get_authors(self) -> list[Author]:
+        """ Returns unique list of message authors """
+
+        if not self.messages:
+            self.logger.warning('Please refine raw messages before getting authors')
+            return []
+
+        self.logger.info("Getting authors")
+        authors = set()
+        for count, message in enumerate(self.messages):
+            if self.verbose:
+                print(f"Getting authors...{utils.percentage(count, len(self.messages))}%", end='\r')
+            authors.add(message.author)
+        
+        if self.verbose:
+            print(f"Getting authors... done")
+        self.authors = list(authors)
+        self.logger.debug(f"{len(self.authors)} authors has been found")
+        return self.authors
 
     def __del__(self):
         #self.logger.info("Destructing refiner")
