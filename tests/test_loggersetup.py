@@ -1,15 +1,15 @@
 import os
 import unittest
 
-from streamanalyser.helpers.filehandler import streamanalyser_filehandler as sf
-from streamanalyser.helpers.loggersetup import create_logger
-
+from streamanalyser.helpers.loggersetup import create_logger, get_logname
 
 class TestLoggerSetup(unittest.TestCase):
    def test_createlogger(self):
-      testlogpath = os.path.join(sf.log_path, 'test.log')
+
+      testlogpath = os.path.join('C:\\Stream Analyser\\Logs', get_logname())
       logger = create_logger(
-         'test.log',
+         __file__,
+         fname='test.log',
          sid=None,
          format='%(module)s:%(levelname)s:%(message)s',
          mode='w'
@@ -25,6 +25,7 @@ class TestLoggerSetup(unittest.TestCase):
       with open(testlogpath, 'r') as f:
          for i, line in enumerate(f.readlines()):
             self.assertEqual(line, f'test_loggersetup:{lvs[i]}:test\n')
+
 
 if __name__ == '__main__':
    unittest.main()

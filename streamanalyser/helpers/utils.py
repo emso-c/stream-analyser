@@ -4,20 +4,10 @@ from shutil import copyfileobj
 from datetime import datetime
 from time import time
 
-import loggersetup
+from .loggersetup import create_logger, get_logname
 
 
-def get_logname() -> str:
-    """ Gets log name in Y-M-Wn format where n is week number, starts from 0
-        Example: 2021-06-W0 """
-    weekno = datetime.today().isocalendar()[1] - datetime.today().replace(day=1).isocalendar()[1]
-    return datetime.today().strftime('%Y-%m-W')+str(weekno)+".log"
-
-_package_path = os.path.abspath(__file__).split('utils\\utils.py')[0]
-logger = loggersetup.create_logger(
-    name=__file__,
-    logpath=_package_path+'\\src\\logs\\'+get_logname()
-)
+logger = create_logger(__file__)
 
 percentage = lambda current, out_of: round(int(current*100/out_of))
 

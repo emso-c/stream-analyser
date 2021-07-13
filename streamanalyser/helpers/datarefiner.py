@@ -41,3 +41,10 @@ class Refiner():
             if self.verbose:
                 print(f"Reading messages... done")
             return messages
+
+    def __del__(self):
+        self.logger.info("Destructing refiner")
+        handlers = self.logger.handlers[:]
+        for handler in handlers:
+            handler.close()
+            self.logger.removeHandler(handler)

@@ -1,10 +1,10 @@
 import logging
 import os
+from datetime import datetime
 
 from .filehandler import streamanalyser_filehandler as sf
 
-
-def create_logger(name, sid=None, format=None, mode='a', def_level=logging.ERROR, level=logging.DEBUG):
+def create_logger(name, fname=None, sid=None, format=None, mode='a', def_level=logging.ERROR, level=logging.DEBUG):
     for handler in logging.root.handlers[:]:
         logging.root.removeHandler(handler)
 
@@ -20,10 +20,13 @@ def create_logger(name, sid=None, format=None, mode='a', def_level=logging.ERROR
     except:
         raise PermissionError(f"Permission denied")
 
+    if not fname:
+        fname = get_logname()
+
     logging.basicConfig(
         level=def_level,
         format=format,
-        filename=os.path.join(sf.log_path, name),
+        filename=os.path.join(sf.log_path, fname),
         encoding='utf-8',
         filemode=mode
     )
@@ -34,3 +37,9 @@ def create_logger(name, sid=None, format=None, mode='a', def_level=logging.ERROR
     logger = logging.getLogger(name)
     logger.setLevel(level)
     return logger
+
+def get_logname() -> str:
+    """ Gets log name in Y-M-Wn format where n is week number, starts from 0
+        Example: 2021-06-W0 """
+    weekno = datetime.today().isocalendar()[1] - datetime.today().replace(day=1).isocalendar()[1]
+    return datetime.today().strftime('%Y-%m-W')+str(weekno)+".log"
