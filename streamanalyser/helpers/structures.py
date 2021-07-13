@@ -35,7 +35,9 @@ class Message():
     
     def __repr__(self):
         return f"[{self.time_in_hms}] {Fore.YELLOW+self.author.name+Style.RESET_ALL}: {self.text}"
-
+    
+    def __hash__(self):
+        return hash(self.id)
 
 @dataclass
 class Intensity():

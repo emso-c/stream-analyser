@@ -1,5 +1,4 @@
 import unittest
-import pprint
 from streamanalyser.helpers.datacollector import DataCollector
 
 
