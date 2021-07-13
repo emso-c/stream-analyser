@@ -3,7 +3,8 @@ import gzip
 from shutil import copyfileobj
 from datetime import datetime
 from time import time
-from .logger_setup import create_logger
+
+import loggersetup
 
 
 def get_logname() -> str:
@@ -13,7 +14,7 @@ def get_logname() -> str:
     return datetime.today().strftime('%Y-%m-W')+str(weekno)+".log"
 
 _package_path = os.path.abspath(__file__).split('utils\\utils.py')[0]
-logger = create_logger(
+logger = loggersetup.create_logger(
     name=__file__,
     logpath=_package_path+'\\src\\logs\\'+get_logname()
 )

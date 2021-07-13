@@ -1,6 +1,8 @@
 import logging
+from filehandler import streamanalyser_filehandler as sf
 
-def create_logger(name, logpath, sid=None, format=None, def_level=logging.ERROR, level=logging.DEBUG):
+
+def create_logger(name, sid=None, format=None, def_level=logging.ERROR, level=logging.DEBUG):
     for handler in logging.root.handlers[:]:
         logging.root.removeHandler(handler)
 
@@ -12,7 +14,7 @@ def create_logger(name, logpath, sid=None, format=None, def_level=logging.ERROR,
     logging.basicConfig(
         level=def_level,
         format=format,
-        filename=logpath,
+        filename=sf.log_path,
         encoding='utf-8',
     )
     console = logging.StreamHandler()
