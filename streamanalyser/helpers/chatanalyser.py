@@ -102,33 +102,35 @@ class ChatAnalyser:
         return self.intensity_list
 
 
-    def calculate_moving_average(self, table) -> dict:
+    def calculate_moving_average(self, table, window) -> dict:
         """ Returns moving average of a table
     
         Args:
-            table (dict): The table to calculate averages. e.g. message frequency.
+            table (dict): The table to calculate averages. 
+                e.g. message frequency.
+
+        Raises:
+            ValueError: If window is smaller than 1
 
         Returns:
             dict: Moving average values of the table.
         """
 
         self.logger.info("Calculating moving average")
-        self.logger.debug(f'{table=}')
 
-        if not self.window > 1:
+        if not window > 1:
             self.logger.error('Interval must be bigger than one')
             raise ValueError('Interval must be bigger than one.')
 
-        stack = []  # holds frequency for the last {window} seconds
+        stack = []  # holds frequency of the last {window} seconds
         mov_avg = {}
         for time, value in table.items():
             if self.verbose:
                 print(f"Calculating moving average...{utils.percentage(time, len(table))}%", end='\r')
-            if len(stack) == self.window:
+            if len(stack) == window:
                 stack.pop(0)
             stack.append(value)
             mov_avg[time] = sum(stack)/len(stack)
-        self.logger.debug(f'{mov_avg=}')
 
         if self.verbose:
             print(f"Calculating moving average... done")

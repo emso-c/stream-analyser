@@ -93,6 +93,28 @@ class TestChatAnalyser(unittest.TestCase):
             [0, 1, 1, 2],
             [Fore.BLUE, Fore.YELLOW, Fore.RED, Fore.MAGENTA],
          )
-      
+
+   def test_calculate_moving_average(self):
+      time_frequency = {}
+      for i in range(20):
+         time_frequency[i]=i+1
+         
+      result = self.canalyser.calculate_moving_average(
+         time_frequency, window=4
+      )
+      expected = {
+         0: 1.0, 1: 1.5, 2: 2.0, 3: 2.5,
+         4: 3.5, 5: 4.5, 6: 5.5, 7: 6.5,
+         8: 7.5, 9: 8.5, 10: 9.5, 11: 10.5,
+         12: 11.5, 13: 12.5, 14: 13.5, 15: 14.5,
+         16: 15.5, 17: 16.5, 18: 17.5, 19: 18.5,
+      }
+      self.assertEqual(result, expected)
+
+      with self.assertRaises(ValueError):
+         self.canalyser.calculate_moving_average(
+            [], window=1
+         )
+
 if __name__ == '__main__':
     unittest.main()

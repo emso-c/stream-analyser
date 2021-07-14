@@ -1,7 +1,6 @@
 # Project related files
 *.gz
 streamanalyser/stream_analyser.egg-info/
-test.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
