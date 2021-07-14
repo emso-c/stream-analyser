@@ -1,7 +1,7 @@
 import unittest
 
-from streamanalyser.helpers.datarefiner import DataRefiner
-from streamanalyser.helpers.structures import Message, Author
+from streamanalyser.modules.datarefiner import DataRefiner
+from streamanalyser.modules.structures import Message, Author
 
 class test(unittest.TestCase):
     def test_refine_raw_messages(self):

@@ -1,5 +1,5 @@
 import unittest
-from streamanalyser.helpers.datacollector import DataCollector
+from streamanalyser.modules.datacollector import DataCollector
 
 
 #TODO Fix:

@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from streamanalyser.helpers.loggersetup import create_logger, get_logname
+from streamanalyser.modules.loggersetup import create_logger, get_logname
 
 class TestLoggerSetup(unittest.TestCase):
    def test_createlogger(self):

@@ -1,21 +1,22 @@
 import unittest
 import random
-from streamanalyser.helpers import exceptions
+from streamanalyser.modules import exceptions
 
-from streamanalyser.helpers.structures import (
+from streamanalyser.modules.structures import (
    Intensity,
    Message,
    Author
 ) 
-from streamanalyser.helpers.chatanalyser import (
+from streamanalyser.modules.chatanalyser import (
    ChatAnalyser,
    Fore
 )
-from streamanalyser.helpers.exceptions import (
+from streamanalyser.modules.exceptions import (
    DifferentListSizeError,
    ConstantsNotAscendingError,
    ConstantsNotUniqueError
 )
+
 
 def generate_random_chat(size, seed, density=0):
    random.seed(seed)

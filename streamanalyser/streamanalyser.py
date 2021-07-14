@@ -1,5 +1,5 @@
 import os
-from filehandler import streamanalyser_filehandler as sf
+from modules.filehandler import streamanalyser_filehandler as sf
 
 class StreamAnalyser():
     def __init__(self):
