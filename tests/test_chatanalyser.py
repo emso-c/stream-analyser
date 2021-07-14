@@ -44,6 +44,7 @@ class TestChatAnalyser(unittest.TestCase):
       self.canalyser = ChatAnalyser(
          generate_random_chat(20, 101, 3)
       )
+      self.canalyser.logger.disabled = True
 
    def tearDown(self):
       del self.canalyser
@@ -70,7 +71,7 @@ class TestChatAnalyser(unittest.TestCase):
          Intensity('very high', 2.0, Fore.MAGENTA),
       ]
       self.assertEqual(result, expected)
-
+      
       with self.assertRaises(DifferentListSizeError):
          self.canalyser.init_intensity(
             ['low', 'medium', 'high', 'very high'],
@@ -79,7 +80,6 @@ class TestChatAnalyser(unittest.TestCase):
          )
 
       with self.assertRaises(ConstantsNotAscendingError):
-         ConstantsNotAscendingError,
          self.canalyser.init_intensity(
             ['low', 'medium', 'high', 'very high'],
             [0, 1, 0.5, 2.0],
@@ -87,7 +87,6 @@ class TestChatAnalyser(unittest.TestCase):
          )
 
       with self.assertRaises(ConstantsNotUniqueError):
-         ConstantsNotUniqueError,
          self.canalyser.init_intensity(
             ['low', 'medium', 'high', 'very high'],
             [0, 1, 1, 2],
@@ -115,6 +114,19 @@ class TestChatAnalyser(unittest.TestCase):
          self.canalyser.calculate_moving_average(
             [], window=1
          )
+
+   def test_create_highlight_annotation(self):
+      result = self.canalyser.create_highlight_annotation([
+            1, 1.1, 1.4, 1.9, 2.5, 4,
+            4, 3.9, 3.7, 3.4, 2.7, 2.3
+         ])
+      self.assertEqual(
+         result,
+         [1, 1, 1, 1, 1, 0, -1, -1, -1, -1, -1]
+      )
+      
+   def detect_highlight_times(self):
+      self.assertFalse(True)
 
 if __name__ == '__main__':
     unittest.main()

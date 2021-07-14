@@ -93,6 +93,7 @@ class test(unittest.TestCase):
 
     def setUp(self):
         self.refiner = DataRefiner()
+        self.refiner.logger.disabled = True
 
     def tearDown(self):
         del self.refiner

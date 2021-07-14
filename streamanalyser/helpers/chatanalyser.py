@@ -54,7 +54,6 @@ class ChatAnalyser:
         if self.verbose:
             print(f"Calculating frequency... done")
         self.message_frequency = sorted_message_frequency
-        self.logger.info(f"{self.message_frequency=}")
         return self.message_frequency
 
 
@@ -142,18 +141,18 @@ class ChatAnalyser:
         return list(np.convolve(list(mov_avg.values()), np.ones(w)/w, mode='same'))
 
 
-    def create_highlight_annotation(self) -> list[int]:
+    def create_highlight_annotation(self, smooth_avg) -> list[int]:
         """ Creates highlight annotation from moving average.
             Values are either -1, 0 or 1 where 1 means it's a highlight. """
 
         self.logger.info("Creating highlight annotation")
         highlight_annotation = []
-        for i in range(len(self.smooth_avg)):
-            if i == len(self.smooth_avg)-1:
+        for i in range(len(smooth_avg)):
+            if i == len(smooth_avg)-1:
                 break
-            if self.smooth_avg[i] < self.smooth_avg[i+1]:
+            if smooth_avg[i] < smooth_avg[i+1]:
                 highlight_annotation.append(1)
-            elif self.smooth_avg[i] > self.smooth_avg[i+1]:
+            elif smooth_avg[i] > smooth_avg[i+1]:
                 highlight_annotation.append(-1)
             else:
                 highlight_annotation.append(0)
@@ -161,8 +160,7 @@ class ChatAnalyser:
         self.logger.debug(f"Total increasing duration: {highlight_annotation.count(1)}")
         self.logger.debug(f"Total decreasing duration: {highlight_annotation.count(-1)}")
         self.logger.debug(f"Total constant duration: {highlight_annotation.count(0)}")
-        self.highlight_annotation = highlight_annotation
-        return self.highlight_annotation
+        return highlight_annotation
 
 
     def line_colors(self, highlight_annotation) -> list[str]:
