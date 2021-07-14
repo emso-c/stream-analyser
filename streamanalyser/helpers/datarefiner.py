@@ -27,7 +27,7 @@ class DataRefiner():
                 if msglimit and count == msglimit:
                     break
                 if self.verbose:
-                    print(f"Refining messages...{utils.percentage(count, msglimit if self.msglimit else len(raw_messages))}%", end='\r')
+                    print(f"Refining messages...{utils.percentage(count, msglimit if msglimit else len(raw_messages))}%", end='\r')
                 messages.append(Message(
                     id=raw_message['message_id'],
                     text=raw_message['message'],
