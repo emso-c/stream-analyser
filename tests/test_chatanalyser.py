@@ -1,6 +1,6 @@
 import unittest
 import random
-from streamanalyser.modules import exceptions
+import warnings
 
 from streamanalyser.modules.structures import (
    Intensity,
@@ -42,6 +42,7 @@ def generate_random_chat(size, seed, density=0):
 
 class TestChatAnalyser(unittest.TestCase):
    def setUp(self):
+      warnings.simplefilter('ignore', category=ResourceWarning)
       self.canalyser = ChatAnalyser(
          generate_random_chat(20, 101, 3)
       )

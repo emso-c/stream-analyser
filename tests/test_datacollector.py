@@ -1,4 +1,6 @@
 import unittest
+import warnings
+
 from streamanalyser.modules.datacollector import DataCollector
 
 
@@ -27,6 +29,7 @@ class TestDataCollector(unittest.TestCase):
 
 
    def setUp(self):
+      warnings.simplefilter('ignore', category=ResourceWarning)
       self.example_url = 'TURbeWK2wwg'
       self.collector = DataCollector(
          self.example_url,

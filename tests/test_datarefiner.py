@@ -1,4 +1,5 @@
 import unittest
+import warnings
 
 from streamanalyser.modules.datarefiner import DataRefiner
 from streamanalyser.modules.structures import Message, Author
@@ -92,6 +93,7 @@ class test(unittest.TestCase):
 
 
     def setUp(self):
+        warnings.simplefilter('ignore', category=ResourceWarning)
         self.refiner = DataRefiner()
         self.refiner.logger.disabled = True
 
