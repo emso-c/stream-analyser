@@ -18,7 +18,9 @@ from .exceptions import (
 class ChatAnalyser:
     """ A class to analyse live chat messages """
 
-    def __init__(self, refined_messages, verbose = False):
+    def __init__(self, refined_messages, stream_id='undefined', verbose = False):
+
+        self.stream_id = stream_id
         self.messages = refined_messages
         self.verbose = verbose
         self.logger = create_logger(__file__)
@@ -55,7 +57,6 @@ class ChatAnalyser:
         self.message_frequency = sorted_message_frequency
         return self.message_frequency
 
-
     def init_intensity(self, levels=[], constants=[], colors=[]) -> list[Intensity]:
         """ Returns list of intensity which will be used for 
             measuring how tense was the highlight.
@@ -91,16 +92,15 @@ class ChatAnalyser:
             self.logger.error('All constants should be unique')
             raise ConstantsNotUniqueError("All constants should be unique")
 
-        self.intensity_list = [
+        intensity_list = [
             Intensity(
                 levels[i],
                 constants[i],
                 colors[i]
             ) for i in range(len(levels))]
-        return self.intensity_list
+        return intensity_list
 
-
-    def calculate_moving_average(self, table, window) -> dict:
+    def calculate_moving_average(self, table, window=30) -> dict:
         """ Returns moving average of a table
     
         Args:
@@ -135,14 +135,12 @@ class ChatAnalyser:
 
         return mov_avg
 
-
-    def _smoothen(self, mov_avg, w=40) -> list:
+    def smoothen(self, mov_avg, w=40) -> list[np.ndarray]:
         return list(np.convolve(list(mov_avg.values()), np.ones(w)/w, mode='same'))
-
 
     def create_highlight_annotation(self, smooth_avg) -> list[int]:
         """ Creates highlight annotation from moving average.
-            Values are either -1, 0 or 1 where 1 means it's a highlight. """
+            Values are either -1, 0 or 1 where 1 means it's increasing. """
 
         self.logger.info("Creating highlight annotation")
         highlight_annotation = []
@@ -161,7 +159,6 @@ class ChatAnalyser:
         self.logger.debug(f"Total constant duration: {highlight_annotation.count(0)}")
         return highlight_annotation
 
-
     def line_colors(self, highlight_annotation) -> list[str]:
         """ Sets plot colors according to highlight annotation """
 
@@ -177,81 +174,101 @@ class ChatAnalyser:
                 colors.append('gray')
         return colors
 
+    def detect_highlight_times(self, highlight_annotation, smooth_mov_avg, min_duration=3) -> list[Highlight]:
+        """ Detects highlight times and durations according to highlight annotation and 
+            smoothened moving average.  Also sets frequency delta, which is the change 
+            of frequency within highlight duration.
 
-    def detect_highlight_times(self) -> list[Highlight]:
-        """ Detects highlight times and durations according to highlight annotation and smoothened average. 
-            Also sets frequency delta, which is the change of frequency within highlight duration. """
+        Args:
+            highlight_annotation (list[int]): Highlight annotation returned from
+                create_highlight_annotation method.
+            smooth_avg (list): Smoothened values of moving average of message frequency.
+            min_duration (int): Minimum highlight duration to detect.
+        Returns:
+            list[Highlight]: List of highlight times
+        """
+
         #TODO improve algorithm 
         self.logger.info("Detecting highlight times")
 
+        highlights = []
         start_time = 0
         initial_frequency = 0
-        for current_time in range(len(self.highlight_annotation)):
+        for current_time in range(len(highlight_annotation)):
             if self.verbose:
-                print(f"Detecting highlight timestamps... {utils.percentage(current_time, len(self.highlight_annotation))}%", end='\r')
-            if not start_time and self.highlight_annotation[current_time] == 1:
+                print(f"Detecting highlight timestamps... {utils.percentage(current_time, len(highlight_annotation))}%", end='\r')
+            if not start_time and highlight_annotation[current_time] == 1:
                 start_time = current_time
-                initial_frequency = self.smooth_avg[current_time]
+                initial_frequency = smooth_mov_avg[current_time]
 
-            if start_time and self.highlight_annotation[current_time] != 1:
+            if start_time and highlight_annotation[current_time] != 1:
                 duration = current_time - start_time
-                if duration < self.config['min-hl-duration']:
+                if duration < min_duration:
                     self.logger.debug(f"Highlight @{start_time} not added, duration was {duration}")
                     start_time = 0
                     continue
-                delta = self.smooth_avg[current_time] - initial_frequency
+                delta = smooth_mov_avg[current_time] - initial_frequency
                 if delta < 0:
                     self.logger.debug(f"Highlight @{start_time} not added, delta was {delta}")
                     start_time = 0
                     continue
-                self.highlights.append(Highlight(self.stream_id, start_time, duration, fdelta=delta))
+                highlights.append(Highlight(self.stream_id, start_time, duration, fdelta=delta))
                 self.logger.debug(f"Highlight found: from {start_time} to {current_time} ({duration}s)")
                 start_time = 0
         if self.verbose:
             print("Detecting highlight timestamps... done")
-        return self.highlights
+        return highlights
 
-
-    def correct_highlights(self) -> list[Highlight]:
-        """ Corrects highlights by removing highlights that are too short or filtered. """
+    def correct_highlights(self, highlights, threshold_constant=3) -> list[Highlight]:
+        """ Corrects highlights by removing highlights that are too short or filtered. 
+            threshold_constant is the value that divides average highlight duration.  """
 
         # TODO consider highlight value 
         self.logger.info("Correcting highlights")
         
-        if not self.highlights:
+        if not highlights:
             return []
 
-        avg_highlight_duration = sum([hl.duration for hl in self.highlights])/len(self.highlights)
-        for i, highlight in enumerate(self.highlights):
+        avg_highlight_duration = sum([hl.duration for hl in highlights])/len(highlights)
+        for i, highlight in enumerate(highlights):
             if self.verbose:
-                print(f"Correcting highlights... {utils.percentage(i, len(self.highlights))}", end='\r')
-            if highlight.duration <= avg_highlight_duration/3:
-                self.highlights.remove(highlight)
+                print(f"Correcting highlights... {utils.percentage(i, len(highlights))}", end='\r')
+            if highlight.duration <= avg_highlight_duration/threshold_constant:
+                highlights.remove(highlight)
                 if self.verbose:
                     self.logger.debug(f"Removed highlight at {highlight.time}, duration was too short ({highlight.duration}s)")
         if self.verbose:
             print("Correcting highlights... done")
-        return self.highlights
+        return highlights
 
+    def set_highlight_intensities(self, highlights, intensity_list)->list[Highlight]:
+        """ Sets highlight intensities based on frequency delta.
 
-    def set_highlight_intensities(self)->list[Highlight]:
-        """ Sets highlight intensities based on frequency delta """
+        Args:
+            highlights (list[Highlight]): List of highlights that contains
+                time, duration and fdelta.
+            intensity_list (list[Intensity]): List of intensities to compare.
+                Preferably returned from init_intensity method.
 
-        if not self.highlights:
+        Returns:
+            list[Highlight]: List of highlights containing intensity values.
+        """
+
+        if not highlights:
             return []
         
         self.logger.info("Setting highlight intensities")
-        avg_value = sum([hl.fdelta for hl in self.highlights])/len(self.highlights)
-        for i, highlight in enumerate(self.highlights):
+        avg_value = sum([hl.fdelta for hl in highlights])/len(highlights)
+        for i, highlight in enumerate(highlights):
             if self.verbose:
-                print(f"Setting highlight intensities... {utils.percentage(i, len(self.highlights))}%", end='\r')
-            for intensity in self.intensity_list:
+                print(f"Setting highlight intensities... {utils.percentage(i, len(highlights))}%", end='\r')
+            for intensity in intensity_list:
                 if highlight.fdelta > avg_value*intensity.constant:
                     highlight.intensity = intensity
             self.logger.debug(f"[{highlight.time}] => {highlight.intensity.level} ({highlight.fdelta})")
         if self.verbose:
             print("Setting highlight intensities... done")
-        return self.highlights
+        return highlights
 
 
     def get_highlight_messages(self) -> list[Highlight]:
