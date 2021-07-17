@@ -1,6 +1,6 @@
-from collections import Counter
-
+import json
 import numpy as np
+from collections import Counter
 from colorama import Fore
 
 from .loggersetup import create_logger
@@ -18,22 +18,47 @@ from .exceptions import (
 class ChatAnalyser:
     """ A class to analyse live chat messages """
 
-    def __init__(self, refined_messages, stream_id='undefined', min_duration=5, window=30, threshold_constant=3, verbose = False):
+    def __init__(
+            self,
+            refined_messages,
+            stream_id='undefined',
+            min_duration=5,
+            window=30,
+            threshold_constant=3,
+            keyword_limit = 4,
+            keyword_filters = [],
+            context_path = '..\\data\\context.json',
+            verbose = False
+        ):
         """
         Args:
             refined_messages (list[Message]): List of messages of the stream refined by
                 the DataRefiner class.
+
             stream_id (str, optional): Stream id of the chat. Defaults to 'undefined'.
+
             min_duration (int): Minimum highlight duration (in seconds) to detect. Defaults to 5
+
             window (int, optional):  Time interval to calculate averages. Defaults to 30.
-            threshold_constant(int, optional) The value that divides average highlight duration. Defaults to 3.
-            verbose (bool, optional): [description]. Defaults to False.
+
+            threshold_constant(int, optional): The value that divides average highlight duration. Defaults to 3.
+
+            keyword_limit(int, optional): Keyword amount to retrieve. Defaults to 4.
+
+            keyword_filters(list, optional): Keywords to filter. Defaults to [].
+            
+            context_path(str, optional): Path to context file. Defaults to '../data/context.json'.
+
+            verbose (bool, optional): Make the output verbose. Defaults to False.
         """
         self.messages = refined_messages
         self.stream_id = stream_id
         self.min_duration = min_duration
         self.window = window
         self.threshold_constant = threshold_constant
+        self.keyword_limit = keyword_limit
+        self.keyword_filters = keyword_filters
+        self.context_path = context_path
         self.verbose = verbose
         self.logger = create_logger(__file__)
         
@@ -47,6 +72,11 @@ class ChatAnalyser:
         self.smooth_avg = []
         self.highlight_annotation = []
         self.highlights = []
+        try:
+            with open(self.context_path, 'r', encoding='utf-8') as file:
+                self.contexts = json.load(file)
+        except FileNotFoundError:
+            self.contexts = []
 
     def get_frequency(self) -> dict:
         """ Creates frequency table of messages """
@@ -81,7 +111,8 @@ class ChatAnalyser:
 
     def init_intensity(self, levels=[], constants=[], colors=[]) -> list[Intensity]:
         """ Returns list of intensity which will be used for 
-            measuring how tense was the highlight.
+            measuring how tense was the highlight. Leave empty
+            for default values.
 
         Args:
             levels (list): Names of the intensity levels.
@@ -101,6 +132,11 @@ class ChatAnalyser:
         self.logger.debug(f"{levels=}")
         self.logger.debug(f"{constants=}")
         self.logger.debug(f"{colors=}")
+        
+        if not levels and not constants and not colors:
+            levels = ['medium', 'high', 'very high', 'ultra high']
+            constants = [0, 0.7, 1.4, 2.1]
+            colors = [Fore.YELLOW, Fore.BLUE, Fore.RED, Fore.MAGENTA]
 
         if len(levels) != len(constants) != len(colors):
             self.logger.error('All lists should be the same size')
@@ -259,7 +295,7 @@ class ChatAnalyser:
         avg_value = sum([hl.fdelta for hl in self.highlights])/len(self.highlights)
         for i, highlight in enumerate(self.highlights):
             if self.verbose:
-                print(f"Setting highlight intensities... {utils.percentage(i, len(highlights))}%", end='\r')
+                print(f"Setting highlight intensities... {utils.percentage(i, len(self.highlights))}%", end='\r')
             for intensity in self.intensity_list:
                 if highlight.fdelta > avg_value*intensity.constant:
                     highlight.intensity = intensity
@@ -267,7 +303,6 @@ class ChatAnalyser:
         if self.verbose:
             print("Setting highlight intensities... done")
         return self.highlights
-
 
     def get_highlight_messages(self) -> list[Highlight]:
         """ Gets messages typed during highlights """
@@ -294,7 +329,6 @@ class ChatAnalyser:
         if self.verbose:
             print("Getting highlight messages... done")
         return self.highlights
-
 
     def get_highlight_keywords(self) -> list[Highlight]:
         """ Adds most frequently used words to the highlight list. """
@@ -348,7 +382,6 @@ class ChatAnalyser:
             print("Getting highlight keywords... done")
         return self.highlights
 
-
     def guess_context(self) -> list[Highlight]:
         """ Guesses context by looking up the keywords for each highlight. """
 
@@ -356,32 +389,38 @@ class ChatAnalyser:
         if not self.highlights:
             return
 
-        with open(self.config['path-to']['contexts'], 'r', encoding='utf-8') as file:
-            context_list = json.load(file)
-            for i, highlight in enumerate(self.highlights):
-                if self.verbose:
-                    print(f"Guessing contexts... {utils.percentage(i, len(self.highlights))}%", end='\r')
-                for keyword in highlight.keywords:
-                    for context in context_list:
-                        for trigger in context['triggers']:
-                            if  (trigger["is_exact"] and trigger["phrase"] == keyword) or \
-                                (not trigger["is_exact"] and trigger["phrase"] in keyword):
-                                highlight.contexts.add(context['reaction_to'])
-                if not highlight.contexts:
-                    highlight.contexts = set(['None'])
-                self.logger.debug(f"Guessed contexts @{highlight.time}: {highlight.contexts} from keywords {highlight.keywords}")
+        for i, highlight in enumerate(self.highlights):
+            if self.verbose:
+                print(f"Guessing contexts... {utils.percentage(i, len(self.highlights))}%", end='\r')
+            for keyword in highlight.keywords:
+                for context in self.contexts:
+                    for trigger in context['triggers']:
+                        if  (trigger["is_exact"] and trigger["phrase"] == keyword) or \
+                            (not trigger["is_exact"] and trigger["phrase"] in keyword):
+                            highlight.contexts.add(context['reaction_to'])
+            if not highlight.contexts:
+                highlight.contexts = set(['None'])
+            self.logger.debug(f"Guessed contexts @{highlight.time}: {highlight.contexts} from keywords {highlight.keywords}")
         if self.verbose:
             print(f"Guessing contexts... done")
         return self.highlights
-
 
     def get_highlights(self) -> list[Highlight]:
         """ Returns a filled highlight list. """
 
         self.detect_highlight_times()
         self.correct_highlights()
+        self.init_intensity()
         self.set_highlight_intensities()
         self.get_highlight_messages()
         self.get_highlight_keywords()
         self.guess_context()
         return self.highlights
+
+    def analyse(self):        
+        self.get_frequency()
+        self.calculate_moving_average()
+        self.smoothen_mov_avg()
+        self.create_highlight_annotation()
+        self.get_highlights()
+        

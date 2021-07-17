@@ -1,8 +1,9 @@
 import unittest
 import random
+from unittest import result
 import warnings
 
-from numpy import exp
+from numpy import exp, result_type
 
 
 from streamanalyser.modules.structures import (
@@ -50,6 +51,7 @@ class TestChatAnalyser(unittest.TestCase):
       self.canalyser = ChatAnalyser(
          generate_random_chat(20, 101, 3)
       )
+      
       self.canalyser.logger.disabled = True
 
    def tearDown(self):
@@ -225,6 +227,230 @@ class TestChatAnalyser(unittest.TestCase):
 
       self.assertEqual(result, expected)
 
+   def test_get_highlight_messages(self):
+      self.canalyser = ChatAnalyser(
+         generate_random_chat(100, 101, 10),
+         window=5
+      )
+      self.canalyser.get_frequency()
+      self.canalyser.calculate_moving_average()
+      self.canalyser.smoothen_mov_avg()
+      self.canalyser.create_highlight_annotation()
+      self.canalyser.detect_highlight_times()
+      self.canalyser.correct_highlights()
+      self.canalyser.init_intensity()
+      self.canalyser.set_highlight_intensities()
+
+      highlights = self.canalyser.get_highlight_messages()
+
+      result = [hl.colorless_str for hl in highlights]
+
+      expected = [
+         '[0:00:01] :  (170 messages, ultra high intensity, 6.148 diff, 24s duration)',
+         '[0:00:31] :  (58 messages, medium intensity, 0.300 diff, 5s duration)',
+         '[0:00:38] :  (114 messages, medium intensity, 1.045 diff, 12s duration)',
+         '[0:01:13] :  (75 messages, medium intensity, 0.545 diff, 7s duration)',
+      ]
+
+      self.assertEqual(result, expected)
+
+   def test_get_highlight_keywords(self):
+      self.canalyser = ChatAnalyser(
+         generate_random_chat(100, 101, 10),
+         window=5
+      )
+      self.canalyser.get_frequency()
+      self.canalyser.calculate_moving_average()
+      self.canalyser.smoothen_mov_avg()
+      self.canalyser.create_highlight_annotation()
+      self.canalyser.detect_highlight_times()
+      self.canalyser.correct_highlights()
+      self.canalyser.init_intensity()
+      self.canalyser.set_highlight_intensities()
+      self.canalyser.get_highlight_messages()
+
+      highlights = self.canalyser.get_highlight_keywords()
+
+      result = [hl.keywords for hl in highlights]
+      expected = [
+         ['msg6', 'msg13', 'msg4', 'msg19'],
+         ['msg32', 'msg34', 'msg35', 'msg33'],
+         ['msg40', 'msg42', 'msg49', 'msg45'],
+         ['msg77', 'msg79', 'msg76', 'msg74']
+      ]
+
+      self.assertEqual(result, expected)
+
+   def test_guess_context(self):
+      self.canalyser = ChatAnalyser(
+         generate_random_chat(100, 101, 10),
+         window=5,
+         context_path='.\\streamanalyser\\data\\context.json'
+      )
+      
+      self.canalyser.get_frequency()
+      self.canalyser.calculate_moving_average()
+      self.canalyser.smoothen_mov_avg()
+      self.canalyser.create_highlight_annotation()
+      self.canalyser.detect_highlight_times()
+      self.canalyser.correct_highlights()
+      self.canalyser.init_intensity()
+      self.canalyser.set_highlight_intensities()
+      self.canalyser.get_highlight_messages()
+      self.canalyser.get_highlight_keywords()
+
+      self.canalyser.contexts = [
+         {
+            "reaction_to": "reaction1",
+            "triggers": [
+               {"phrase": "msg6", "is_exact": False},
+               {"phrase": "msg34", "is_exact": False},
+               {"phrase": "msg2", "is_exact": False},
+            ]
+         },
+         {
+            "reaction_to": "reaction2",
+            "triggers": [
+               {"phrase": "msg42msg40", "is_exact": True},
+               {"phrase": "msg49", "is_exact": True},
+            ]
+         },
+         {
+            "reaction_to": "reaction3",
+            "triggers": [
+               {"phrase": "msg74", "is_exact": False},
+               {"phrase": "msg35", "is_exact": False},
+            ]
+         },
+      ]
+      expected = [
+         ['msg6', 'msg13', 'msg4', 'msg19'],
+         ['msg32', 'msg34', 'msg35', 'msg33'],
+         ['msg40', 'msg42', 'msg49', 'msg45'],
+         ['msg77', 'msg79', 'msg76', 'msg74']
+      ]
+      
+      highlights = self.canalyser.guess_context()
+      
+      result = [hl.contexts for hl in highlights]
+
+      expected = [
+         {'reaction1'},
+         {'reaction1', 'reaction3'},
+         {'reaction2'},
+         {'reaction3'}
+      ]
+
+      self.assertEqual(result, expected)
+
+   def test_get_highlights(self):
+      self.canalyser = ChatAnalyser(
+         generate_random_chat(100, 101, 10),
+         window=5,
+         context_path='.\\streamanalyser\\data\\context.json'
+      )
+      
+      self.canalyser.get_frequency()
+      self.canalyser.calculate_moving_average()
+      self.canalyser.smoothen_mov_avg()
+      self.canalyser.create_highlight_annotation()
+
+      self.canalyser.contexts = [
+         {
+            "reaction_to": "reaction1",
+            "triggers": [
+               {"phrase": "msg6", "is_exact": False},
+               {"phrase": "msg34", "is_exact": False},
+               {"phrase": "msg2", "is_exact": False},
+            ]
+         },
+         {
+            "reaction_to": "reaction2",
+            "triggers": [
+               {"phrase": "msg42msg40", "is_exact": True},
+               {"phrase": "msg49", "is_exact": True},
+            ]
+         },
+         {
+            "reaction_to": "reaction3",
+            "triggers": [
+               {"phrase": "msg74", "is_exact": False},
+               {"phrase": "msg35", "is_exact": False},
+            ]
+         },
+      ]
+      highlights = self.canalyser.get_highlights()
+      result = [hl.colorless_str for hl in highlights]
+
+      expected = [
+         '[0:00:01] reaction1: msg6, msg13, msg4, msg19 (170 messages, ultra high intensity, 6.148 diff, 24s duration)',
+         '[0:00:31] reaction3/reaction1: msg32, msg34, msg35, msg33 (58 messages, medium intensity, 0.300 diff, 5s duration)',
+         '[0:00:38] reaction2: msg40, msg42, msg49, msg45 (114 messages, medium intensity, 1.045 diff, 12s duration)',
+         '[0:01:13] reaction3: msg77, msg79, msg76, msg74 (75 messages, medium intensity, 0.545 diff, 7s duration)'
+      ]
+      # @list_elem_2 reaction1 and reaction3 changes order since there is no order in dictionaries.
+      expected2 = [
+         '[0:00:01] reaction1: msg6, msg13, msg4, msg19 (170 messages, ultra high intensity, 6.148 diff, 24s duration)',
+         '[0:00:31] reaction1/reaction3: msg32, msg34, msg35, msg33 (58 messages, medium intensity, 0.300 diff, 5s duration)',
+         '[0:00:38] reaction2: msg40, msg42, msg49, msg45 (114 messages, medium intensity, 1.045 diff, 12s duration)',
+         '[0:01:13] reaction3: msg77, msg79, msg76, msg74 (75 messages, medium intensity, 0.545 diff, 7s duration)'
+      ]
+      if result == expected:
+         self.assertEqual(result, expected)
+      else:
+         self.assertEqual(result, expected2)
+
+   def test_analyse(self):
+      self.canalyser = ChatAnalyser(
+         generate_random_chat(100, 101, 10),
+         window=5,
+         context_path='.\\streamanalyser\\data\\context.json'
+      )
+      self.canalyser.contexts = [
+         {
+            "reaction_to": "reaction1",
+            "triggers": [
+               {"phrase": "msg6", "is_exact": False},
+               {"phrase": "msg34", "is_exact": False},
+               {"phrase": "msg2", "is_exact": False},
+            ]
+         },
+         {
+            "reaction_to": "reaction2",
+            "triggers": [
+               {"phrase": "msg42msg40", "is_exact": True},
+               {"phrase": "msg49", "is_exact": True},
+            ]
+         },
+         {
+            "reaction_to": "reaction3",
+            "triggers": [
+               {"phrase": "msg74", "is_exact": False},
+               {"phrase": "msg35", "is_exact": False},
+            ]
+         },
+      ]
+
+      self.canalyser.analyse()
+      result = [hl.colorless_str for hl in self.canalyser.highlights]
+
+      expected = [
+         '[0:00:01] reaction1: msg6, msg13, msg4, msg19 (170 messages, ultra high intensity, 6.148 diff, 24s duration)',
+         '[0:00:31] reaction3/reaction1: msg32, msg34, msg35, msg33 (58 messages, medium intensity, 0.300 diff, 5s duration)',
+         '[0:00:38] reaction2: msg40, msg42, msg49, msg45 (114 messages, medium intensity, 1.045 diff, 12s duration)',
+         '[0:01:13] reaction3: msg77, msg79, msg76, msg74 (75 messages, medium intensity, 0.545 diff, 7s duration)'
+      ]
+      # @list_elem_2 reaction1 and reaction3 changes order since there is no order in dictionaries.
+      expected2 = [
+         '[0:00:01] reaction1: msg6, msg13, msg4, msg19 (170 messages, ultra high intensity, 6.148 diff, 24s duration)',
+         '[0:00:31] reaction1/reaction3: msg32, msg34, msg35, msg33 (58 messages, medium intensity, 0.300 diff, 5s duration)',
+         '[0:00:38] reaction2: msg40, msg42, msg49, msg45 (114 messages, medium intensity, 1.045 diff, 12s duration)',
+         '[0:01:13] reaction3: msg77, msg79, msg76, msg74 (75 messages, medium intensity, 0.545 diff, 7s duration)'
+      ]
+      if result == expected:
+         self.assertEqual(result, expected)
+      else:
+         self.assertEqual(result, expected2)
 
 if __name__ == '__main__':
     unittest.main()
