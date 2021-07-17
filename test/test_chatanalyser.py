@@ -2,6 +2,8 @@ import unittest
 import random
 import warnings
 
+from numpy import exp
+
 
 from streamanalyser.modules.structures import (
    Highlight,
@@ -101,45 +103,45 @@ class TestChatAnalyser(unittest.TestCase):
       time_frequency = {}
       for i in range(20):
          time_frequency[i]=i+1
-         
-      result = self.canalyser.calculate_moving_average(
-         time_frequency, window=4
-      )
+      
+      self.canalyser.get_frequency()
+      self.canalyser.window = 4
+      result = self.canalyser.calculate_moving_average()
       expected = {
-         0: 1.0, 1: 1.5, 2: 2.0, 3: 2.5,
-         4: 3.5, 5: 4.5, 6: 5.5, 7: 6.5,
-         8: 7.5, 9: 8.5, 10: 9.5, 11: 10.5,
-         12: 11.5, 13: 12.5, 14: 13.5, 15: 14.5,
-         16: 15.5, 17: 16.5, 18: 17.5, 19: 18.5,
-      }
+         0: 0.0, 1: 0.5, 2: 1.6666666666666667,
+         3: 1.75, 4: 2.25, 5: 3.25, 6: 3.75,
+         7: 4.0, 8: 3.75, 9: 3.25, 10: 2.25,
+         11: 2.25, 12: 2.5, 13: 2.25, 14: 2.5,
+         15: 2.5, 16: 2.25, 17: 2.25, 18: 1.75,
+         19: 1.5, 20: 1.5}
+
       self.assertEqual(result, expected)
 
       with self.assertRaises(ValueError):
-         self.canalyser.calculate_moving_average(
-            [], window=1
-         )
+         ChatAnalyser([], window=1)
 
    def test_create_highlight_annotation(self):
-      result = self.canalyser.create_highlight_annotation([
-            1, 1.1, 1.4, 1.9, 2.5, 4,
-            4, 3.9, 3.7, 3.4, 2.7, 2.3
-         ])
-      self.assertEqual(
-         result,
-         [1, 1, 1, 1, 1, 0, -1, -1, -1, -1, -1]
-      )
+      self.canalyser.get_frequency()
+      self.canalyser.calculate_moving_average()
+      self.canalyser.smoothen_mov_avg()
+      result = self.canalyser.create_highlight_annotation()
+      expected = [
+         1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -1, -1,
+         -1, -1, -1, -1, -1, -1
+      ]
+      self.assertEqual(result, expected)
 
    def test_detect_highlight_times(self):
       self.canalyser = ChatAnalyser(
-         generate_random_chat(100, 101, 4)
+         generate_random_chat(100, 101, 4),
+         window=5
       )
-      fre = self.canalyser.get_frequency()
-      mov_avg = self.canalyser.calculate_moving_average(fre, 5)
-      smooth_avg = self.canalyser.smoothen(mov_avg)
-      annotation = self.canalyser.create_highlight_annotation(smooth_avg)
-      highlights = self.canalyser.detect_highlight_times(
-         annotation, smooth_avg
-      )
+      self.canalyser.get_frequency()
+      self.canalyser.calculate_moving_average()
+      self.canalyser.smoothen_mov_avg()
+      self.canalyser.create_highlight_annotation()
+      highlights = self.canalyser.detect_highlight_times()
 
       result = ["[{}] ({}->{}): {}".format(
          h.stream_id,
@@ -150,7 +152,6 @@ class TestChatAnalyser(unittest.TestCase):
 
       expected = [
          '[undefined] (1->20): 1.7000000000000006',
-         '[undefined] (26->4): 0.23499999999999988',
          '[undefined] (38->10): 0.5050000000000003',
          '[undefined] (54->5): 0.17000000000000082',
          '[undefined] (60->8): 0.5350000000000001'
@@ -160,22 +161,20 @@ class TestChatAnalyser(unittest.TestCase):
 
    def test_correct_highlights(self):
       self.canalyser = ChatAnalyser(
-         generate_random_chat(100, 101, 10)
+         generate_random_chat(100, 101, 10),
+         window=5
       )
-      fre = self.canalyser.get_frequency()
-      mov_avg = self.canalyser.calculate_moving_average(fre, 5)
-      smooth_avg = self.canalyser.smoothen(mov_avg)
-      annotation = self.canalyser.create_highlight_annotation(smooth_avg)
-      highlights = self.canalyser.detect_highlight_times(
-         annotation, smooth_avg
-      )
+      self.canalyser.get_frequency()
+      self.canalyser.calculate_moving_average()
+      self.canalyser.smoothen_mov_avg()
+      self.canalyser.create_highlight_annotation()
+      self.canalyser.detect_highlight_times()
+      
       # manually modified a highlight to be too short
-      highlights[1].duration = 3
-      initial_len = len(highlights)
+      self.canalyser.highlights[1].duration = 3
+      initial_len = len(self.canalyser.highlights)
 
-      corrected_highlights = self.canalyser.correct_highlights(
-         highlights
-      )
+      corrected_highlights = self.canalyser.correct_highlights()
 
       result = ["[{}] ({}->{}): {}".format(
          h.stream_id,
@@ -190,35 +189,32 @@ class TestChatAnalyser(unittest.TestCase):
          '[undefined] (73->7): 0.5450000000000017'
       ]
 
-      self.assertEqual(len(highlights), len(corrected_highlights))
+      self.assertEqual(
+         len(self.canalyser.highlights), 
+         len(corrected_highlights)
+      )
       self.assertNotEqual(initial_len, len(corrected_highlights))
       self.assertEqual(result, expected)
 
    def test_set_highlight_intensities(self):
       self.canalyser = ChatAnalyser(
-         generate_random_chat(100, 101, 10)
+         generate_random_chat(100, 101, 10),
+         window=5
       )
-      fre = self.canalyser.get_frequency()
-      mov_avg = self.canalyser.calculate_moving_average(fre, 5)
-      smooth_avg = self.canalyser.smoothen(mov_avg)
-      annotation = self.canalyser.create_highlight_annotation(smooth_avg)
-      highlights = self.canalyser.detect_highlight_times(
-         annotation, smooth_avg
-      )
-      corrected_highlights = self.canalyser.correct_highlights(
-         highlights
-      )
+      self.canalyser.get_frequency()
+      self.canalyser.calculate_moving_average()
+      self.canalyser.smoothen_mov_avg()
+      self.canalyser.create_highlight_annotation()
+      self.canalyser.detect_highlight_times()
+      self.canalyser.correct_highlights()
 
-      intensities = self.canalyser.init_intensity(
+      self.canalyser.init_intensity(
          ['low', 'medium', 'high', 'very high'],
          [0, 0.4, 1.1, 1.7],
          [Fore.BLUE, Fore.YELLOW, Fore.RED, Fore.MAGENTA],
       )
-      hl_int = self.canalyser.set_highlight_intensities(
-         corrected_highlights,
-         intensities
-      )
-      
+
+      hl_int = self.canalyser.set_highlight_intensities()
       result = [h.colorless_str for h in hl_int]
       expected = [
          '[0:00:01] :  (No messages, very high intensity, 6.148 diff, 24s duration)',
