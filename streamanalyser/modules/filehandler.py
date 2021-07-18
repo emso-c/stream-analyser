@@ -2,6 +2,7 @@ import os
 import json
 import yaml
 import logging
+import requests
 from datetime import datetime
 
 
@@ -38,9 +39,6 @@ class FileHandler():
 
         # create_logger is seperately implemented to prevent circular imports
         self.logger = self._create_logger(__file__)
-
-        self.create_dir_if_not_exists(storage_path)
-        self.create_dir_if_not_exists(self.cache_path)
 
         self.sid_path = None
 
@@ -92,7 +90,7 @@ class FileHandler():
         if not os.path.exists(path):
             try:
                 os.makedirs(path)
-                self.logger.debug(f"'{path}'' created")
+                self.logger.debug(f"'{path}' created")
             except PermissionError as e:
                 print(f"{e}\nTry another path or re-run the program in administrator mode.")
                 self.logger.error(f"Permission denied to '{path}'")
@@ -102,6 +100,7 @@ class FileHandler():
         self.create_dir_if_not_exists(self.sid_path)
 
     def cache_messages(self, message_dict):
+        self.logger.info("Caching messages")
         fpath = os.path.join(self.sid_path, self.message_fname)
         try:
             with open(fpath, 'w', encoding='utf-8') as f:
@@ -111,6 +110,7 @@ class FileHandler():
             raise RuntimeError(f"Could not cache messages: {e.__class__.__name__}:{e}")
 
     def cache_metadata(self, metadata_dict):
+        self.logger.info("Caching metadata")
         fpath = os.path.join(self.sid_path, self.metadata_fname)
         try:
             with open(fpath, 'w', encoding='utf-8') as file:
@@ -119,11 +119,22 @@ class FileHandler():
             self.delete_file(fpath)
             raise RuntimeError(f"Could not cache metadata: {e.__class__.__name__}:{e}")
 
-    def cache_thumbnail(self):
-        pass
+    def cache_thumbnail(self, url):
+        fpath = os.path.join(self.sid_path, self.thumbnail_fname)
+        self.logger.info("Downloading thumbnail")
+        try:
+            response = requests.get(url)
+            with open(fpath, "wb") as f:
+                f.write(response.content)
+        except Exception as e:
+            self.delete_file(fpath)
+            raise RuntimeError(f"Could not download thumbnail: {e.__class__.__name__}:{e}")
 
-    def download_thumbnail(self, res_lvl):
-        pass
+    def download_thumbnail(self, url):
+        """ Alias for cache_thumbnail """
+        self.cache_thumbnail(url)
+       
+
 
     def show_cached(self):
         pass

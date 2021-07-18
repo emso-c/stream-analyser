@@ -79,3 +79,28 @@ class DataCollector():
 
         self.logger.info(f'{len(raw_messages)-corrupted_data_amount} messages fetched ({corrupted_data_amount} corrupted)')
         return raw_messages
+
+    def get_thumbnail_url(self, res_lvl=2) -> str:
+        """ Gets URL of the thumbnail image.
+        
+        Args:
+            res_lv (int, optional): Resolution level of the thumbnail. Defaults to 2.
+                0 -> Medium res.
+                1 -> High res.
+                2 -> Standard res.
+                3 -> Max res.
+
+        Returns:
+            str: URL of the thumbnail image.
+
+        """
+        self.logger.info("Getting thumbnail url")
+        self.logger.debug(f"{res_lvl=}")
+
+        res_lvls = ['mqdefault', 'hqdefault', 'sddefault', 'maxresdefault']
+        
+        if not 0 <= res_lvl < 4:
+            self.logger.warning("res_lvl was out of range, set it to 2")
+            res_lvl = 2
+
+        return f'https://i.ytimg.com/vi/{self.id}/{res_lvls[res_lvl]}.jpg'

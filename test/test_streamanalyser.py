@@ -50,12 +50,15 @@ class TestStreamAnalyser(unittest.TestCase):
             'width': 200}
          self.assertEqual(metadata, expected)
 
+         # clear files
+         shutil.rmtree(analyser.filehandler.sid_path)
+
    def test_cache_messages(self):
       with sa.StreamAnalyser('testid', 1) as analyser:
          analyser.logger.disabled = True
          analyser.filehandler.logger.disabled = True
 
-         analyser._raw_messages = [{'test':'test'}]
+         analyser._raw_messages = [{}]
          analyser._cache_messages()
 
          self.assertTrue(os.path.isfile(
@@ -66,19 +69,36 @@ class TestStreamAnalyser(unittest.TestCase):
 
          # clear files
          shutil.rmtree(analyser.filehandler.sid_path)
-   
+
    def test_cache_metadata(self):
       with sa.StreamAnalyser('testid', 1) as analyser:
          analyser.logger.disabled = True
          analyser.filehandler.logger.disabled = True
 
-         analyser.metadata = {'test':'test','test2':{'test3':'test3'}}
+         analyser.metadata = {}
          analyser._cache_metadata()
 
          self.assertTrue(os.path.isfile(
             os.path.join(
                analyser.filehandler.sid_path,
                analyser.filehandler.metadata_fname
+         )))
+
+         # clear files
+         shutil.rmtree(analyser.filehandler.sid_path)
+
+   def test_cache_thumbnail(self):
+      with sa.StreamAnalyser('vFWfaqZl3WQ', 0) as analyser:
+         analyser.logger.disabled = True
+         analyser.filehandler.logger.disabled = True
+
+         analyser._thumbnail_url = analyser.collector.get_thumbnail_url(0)
+         analyser._cache_thumbnail()
+
+         self.assertTrue(os.path.isfile(
+            os.path.join(
+               analyser.filehandler.sid_path,
+               analyser.filehandler.thumbnail_fname
          )))
 
          # clear files
