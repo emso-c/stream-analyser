@@ -15,7 +15,7 @@ class DataCollector():
         self.msglimit = msglimit
         self.verbose = verbose
 
-        self.metadata = None
+        self.metadata = {}
         self.logger = create_logger(__file__)
         self.iscomplete = False
 
@@ -34,7 +34,6 @@ class DataCollector():
             with urllib.request.urlopen(url) as response:
                 response_text = response.read()
                 data = json.loads(response_text.decode())
-                self.logger.debug(f"{data=}")
         except Exception as e:
             self.logger.error(e)
             raise requests.HTTPError('Bad request: 400')
@@ -45,7 +44,7 @@ class DataCollector():
     def fetch_raw_messages(self) -> list[dict]:
         """ Fetches live chat messages """
 
-        self.logger.info("Caching messages")
+        self.logger.info("Fetching messages")
         raw_messages = []
         yt_url = "https://www.youtube.com/watch?v="+self.id
         corrupted_data_amount = 0
@@ -54,12 +53,13 @@ class DataCollector():
                 if self.verbose:
                     print(f"Fetching raw messages... {str(percentage(counter, self.msglimit))+'%' if self.msglimit else counter}", end='\r')
                 try:
+                    # only fetch important fields
                     raw_messages.append({
-                            "message_id":raw_message['message_id'],
-                            "message":raw_message['message'],
-                            "time_in_seconds":raw_message['time_in_seconds'],
-                            "author":{"name":raw_message['author']['name'], "id":raw_message['author']['id']},
-                        })
+                        "message_id":raw_message['message_id'],
+                        "message":raw_message['message'],
+                        "time_in_seconds":raw_message['time_in_seconds'],
+                        "author":{"name":raw_message['author']['name'], "id":raw_message['author']['id']},
+                    })
                 except KeyError as e:
                     self.logger.warning(f"Corrupt message data skipped: {raw_message}")
                     corrupted_data_amount+=1
@@ -70,18 +70,12 @@ class DataCollector():
             self.logger.critical(f"Could not fetch messages: {e.__class__.__name__}:{e}")
             raise RuntimeError(f"Could not fetch messages: {e.__class__.__name__}:{e}")
         
+        self.metadata['iscomplete'] = False
         if not self.msglimit:
-            self.iscomplete = True
+            self.metadata['iscomplete'] = True
 
         if self.verbose:
             print(f"Fetching raw messages... done")
 
         self.logger.info(f'{len(raw_messages)-corrupted_data_amount} messages fetched ({corrupted_data_amount} corrupted)')
         return raw_messages
-
-    def __del__(self):
-        #self.logger.info("Destructing datacollector")
-        handlers = self.logger.handlers[:]
-        for handler in handlers:
-            handler.close()
-            self.logger.removeHandler(handler)
