@@ -4,33 +4,24 @@ from shutil import copyfileobj
 from datetime import datetime
 from time import time
 
-from .loggersetup import create_logger, get_logname
+from .loggersetup import create_logger
 
 
 logger = create_logger(__file__)
 
 percentage = lambda current, out_of: round(int(current*100/out_of))
 
-def delete_file(path):
-    try:
-        os.remove(path)
-        logger.info(f'{path} removed')
-    except FileNotFoundError:
-        logger.debug(f"{path} couldn't be found")
-    except Exception as e:
-        logger.error(f"cound't remove {path}")
-
 
 def compress_file(path):
-        try:
-            with open(path, 'rb') as f_in:
-                with gzip.open(path+".gz", 'wb') as f_out:
-                    copyfileobj(f_in, f_out)
-            os.remove(path)
-        except Exception as e:
-            logger.critical(e)
-            raise Exception(e)
-        logger.info('File compressed')
+    try:
+        with open(path, 'rb') as f_in:
+            with gzip.open(path+".gz", 'wb') as f_out:
+                copyfileobj(f_in, f_out)
+        os.remove(path)
+    except Exception as e:
+        logger.critical(e)
+        raise Exception(e)
+    logger.info('File compressed')
 
 
 def decompress_file(path):
