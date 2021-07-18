@@ -14,12 +14,9 @@ def create_logger(name, fname=None, sid=None, format=None, mode='a', def_level=l
         else:
             format = f'%(asctime)s:%(module)s[%(lineno)d]:%(levelname)s:%(message)s'
     
-    try:
-        if not os.path.exists(sf.log_path):
-            os.makedirs(sf.log_path)
-    except:
-        raise PermissionError(f"Permission denied")
-
+    if not os.path.exists(sf.log_path):
+        os.makedirs(sf.log_path)
+   
     if not fname:
         fname = get_logname()
 
