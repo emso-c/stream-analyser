@@ -95,7 +95,7 @@ class FileHandler():
                 print(f"{e}\nTry another path or re-run the program in administrator mode.")
                 self.logger.error(f"Permission denied to '{path}'")
 
-    def create_cache(self, stream_id):
+    def create_cache_dir(self, stream_id):
         self.sid_path = os.path.join(self.cache_path, stream_id)
         self.create_dir_if_not_exists(self.sid_path)
 
@@ -133,8 +133,6 @@ class FileHandler():
     def download_thumbnail(self, url):
         """ Alias for cache_thumbnail """
         self.cache_thumbnail(url)
-       
-
 
     def show_cached(self):
         pass

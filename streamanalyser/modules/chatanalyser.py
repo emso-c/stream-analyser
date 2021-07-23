@@ -64,7 +64,7 @@ class ChatAnalyser:
         
         if not self.window > 1:
             self.logger.error('Interval must be bigger than one')
-            raise ValueError('Interval must be bigger than one.')
+            raise ValueError('Interval must be bigger than one')
 
         self.frequency = {}
         self.intensity_list = []
@@ -72,10 +72,12 @@ class ChatAnalyser:
         self.smooth_avg = []
         self.highlight_annotation = []
         self.highlights = []
+
         try:
             with open(self.context_path, 'r', encoding='utf-8') as file:
                 self.contexts = json.load(file)
         except FileNotFoundError:
+            self.logger.error("Path to context file could not be found")
             self.contexts = []
 
     def get_frequency(self) -> dict:
@@ -198,7 +200,6 @@ class ChatAnalyser:
                 self.highlight_annotation.append(-1)
             else:
                 self.highlight_annotation.append(0)
-        self.logger.debug(f"{self.highlight_annotation=}")
         self.logger.debug(f"Total increasing duration: {self.highlight_annotation.count(1)}")
         self.logger.debug(f"Total decreasing duration: {self.highlight_annotation.count(-1)}")
         self.logger.debug(f"Total constant duration: {self.highlight_annotation.count(0)}")

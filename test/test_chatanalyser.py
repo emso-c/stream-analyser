@@ -7,7 +7,6 @@ from numpy import exp, result_type
 
 
 from streamanalyser.modules.structures import (
-   Highlight,
    Intensity,
    Message,
    Author
