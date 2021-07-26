@@ -1,3 +1,4 @@
+import os
 import json
 import numpy as np
 from collections import Counter
@@ -15,6 +16,11 @@ from .exceptions import (
     ConstantsNotUniqueError
 )
 
+CONTEXT_PATH = os.path.join(
+    os.path.dirname(os.path.realpath(__file__)),
+    '..', "data", "context.json"
+)
+
 class ChatAnalyser:
     """ A class to analyse live chat messages """
 
@@ -27,7 +33,7 @@ class ChatAnalyser:
             threshold_constant=3,
             keyword_limit = 4,
             keyword_filters = [],
-            context_path = '..\\data\\context.json',
+            context_path = CONTEXT_PATH,
             verbose = False
         ):
         """
@@ -47,7 +53,7 @@ class ChatAnalyser:
 
             keyword_filters(list, optional): Keywords to filter. Defaults to [].
             
-            context_path(str, optional): Path to context file. Defaults to '../data/context.json'.
+            context_path(str, optional): Path to context file. Defaults to CONTEXT_PATH.
 
             verbose (bool, optional): Make the output verbose. Defaults to False.
         """
@@ -82,6 +88,8 @@ class ChatAnalyser:
 
     def get_frequency(self) -> dict:
         """ Creates frequency table of messages """
+
+        #TODO frequencies = sorted(frequencies.items(), key=itemgetter(1), reverse=True)
 
         self.logger.info("Calculating frequency")
 

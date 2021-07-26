@@ -1,5 +1,8 @@
 import os
+import random
 import traceback
+
+from wordcloud import WordCloud
 
 from .modules import (
     loggersetup,
@@ -10,6 +13,9 @@ from .modules import (
     structures,
     utils
 )
+
+DIR_PATH = os.path.dirname(os.path.realpath(__file__))
+DEFAULT_FONT_PATH = os.path.join(DIR_PATH, "fonts", "NotoSansCJKjp-Bold.ttf")
 
 class StreamAnalyser():
     """[summary]
@@ -33,7 +39,7 @@ class StreamAnalyser():
         self.messages = []
         self.authors = []
         self.highlights = []
-        self.context_path = "..\\data\\context.json"
+        self.context_path = chatanalyser.CONTEXT_PATH
         
         self.logger = loggersetup.create_logger(__file__, sid=sid)
         self.filehandler = filehandler.streamanalyser_filehandler
@@ -73,10 +79,6 @@ class StreamAnalyser():
     def _cache_thumbnail(self):
         self.filehandler.cache_thumbnail(self._thumbnail_url)
 
-    def set_context_path(self, path):
-        """ Sets a custom context path manually """
-        self.context_path = path
-
     def collect_data(self, thumb_res_lvl=2):
         """ Collects stream data using datacollector module """
         self.metadata = self.collector.collect_metadata()
@@ -96,8 +98,8 @@ class StreamAnalyser():
         )
         self.authors = self.refiner.get_authors()
 
-    #TODO add other arguments
     def analyse_data(self):
+        #TODO Add other arguments
         canalyser = chatanalyser.ChatAnalyser(
             refined_messages = self.messages,
             stream_id = self.sid,
@@ -110,7 +112,45 @@ class StreamAnalyser():
         self.highlights = canalyser.highlights
 
     def analyse(self):
-        self.collect_data()
-        self.cache_data()
+        # TODO implement this logic
+        if not self.already_cached:
+            self.collect_data()
+            self.cache_data()
         self.refine_data()
         self.analyse_data()
+
+    def create_wordcloud(self, font_path=None, scale=3) -> WordCloud:
+        """ Returns word cloud of the stream
+
+        Args:
+            font_path (str, optional): Custom font path. Defaults to None.
+            scale (int, optional): Scale of the resulting wordcloud.
+                Might want to decrease for more performance. Defaults to 3.
+        """
+
+        #TODO Stylize the wordcloud
+        
+        if not font_path:
+            font_path = DEFAULT_FONT_PATH
+        
+        # get all words from the chat
+        wordlist = [msg.text.replace("_","") for msg in self.messages]
+        
+        # shuffle word list to minimize the issue where
+        # repeating consecutive messages merge together
+        # in the word cloud
+        random.shuffle(wordlist)
+        
+        return WordCloud(
+            font_path = font_path,
+            scale = scale
+        ).generate(" ".join(wordlist))
+
+    def find_message(self):
+        pass
+
+    def find_user_messages(self):
+        pass
+    
+    
+    #TODO Add output methods (graph, print etc.)
