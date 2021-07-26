@@ -116,9 +116,9 @@ class StreamAnalyser():
 
     def analyse(self):
         # TODO implement this logic
-        if not self.already_cached:
-            self.collect_data()
-            self.cache_data()
+        #if not self.already_cached:
+        self.collect_data()
+        self.cache_data()
         self.refine_data()
         self.analyse_data()
 

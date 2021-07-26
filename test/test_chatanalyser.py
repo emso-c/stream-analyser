@@ -1,10 +1,6 @@
 import unittest
 import random
-from unittest import result
 import warnings
-
-from numpy import exp, result_type
-
 
 from streamanalyser.modules.structures import (
    Intensity,

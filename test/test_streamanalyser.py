@@ -199,7 +199,6 @@ class TestStreamAnalyser(unittest.TestCase):
          )
 
 
-
 sample_raw_messages = [
    {'author': {'id': 'UCX07ffYvacTkgo89MjNpweg', 'name': 'RathalosRE'},
    'message': 'kon...',
