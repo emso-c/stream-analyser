@@ -150,7 +150,19 @@ class TestStreamAnalyser(unittest.TestCase):
             []
          )
 
+   def test_find_user_messages(self):
+      with sa.StreamAnalyser('um196SMIoR8', 1, True) as analyser:
+         analyser.messages = analyser.refiner.refine_raw_messages(
+            sample_raw_messages
+         )
          
+         self.assertEqual(
+            len(analyser.find_user_messages(username="Yuzuchu")), 2
+         )
+         
+         self.assertEqual(
+            len(analyser.find_user_messages(id="UCBLOc9HL4kIvp36bMqu7pxg")), 1
+         )
 
 sample_raw_messages = [
    {'author': {'id': 'UCX07ffYvacTkgo89MjNpweg', 'name': 'RathalosRE'},

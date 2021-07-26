@@ -13,6 +13,7 @@ class DataRefiner():
         self.verbose = verbose
 
         self.messages = []
+        self.authors = []
         self.logger = loggersetup.create_logger(__file__)
 
     def refine_raw_messages(self, raw_messages, msglimit=None) -> list[Message]:

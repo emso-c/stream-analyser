@@ -191,6 +191,43 @@ class StreamAnalyser():
                 messages_to_return.append(original_message)
         return messages_to_return
 
+    def find_user_messages(self, username=None, id=None) -> list[structures.Message]:
+        """ Finds messages by either username or user id.
+
+        Args:
+            username (str, optional): Target username. Defaults to None.
+                Note that it's more reliable to use id since there might 
+                be same users with the same name or username changes.
+
+            id (str, optional): Target user id. Defaults to None.
+
+        Raises:
+            ValueError: Should provide either username or id.
+
+        Returns:
+            list[Message]: Messages the user typed.
+        """
+
+        self.logger.info("Finding user messages")
+        self.logger.debug(f"{id=}")
+        self.logger.debug(f"{username=}")
+
+        if not username and not id:
+            self.logger.error("Should provide either username or id")
+            raise ValueError("Should provide either username or id.")
+        if username and id:
+            self.logger.warning("Should only provide one argument. Moving on with id.")
+            username=None
+
+        messages_to_return = []
+        for message in self.messages:
+            if  (id and message.author.id == id) or \
+                (username and message.author.name == username):
+                messages_to_return.append(message)
+
+        return messages_to_return
+
+
     
     
     #TODO Add output methods (graph, print etc.)
