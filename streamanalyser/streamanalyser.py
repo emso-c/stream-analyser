@@ -266,6 +266,8 @@ class StreamAnalyser():
         self.logger.debug(f"Most used phrase: {Counter(_words).most_common(1+_idx)[_idx]}")
         return Counter(_words).most_common(1+_idx)[_idx]
 
-    
+    @property
+    def total_message_amount(self):
+        return len(self.messages) 
     
     #TODO Add output methods (graph, print etc.)
