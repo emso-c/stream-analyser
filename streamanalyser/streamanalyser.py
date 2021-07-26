@@ -227,6 +227,44 @@ class StreamAnalyser():
 
         return messages_to_return
 
+    def most_used_phrase(self, exclude=[], normalize=True) -> Tuple[str, int]:
+        """ Returns most frequently used phrase
+
+        Args:
+            exclude (list, optional): List of words to exclude from the search.
+                Defaults to [].
+
+            normalize (bool, optional): Option for the word be normalized 
+                to cover more instances. Defaults to True.
+
+        Returns:
+            Tuple[str, int]: Most used word and it's frequency 
+        """
+
+        #return "草"    # would probably work lol
+
+        self.logger.info("Finding most used word")
+        self.logger.debug(f"{exclude=}")
+        self.logger.debug(f"{normalize=}")
+        
+        if isinstance(exclude, str):
+            exclude = list(exclude)
+        
+        _words = []
+        for message in self.messages:
+            _words.extend(message.text.split(' '))
+
+        if normalize:
+            _words = [utils.normalize(word) for word in _words]
+        
+        _idx = 0
+        while exclude and Counter(_words).most_common(1+_idx)[_idx][0] in exclude:
+            _idx+=1
+            if _idx == len(_words)-1:
+                return Counter(_words).most_common(1+_idx)[_idx]
+
+        self.logger.debug(f"Most used phrase: {Counter(_words).most_common(1+_idx)[_idx]}")
+        return Counter(_words).most_common(1+_idx)[_idx]
 
     
     

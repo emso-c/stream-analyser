@@ -164,6 +164,42 @@ class TestStreamAnalyser(unittest.TestCase):
             len(analyser.find_user_messages(id="UCBLOc9HL4kIvp36bMqu7pxg")), 1
          )
 
+   def test_most_used_phrase(self):
+      with sa.StreamAnalyser('um196SMIoR8', 1, True) as analyser:
+         analyser.messages = analyser.refiner.refine_raw_messages(
+            sample_raw_messages
+         )
+
+         self.assertEqual(
+            analyser.most_used_phrase(),
+            ('こんやっぴートワ様いえーい', 35)
+         )
+         
+         # with not normalize
+         self.assertEqual(
+            analyser.most_used_phrase(normalize=False),
+            ('こん:_やっぴー::_トワ様いえーい:', 35)
+         )
+         
+         # with exclude
+         self.assertEqual(
+            analyser.most_used_phrase(
+               exclude=['こんやっぴートワ様いえーい'],
+            ),
+            ('konyappi', 11)
+         )
+
+         # with exclude and not normalize
+         self.assertEqual(
+            analyser.most_used_phrase(
+               exclude=['こん:_やっぴー::_トワ様いえーい:'],
+               normalize=False
+            ),
+            ('こん...', 6)
+         )
+
+
+
 sample_raw_messages = [
    {'author': {'id': 'UCX07ffYvacTkgo89MjNpweg', 'name': 'RathalosRE'},
    'message': 'kon...',
