@@ -1,8 +1,11 @@
+from collections import Counter
 import os
 import random
 import traceback
+from typing import Tuple
 
 from wordcloud import WordCloud
+import wordcloud
 
 from .modules import (
     loggersetup,
@@ -119,7 +122,7 @@ class StreamAnalyser():
         self.refine_data()
         self.analyse_data()
 
-    def create_wordcloud(self, font_path=None, scale=3) -> WordCloud:
+    def generate_wordcloud(self, font_path=None, scale=3) -> WordCloud:
         """ Returns word cloud of the stream
 
         Args:
@@ -129,6 +132,13 @@ class StreamAnalyser():
         """
 
         #TODO Stylize the wordcloud
+
+        self.logger.info("Generating word cloud")
+        self.logger.debug(f"{font_path=}")
+        self.logger.debug(f"{scale=}")
+
+        if self.verbose:
+            print("Generating word cloud...", end='\r')
         
         if not font_path:
             font_path = DEFAULT_FONT_PATH
@@ -141,16 +151,46 @@ class StreamAnalyser():
         # in the word cloud
         random.shuffle(wordlist)
         
-        return WordCloud(
+        word_cloud = WordCloud(
             font_path = font_path,
             scale = scale
         ).generate(" ".join(wordlist))
 
-    def find_message(self):
-        pass
+        if self.verbose:
+            print("Generating word cloud... done")
+        return word_cloud
 
-    def find_user_messages(self):
-        pass
+    def find_messages(self, search_phrase, exact=False, ignore_case=True) -> list[structures.Message]:
+        """ Finds messages containing a specific phrase or exactly the same phrase.
+
+        Args:
+            search_phrase (str): The phrase to search.
+            exact (bool, optional): If the phrase has to be exactly the same or not. Defaults to False.
+            ignore_case (bool, optional): Ignore letter cases. Defaults to True.
+
+        Returns:
+            list[Message]: List of messages that contains the given phrase.
+        """
+        
+        messages_to_return = []
+        self.logger.info("Finding messages")
+        self.logger.debug(f"{search_phrase=}")
+        self.logger.debug(f"{exact=}")
+        self.logger.debug(f"{ignore_case=}")
+
+        if ignore_case:
+            search_phrase = search_phrase.lower()
+
+        tmp_message = None
+        for original_message in self.messages:
+            tmp_message = original_message.text
+            if ignore_case:
+                tmp_message = tmp_message.lower()
+            if  (exact and search_phrase == tmp_message) or \
+                (not exact and search_phrase in tmp_message):
+                messages_to_return.append(original_message)
+        return messages_to_return
+
     
     
     #TODO Add output methods (graph, print etc.)

@@ -117,16 +117,40 @@ class TestStreamAnalyser(unittest.TestCase):
             "kon (24 messages, high intensity, 1.042 diff, 19s duration)"
          )
 
-   def test_create_wordcloud(self):
+   def test_generate_wordcloud(self):
       with sa.StreamAnalyser('um196SMIoR8', 1, True) as analyser:
          analyser.messages = analyser.refiner.refine_raw_messages(
             sample_raw_messages
          )
          self.assertTrue(
-            analyser.create_wordcloud(scale=0.1).to_image()
+            analyser.generate_wordcloud(scale=0.1).to_image()
          )
 
+   def test_find_messages(self):
+      with sa.StreamAnalyser('um196SMIoR8', 1, True) as analyser:
+         analyser.messages = analyser.refiner.refine_raw_messages(
+            sample_raw_messages
+         )
 
+         self.assertEqual(
+            analyser.find_messages("こんやっぴ~")[0].colorless_str,
+            "[0:00:39] Yuzuchu: こんやっぴ~"
+         )
+
+         # ignore_case should produce different results
+         self.assertNotEqual(
+            analyser.find_messages("kon...", ignore_case=False),
+            analyser.find_messages("kon...", ignore_case=True)
+         )
+
+         # It should return empty list when exact is set
+         # even though there's "kon" in other messages
+         self.assertEqual(
+            analyser.find_messages("kon", exact=True),
+            []
+         )
+
+         
 
 sample_raw_messages = [
    {'author': {'id': 'UCX07ffYvacTkgo89MjNpweg', 'name': 'RathalosRE'},
