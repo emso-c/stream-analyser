@@ -205,6 +205,9 @@ class FileHandler():
             Tuple[list, list]: Lists of unnecesary and missing files
         """
 
+        self.logger.info("Checking cache integrity")
+        self.logger.debug(f"{autofix=}")
+        
         files = self.get_filenames(self.sid_path, show_extension=True)
         necessary_files = [self.message_fname+".gz",
                            self.metadata_fname,
@@ -212,8 +215,6 @@ class FileHandler():
         unnecesary_files = list(set(files) - set(necessary_files))
         missing_files = list(set(necessary_files) - set(files))
 
-        self.logger.info("Checking cache integrity")
-        self.logger.debug(f"{autofix=}")
         self.logger.debug(f"{unnecesary_files=}")
         self.logger.debug(f"{missing_files=}")
         

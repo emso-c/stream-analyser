@@ -231,6 +231,27 @@ class TestStreamAnalyser(unittest.TestCase):
             []
          )
 
+   def test_enforce_integrity(self):
+      with sa.StreamAnalyser('um196SMIoR8', 1) as analyser:
+         analyser.collect_data()
+
+         # intentionally delete cache files
+         analyser.clear_cache()
+         analyser.filehandler.create_cache_dir(analyser.sid)
+
+         # create unnecessary dummy file
+         with open(analyser.filehandler.sid_path+"\\dummy.txt", 'w'):
+            pass
+
+         # call the function
+         analyser.enforce_integrity()
+
+         # check integrity now
+         missing_files, unnecessary_files = analyser.filehandler.check_integrity()
+
+         self.assertEqual(missing_files, [])
+         self.assertEqual(unnecessary_files, [])
+
 sample_raw_messages = [
    {'author': {'id': 'UCX07ffYvacTkgo89MjNpweg', 'name': 'RathalosRE'},
    'message': 'kon...',

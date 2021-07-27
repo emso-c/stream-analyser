@@ -124,26 +124,46 @@ class StreamAnalyser():
         self.highlights = canalyser.highlights
 
     def analyse(self):
-        # TODO implement this logic
-        #if not self.already_cached:
-        self.collect_data()
+        if not self.is_cached:
+            self.collect_data()
+        self.enforce_integrity()
         self.read_data()
         self.refine_data()
         self.analyse_data()
 
-    def _check_integrity(self, autofix=False):
-        self.filehandler.check_integrity(autofix=autofix)
+    def _check_integrity(self, autofix=False) -> Tuple[list, list]:
+        return self.filehandler.check_integrity(autofix=autofix)
+
+    @property
+    def is_cached(self):
+        return not any(self._check_integrity(self))
 
     def enforce_integrity(self):
-        missing_files, unnecessary_files = self._check_integrity(
+        """ Enforces file integrity by recollecting
+            missing data and deleting unnecessary files """
+        missing_files, _ = self._check_integrity(
             autofix = True
         )
-        print(missing_files)
-        print(unnecessary_files)
-
         for missing_file in missing_files:
-            if missing_files is self.filehandler.message_fname:
-                pass
+            if missing_file == self.filehandler.message_fname+".gz":
+                self.logger.warning("Message file is missing")
+                self.filehandler.cache_messages(
+                    self.collector.fetch_raw_messages()
+                )
+            if missing_file == self.filehandler.metadata_fname:
+                self.logger.warning("Metadata file is missing")
+                self.filehandler.cache_metadata(
+                    self.collector.collect_metadata()
+                )
+            if missing_file == self.filehandler.thumbnail_fname:
+                self.logger.warning("Thumbnail file is missing")
+                self.filehandler.download_thumbnail(
+                    self.collector.get_thumbnail_url(
+                        self.thumb_res_lvl
+                    )
+                )
+        
+        # TODO fetch new messages
 
     def generate_wordcloud(self, font_path=None, scale=3) -> WordCloud:
         """ Returns word cloud of the stream
