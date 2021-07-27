@@ -3,6 +3,7 @@ import json
 import requests
 
 from chat_downloader import ChatDownloader
+from requests.exceptions import HTTPError
 
 from .loggersetup import create_logger
 from .utils import percentage
@@ -36,7 +37,7 @@ class DataCollector():
                 data = json.loads(response_text.decode())
         except Exception as e:
             self.logger.error(e)
-            raise requests.HTTPError('Bad request: 400')
+            raise e
         if self.verbose:
             print(f"Collecting metadata... done")
         return data
@@ -68,7 +69,7 @@ class DataCollector():
                     break
         except Exception as e:
             self.logger.critical(f"Could not fetch messages: {e.__class__.__name__}:{e}")
-            raise RuntimeError(f"Could not fetch messages: {e.__class__.__name__}:{e}")
+            raise e
         
         self.metadata['iscomplete'] = False
         if not self.msglimit:

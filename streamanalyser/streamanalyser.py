@@ -5,7 +5,6 @@ import traceback
 from typing import Tuple
 
 from wordcloud import WordCloud
-import wordcloud
 
 from .modules import (
     loggersetup,
@@ -25,16 +24,14 @@ class StreamAnalyser():
     """
 
     def __init__(
-            self,
-            sid,
-            msglimit=None,
-            disable_logs = False,
+            self, sid, msglimit=None, disable_logs = False, thumb_res_lvl = 2,
             verbose=False
         ):
 
         self.sid = sid
         self.msglimit = msglimit
         self.disable_logs = disable_logs
+        self.thumb_res_lvl = thumb_res_lvl
         self.verbose = verbose
 
         self.metadata = {}
@@ -57,7 +54,6 @@ class StreamAnalyser():
 
         self.logger.info("Session start ==================================")
 
-        #TODO don't log this
         self.filehandler.create_cache_dir(self.sid)
 
     def __enter__(self):
@@ -73,36 +69,51 @@ class StreamAnalyser():
         self.collector.logger.disabled = True
         self.refiner.logger.disabled = True
 
-    def _cache_messages(self):
-        self.filehandler.cache_messages(self._raw_messages)
+    def _cache_metadata(self, metadata):
+        self.filehandler.cache_metadata(metadata)
+    
+    def _cache_messages(self, raw_messages):
+        self.filehandler.cache_messages(raw_messages)
 
-    def _cache_metadata(self):
-        self.filehandler.cache_metadata(self.metadata)
+    def _cache_thumbnail(self, thumbnail_url):
+        self.filehandler.download_thumbnail(thumbnail_url)
 
-    def _cache_thumbnail(self):
-        self.filehandler.cache_thumbnail(self._thumbnail_url)
+    def clear_cache(self):
+        self.filehandler.clear_cache()
 
-    def collect_data(self, thumb_res_lvl=2):
-        """ Collects stream data using datacollector module """
-        self.metadata = self.collector.collect_metadata()
-        self._raw_messages = self.collector.fetch_raw_messages()
-        # TODO self.thumbreslvl
-        self._thumbnail_url = self.collector.get_thumbnail_url(thumb_res_lvl)
+    def collect_data(self):
+        """ Collects and caches stream data:
+            - metadata (title, channel etc.)
+            - messages
+            - thumbnail
+        """
+        # collect data
+        metadata = self.collector.collect_metadata()
+        raw_messages = self.collector.fetch_raw_messages()
+        thumbnail_url = self.collector.get_thumbnail_url(self.thumb_res_lvl)
+        
+        # cache data
+        self._cache_metadata(metadata)
+        self._cache_messages(raw_messages)
+        self._cache_thumbnail(thumbnail_url)
 
-    def cache_data(self):
-        self._cache_metadata()
-        self._cache_messages()
-        self._cache_thumbnail()
-
+    def read_data(self):
+        """ Reads cached data """
+        self._raw_messages = self.filehandler.read_messages()
+        self.metadata = self.filehandler.read_metadata()
+        
     def refine_data(self):
+        """ Refines read data """
         self.messages = self.refiner.refine_raw_messages(
             self._raw_messages,
             self.msglimit
         )
+        self._raw_messages = None
         self.authors = self.refiner.get_authors()
 
     def analyse_data(self):
-        #TODO Add other arguments
+        """ Analyses refined data and finds highligths """
+        #TODO Add other arguments too
         canalyser = chatanalyser.ChatAnalyser(
             refined_messages = self.messages,
             stream_id = self.sid,
@@ -118,7 +129,7 @@ class StreamAnalyser():
         # TODO implement this logic
         #if not self.already_cached:
         self.collect_data()
-        self.cache_data()
+        self.read_data()
         self.refine_data()
         self.analyse_data()
 
@@ -128,7 +139,7 @@ class StreamAnalyser():
         Args:
             font_path (str, optional): Custom font path. Defaults to None.
             scale (int, optional): Scale of the resulting wordcloud.
-                Might want to decrease for more performance. Defaults to 3.
+                Might want to decrease it for more performance. Defaults to 3.
         """
 
         #TODO Stylize the wordcloud

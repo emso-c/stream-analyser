@@ -1,7 +1,7 @@
+from streamanalyser.modules import chatanalyser
 import unittest
 import warnings
 import os
-import shutil
 
 from streamanalyser import streamanalyser as sa 
 
@@ -10,63 +10,20 @@ class TestStreamAnalyser(unittest.TestCase):
    def setUp(self):
       warnings.simplefilter('ignore', category=ResourceWarning)
 
-   def test_collect_data(self):
-      with sa.StreamAnalyser('um196SMIoR8', 1, True) as analyser:
-         analyser.collect_data()
-         raw_messages = analyser._raw_messages
-         expected = [{
-            'message_id':  'CjkKGkNMSHU0ZmpxNl9FQ0ZjTWZmUW9kWlJzSXFBEht'+
-                           'DSlRCd0szbTZfRUNGY2ZGeEFvZHVVUUEwZzA%3D',
-            'message': 'kon...',
-            'time_in_seconds': 0,
-            'author': {
-               'name': 'RathalosRE',
-               'id': 'UCX07ffYvacTkgo89MjNpweg'
-         }}]
-         self.assertEqual(raw_messages, expected)
-
-         metadata = analyser.metadata
-         expected = {
-            'author_name': 'Towa Ch. 常闇トワ',
-            'author_url': 'https://www.youtube.com/channel/UC1uv2Oq6kNxgATlCiez59hw',
-            'height': 113,
-            'html': '<iframe width="200" height="113" '
-                     'src="https://www.youtube.com/embed/um196SMIoR8?feature=oembed" '
-                     'frameborder="0" allow="accelerometer; autoplay; clipboard-write; '
-                     'encrypted-media; gyroscope; picture-in-picture" '
-                     'allowfullscreen></iframe>',
-            'provider_name': 'YouTube',
-            'provider_url': 'https://www.youtube.com/',
-            'thumbnail_height': 360,
-            'thumbnail_url': 'https://i.ytimg.com/vi/um196SMIoR8/hqdefault.jpg',
-            'thumbnail_width': 480,
-            'title': '【APEX】英語…頑張ります！！\u3000w/ Roboco,Amelia【常闇トワ/ホロライブ】',
-            'type': 'video',
-            'version': '1.0',
-            'width': 200}
-         self.assertEqual(metadata, expected)
-
-         # clear files
-         shutil.rmtree(analyser.filehandler.sid_path)
-
    def test_cache_messages(self):
       with sa.StreamAnalyser('testid', 1, True) as analyser:
-         analyser._raw_messages = [{}]
-         analyser._cache_messages()
-
+         analyser._cache_messages([{}])
          self.assertTrue(os.path.isfile(
             os.path.join(
                analyser.filehandler.sid_path,
-               analyser.filehandler.message_fname
+               analyser.filehandler.message_fname+'.gz'
          )))
-
-         # clear files
-         shutil.rmtree(analyser.filehandler.sid_path)
+         
+         analyser.clear_cache()
 
    def test_cache_metadata(self):
       with sa.StreamAnalyser('testid', 1, True) as analyser:
-         analyser.metadata = {}
-         analyser._cache_metadata()
+         analyser._cache_metadata({})
 
          self.assertTrue(os.path.isfile(
             os.path.join(
@@ -74,13 +31,13 @@ class TestStreamAnalyser(unittest.TestCase):
                analyser.filehandler.metadata_fname
          )))
 
-         # clear files
-         shutil.rmtree(analyser.filehandler.sid_path)
+         analyser.clear_cache()
 
    def test_cache_thumbnail(self):
       with sa.StreamAnalyser('vFWfaqZl3WQ', 0, True) as analyser:
-         analyser._thumbnail_url = analyser.collector.get_thumbnail_url(0)
-         analyser._cache_thumbnail()
+         analyser._cache_thumbnail(
+            analyser.collector.get_thumbnail_url(0)
+         )
 
          self.assertTrue(os.path.isfile(
             os.path.join(
@@ -88,12 +45,27 @@ class TestStreamAnalyser(unittest.TestCase):
                analyser.filehandler.thumbnail_fname
          )))
 
-         # clear files
-         shutil.rmtree(analyser.filehandler.sid_path)
+         analyser.clear_cache()
+
+   def test_collect_read_data(self):
+      with sa.StreamAnalyser('um196SMIoR8', 1, True) as analyser:
+         analyser.collect_data()
+         analyser.read_data()
+         self.assertTrue(
+            analyser._raw_messages[0]["author"]["id"],
+            "UCX07ffYvacTkgo89MjNpweg"
+         )
+         self.assertTrue(
+            analyser.metadata["title"],
+            "【APEX】英語…頑張ります！！\u3000w/" +
+            " Roboco,Amelia【常闇トワ/ホロライブ】"
+         )
+
+         analyser.clear_cache()
 
    def test_refine_data(self):
       with sa.StreamAnalyser('um196SMIoR8', 1, True) as analyser:
-         analyser._raw_messages = analyser.collector.fetch_raw_messages()
+         analyser._raw_messages = sample_raw_messages
          analyser.refine_data()
          self.assertEqual(
             analyser.messages[0].text,
@@ -103,6 +75,7 @@ class TestStreamAnalyser(unittest.TestCase):
             analyser.authors[0].id,
             "UCX07ffYvacTkgo89MjNpweg"
          )
+         analyser.clear_cache()
 
    def test_analyse_data(self):
       with sa.StreamAnalyser('um196SMIoR8', 1, True) as analyser:
@@ -116,6 +89,8 @@ class TestStreamAnalyser(unittest.TestCase):
             "[0:00:01] greeting: こんやっぴートワ様いえーい, こん, こん…, "+
             "kon (24 messages, high intensity, 1.042 diff, 19s duration)"
          )
+
+         analyser.clear_cache()
 
    def test_generate_wordcloud(self):
       with sa.StreamAnalyser('um196SMIoR8', 1, True) as analyser:
@@ -149,6 +124,7 @@ class TestStreamAnalyser(unittest.TestCase):
             analyser.find_messages("kon", exact=True),
             []
          )
+         analyser.clear_cache()
 
    def test_find_user_messages(self):
       with sa.StreamAnalyser('um196SMIoR8', 1, True) as analyser:
@@ -163,6 +139,7 @@ class TestStreamAnalyser(unittest.TestCase):
          self.assertEqual(
             len(analyser.find_user_messages(id="UCBLOc9HL4kIvp36bMqu7pxg")), 1
          )
+         analyser.clear_cache()
 
    def test_most_used_phrase(self):
       with sa.StreamAnalyser('um196SMIoR8', 1, True) as analyser:
@@ -197,6 +174,7 @@ class TestStreamAnalyser(unittest.TestCase):
             ),
             ('こん...', 6)
          )
+         analyser.clear_cache()
 
 
 sample_raw_messages = [

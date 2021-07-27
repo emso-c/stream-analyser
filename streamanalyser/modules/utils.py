@@ -20,7 +20,7 @@ def compress_file(path):
         os.remove(path)
     except Exception as e:
         logger.critical(e)
-        raise Exception(e)
+        raise e
     logger.info('File compressed')
 
 
@@ -32,7 +32,7 @@ def decompress_file(path):
         os.remove(path+'.gz')
     except Exception as e:
         logger.critical(e)
-        raise Exception(e)
+        raise e
     logger.info('File decompressed')
 
 

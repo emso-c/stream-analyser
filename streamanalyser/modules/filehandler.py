@@ -1,8 +1,11 @@
 import os
 import json
+import shutil
 import yaml
+import gzip
 import logging
 import requests
+from shutil import copyfileobj
 from datetime import datetime
 
 
@@ -109,6 +112,8 @@ class FileHandler():
             self.delete_file(fpath)
             raise RuntimeError(f"Could not cache messages: {e.__class__.__name__}:{e}")
 
+        self._compress_file(fpath)
+
     def cache_metadata(self, metadata_dict):
         self.logger.info("Caching metadata")
         fpath = os.path.join(self.sid_path, self.metadata_fname)
@@ -134,16 +139,57 @@ class FileHandler():
         """ Alias for cache_thumbnail """
         self.cache_thumbnail(url)
 
+    def read_messages(self):
+        """ Reads cached messages.
+            Returns a dict. """
+        fpath = os.path.join(self.sid_path, self.message_fname)
+        self._decompress_file(fpath)
+        with open(fpath, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        return data
+
+    def read_metadata(self):
+        """ Reads cached messages.
+            Returns a dict. """
+        fpath = os.path.join(self.sid_path, self.metadata_fname)
+        return yaml.load(open(fpath, 'r'), Loader=yaml.Loader)
+
+    def _compress_file(self, jsonpath):
+        """ Compresses a json file with gzip """
+        try:
+            with open(jsonpath, 'rb') as f_in:
+                with gzip.open(jsonpath+".gz", 'wb') as f_out:
+                    copyfileobj(f_in, f_out)
+            os.remove(jsonpath)
+        except Exception as e:
+            os.remove(jsonpath+".gz")
+            self.logger.critical(e)
+            raise e
+        self.logger.info(f'{jsonpath} compressed')
+
+    def _decompress_file(self, jsonpath):
+        """ Decompresses a json gzip file """
+        try:
+            with gzip.open(jsonpath+'.gz', 'rb') as f_in:
+                with open(jsonpath, 'wb') as f_out:
+                    copyfileobj(f_in, f_out)
+            os.remove(jsonpath+'.gz')
+        except Exception as e:
+            os.remove(jsonpath)
+            self.logger.critical(e)
+            raise e
+        self.logger.info(f'{jsonpath} decompressed')
+
+    def clear_cache(self):
+        """ Clears cached files """
+        if not self.sid_path:
+            self.logger.warning("Cache path could not be found")
+        try:
+            shutil.rmtree(self.sid_path)
+        except Exception as e:
+            self.logger.error(e)
+
     def show_cached(self):
-        pass
-
-    def read_cache(self):
-        pass
-
-    def compress_file(self):
-        pass
-
-    def decompress_file(self):
         pass
 
 
