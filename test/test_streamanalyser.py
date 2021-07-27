@@ -176,6 +176,13 @@ class TestStreamAnalyser(unittest.TestCase):
          )
          analyser.clear_cache()
 
+   def test_analyse(self):
+      with sa.StreamAnalyser('um196SMIoR8', 100, True) as analyser:
+         analyser.analyse()
+         self.assertEqual(
+            analyser.highlights[0].contexts,
+            {'greeting'}
+         )
 
 sample_raw_messages = [
    {'author': {'id': 'UCX07ffYvacTkgo89MjNpweg', 'name': 'RathalosRE'},

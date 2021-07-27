@@ -22,7 +22,29 @@ CONTEXT_PATH = os.path.join(
 )
 
 class ChatAnalyser:
-    """ A class to analyse live chat messages """
+    """ A class to analyse live chat messages 
+    
+    Args:
+        refined_messages (list[Message]): List of messages of the stream refined by
+            the DataRefiner class.
+
+        stream_id (str, optional): Stream id of the chat. Defaults to 'undefined'.
+
+        min_duration (int): Minimum highlight duration (in seconds) to detect. Defaults to 5
+
+        window (int, optional):  Time interval to calculate averages. Defaults to 30.
+
+        threshold_constant(int, optional): The value that divides average highlight duration. 
+            Defaults to 3.
+
+        keyword_limit(int, optional): Keyword amount to retrieve. Defaults to 4.
+
+        keyword_filters(list, optional): Keywords to filter. Defaults to [].
+        
+        context_path(str, optional): Path to context file. Defaults to CONTEXT_PATH.
+
+        verbose (bool, optional): Make the output verbose. Defaults to False.
+    """
 
     def __init__(
             self,
@@ -36,27 +58,6 @@ class ChatAnalyser:
             context_path = CONTEXT_PATH,
             verbose = False
         ):
-        """
-        Args:
-            refined_messages (list[Message]): List of messages of the stream refined by
-                the DataRefiner class.
-
-            stream_id (str, optional): Stream id of the chat. Defaults to 'undefined'.
-
-            min_duration (int): Minimum highlight duration (in seconds) to detect. Defaults to 5
-
-            window (int, optional):  Time interval to calculate averages. Defaults to 30.
-
-            threshold_constant(int, optional): The value that divides average highlight duration. Defaults to 3.
-
-            keyword_limit(int, optional): Keyword amount to retrieve. Defaults to 4.
-
-            keyword_filters(list, optional): Keywords to filter. Defaults to [].
-            
-            context_path(str, optional): Path to context file. Defaults to CONTEXT_PATH.
-
-            verbose (bool, optional): Make the output verbose. Defaults to False.
-        """
         self.messages = refined_messages
         self.stream_id = stream_id
         self.min_duration = min_duration

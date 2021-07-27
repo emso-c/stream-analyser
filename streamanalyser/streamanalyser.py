@@ -34,13 +34,12 @@ class StreamAnalyser():
         self.thumb_res_lvl = thumb_res_lvl
         self.verbose = verbose
 
-        self.metadata = {}
         self._raw_messages = {}
         self.messages = []
         self.authors = []
         self.highlights = []
         self.context_path = chatanalyser.CONTEXT_PATH
-        
+        self.metadata = {}
         self.logger = loggersetup.create_logger(__file__, sid=sid)
         self.filehandler = filehandler.streamanalyser_filehandler
         self.collector = datacollector.DataCollector(
@@ -53,7 +52,6 @@ class StreamAnalyser():
             self._disable_logs()
 
         self.logger.info("Session start ==================================")
-
         self.filehandler.create_cache_dir(self.sid)
 
     def __enter__(self):
@@ -91,7 +89,7 @@ class StreamAnalyser():
         metadata = self.collector.collect_metadata()
         raw_messages = self.collector.fetch_raw_messages()
         thumbnail_url = self.collector.get_thumbnail_url(self.thumb_res_lvl)
-        
+
         # cache data
         self._cache_metadata(metadata)
         self._cache_messages(raw_messages)
@@ -100,7 +98,7 @@ class StreamAnalyser():
     def read_data(self):
         """ Reads cached data """
         self._raw_messages = self.filehandler.read_messages()
-        self.metadata = self.filehandler.read_metadata()
+        self.metadata.update(self.filehandler.read_metadata())
         
     def refine_data(self):
         """ Refines read data """
@@ -157,9 +155,8 @@ class StreamAnalyser():
         # get all words from the chat
         wordlist = [msg.text.replace("_","") for msg in self.messages]
         
-        # shuffle word list to minimize the issue where
-        # repeating consecutive messages merge together
-        # in the word cloud
+        # shuffle word list to minimize the issue where repeating
+        # consecutive messages merge together in the word cloud
         random.shuffle(wordlist)
         
         word_cloud = WordCloud(
