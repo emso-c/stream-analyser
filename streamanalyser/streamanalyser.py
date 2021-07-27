@@ -131,6 +131,20 @@ class StreamAnalyser():
         self.refine_data()
         self.analyse_data()
 
+    def _check_integrity(self, autofix=False):
+        self.filehandler.check_integrity(autofix=autofix)
+
+    def enforce_integrity(self):
+        missing_files, unnecessary_files = self._check_integrity(
+            autofix = True
+        )
+        print(missing_files)
+        print(unnecessary_files)
+
+        for missing_file in missing_files:
+            if missing_files is self.filehandler.message_fname:
+                pass
+
     def generate_wordcloud(self, font_path=None, scale=3) -> WordCloud:
         """ Returns word cloud of the stream
 

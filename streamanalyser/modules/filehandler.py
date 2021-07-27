@@ -1,6 +1,8 @@
+from enum import auto
 import os
 import json
 import shutil
+from typing import Tuple
 import yaml
 import gzip
 import logging
@@ -86,7 +88,7 @@ class FileHandler():
             self.logger.info(f'{path} removed')
         except FileNotFoundError:
             self.logger.debug(f"{path} could not be found")
-        except Exception as e:
+        except Exception:
             self.logger.error(f"Could not remove {path}")
 
     def create_dir_if_not_exists(self, path):
@@ -189,9 +191,58 @@ class FileHandler():
         except Exception as e:
             self.logger.error(e)
 
-    def show_cached(self):
-        pass
+    def check_integrity(self, autofix=False) -> Tuple[list, list]:
+        """ Checks integrity of the cached files. Note that it
+            only detects files by their names, not content.
 
+        Args:
+            autofix (bool, optional): Attempts to automatically fix issues
+                by deleting unnecessary files and compressing uncompressed
+                messages. Missing files must be dealt manually.
+                Defaults to False.
+
+        Returns:
+            Tuple[list, list]: Lists of unnecesary and missing files
+        """
+
+        files = self.get_filenames(self.sid_path, show_extension=True)
+        necessary_files = [self.message_fname+".gz",
+                           self.metadata_fname,
+                           self.thumbnail_fname]
+        unnecesary_files = list(set(files) - set(necessary_files))
+        missing_files = list(set(necessary_files) - set(files))
+
+        self.logger.info("Checking cache integrity")
+        self.logger.debug(f"{autofix=}")
+        self.logger.debug(f"{unnecesary_files=}")
+        self.logger.debug(f"{missing_files=}")
+        
+        if autofix:
+            for file in unnecesary_files:                
+                # it might be a json file that is not compressed
+                if file == self.message_fname:
+                    self._compress_file(os.path.join(self.sid_path, file))
+                    missing_files.remove(file+".gz")
+                    continue
+                self.delete_file(os.path.join(self.sid_path, file))
+            unnecesary_files = []
+
+        return missing_files, unnecesary_files
+
+    def get_filenames(self, path, show_extension=False) -> list[str]:
+        """ Returns file names in a path """
+
+        self.logger.info(f"Finding file names in {path}")
+        if not os.path.exists(path):
+            self.logger.error("Path doesn't exist")
+            return []
+
+        try:
+            if show_extension:
+                return [fname for fname in os.listdir(path)]
+            return [fname.split(os.extsep)[0] for fname in os.listdir(path)]
+        except Exception as e:
+            self.logger.error(e)
 
 streamanalyser_filehandler = FileHandler(
     storage_path='C:\\Stream Analyser'

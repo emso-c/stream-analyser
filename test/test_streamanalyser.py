@@ -9,6 +9,12 @@ from streamanalyser import streamanalyser as sa
 class TestStreamAnalyser(unittest.TestCase):
    def setUp(self):
       warnings.simplefilter('ignore', category=ResourceWarning)
+   
+   def tearDown(self):
+      # clear caches of used id's
+      for testid in ['um196SMIoR8', 'vFWfaqZl3WQ', 'testid']:
+         with sa.StreamAnalyser(testid, 0, True) as analyser:
+            analyser.clear_cache()
 
    def test_cache_messages(self):
       with sa.StreamAnalyser('testid', 1, True) as analyser:
@@ -18,8 +24,6 @@ class TestStreamAnalyser(unittest.TestCase):
                analyser.filehandler.sid_path,
                analyser.filehandler.message_fname+'.gz'
          )))
-         
-         analyser.clear_cache()
 
    def test_cache_metadata(self):
       with sa.StreamAnalyser('testid', 1, True) as analyser:
@@ -30,8 +34,6 @@ class TestStreamAnalyser(unittest.TestCase):
                analyser.filehandler.sid_path,
                analyser.filehandler.metadata_fname
          )))
-
-         analyser.clear_cache()
 
    def test_cache_thumbnail(self):
       with sa.StreamAnalyser('vFWfaqZl3WQ', 0, True) as analyser:
@@ -44,8 +46,6 @@ class TestStreamAnalyser(unittest.TestCase):
                analyser.filehandler.sid_path,
                analyser.filehandler.thumbnail_fname
          )))
-
-         analyser.clear_cache()
 
    def test_collect_read_data(self):
       with sa.StreamAnalyser('um196SMIoR8', 1, True) as analyser:
@@ -61,8 +61,6 @@ class TestStreamAnalyser(unittest.TestCase):
             " Roboco,Amelia【常闇トワ/ホロライブ】"
          )
 
-         analyser.clear_cache()
-
    def test_refine_data(self):
       with sa.StreamAnalyser('um196SMIoR8', 1, True) as analyser:
          analyser._raw_messages = sample_raw_messages
@@ -75,7 +73,6 @@ class TestStreamAnalyser(unittest.TestCase):
             analyser.authors[0].id,
             "UCX07ffYvacTkgo89MjNpweg"
          )
-         analyser.clear_cache()
 
    def test_analyse_data(self):
       with sa.StreamAnalyser('um196SMIoR8', 1, True) as analyser:
@@ -89,8 +86,6 @@ class TestStreamAnalyser(unittest.TestCase):
             "[0:00:01] greeting: こんやっぴートワ様いえーい, こん, こん…, "+
             "kon (24 messages, high intensity, 1.042 diff, 19s duration)"
          )
-
-         analyser.clear_cache()
 
    def test_generate_wordcloud(self):
       with sa.StreamAnalyser('um196SMIoR8', 1, True) as analyser:
@@ -124,7 +119,6 @@ class TestStreamAnalyser(unittest.TestCase):
             analyser.find_messages("kon", exact=True),
             []
          )
-         analyser.clear_cache()
 
    def test_find_user_messages(self):
       with sa.StreamAnalyser('um196SMIoR8', 1, True) as analyser:
@@ -139,7 +133,6 @@ class TestStreamAnalyser(unittest.TestCase):
          self.assertEqual(
             len(analyser.find_user_messages(id="UCBLOc9HL4kIvp36bMqu7pxg")), 1
          )
-         analyser.clear_cache()
 
    def test_most_used_phrase(self):
       with sa.StreamAnalyser('um196SMIoR8', 1, True) as analyser:
@@ -174,7 +167,6 @@ class TestStreamAnalyser(unittest.TestCase):
             ),
             ('こん...', 6)
          )
-         analyser.clear_cache()
 
    def test_analyse(self):
       with sa.StreamAnalyser('um196SMIoR8', 100, True) as analyser:
@@ -182,6 +174,61 @@ class TestStreamAnalyser(unittest.TestCase):
          self.assertEqual(
             analyser.highlights[0].contexts,
             {'greeting'}
+         )
+
+   def test_check_integrity(self):
+      with sa.StreamAnalyser('um196SMIoR8', 1, True) as analyser:
+         analyser.collect_data()
+
+         # intentionally delete metadata file
+         analyser.filehandler.delete_file(
+            os.path.join(
+               analyser.filehandler.sid_path,
+               analyser.filehandler.metadata_fname
+            )
+         )
+
+         # create unnecessary dummy file
+         with open(analyser.filehandler.sid_path+"\\dummy.txt", 'w'):
+            pass
+         
+         missing_files, unnecessary_files = analyser.filehandler.check_integrity()
+
+         # should detect metadata as missing file
+         self.assertEqual(
+            missing_files,
+            [analyser.filehandler.metadata_fname]
+         )
+
+         # should detect dummy.txt as unnecessary file
+         self.assertEqual(
+            unnecessary_files,
+            ['dummy.txt']
+         )
+
+         # intentionally decompress message file
+         analyser.filehandler._decompress_file(
+            os.path.join(
+               analyser.filehandler.sid_path,
+               analyser.filehandler.message_fname
+            )
+         )
+
+         # try again with autofix
+         missing_files, unnecessary_files = analyser.filehandler.check_integrity(
+            autofix=True
+         )
+
+         # still should detect metadata as missing file,
+         # but decompressed file should be compressed
+         self.assertEqual(
+            missing_files,
+            [analyser.filehandler.metadata_fname]
+         )
+         # should delete dummy file
+         self.assertEqual(
+            unnecessary_files,
+            []
          )
 
 sample_raw_messages = [
