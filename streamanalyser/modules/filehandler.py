@@ -9,6 +9,7 @@ import logging
 import requests
 from shutil import copyfileobj
 from datetime import datetime
+from time import time
 
 
 class FileHandler():
@@ -244,6 +245,46 @@ class FileHandler():
             return [fname.split(os.extsep)[0] for fname in os.listdir(path)]
         except Exception as e:
             self.logger.error(e)
+
+    # TODO test these new functions
+    def _creation_time_in_days(self, path) -> int:
+        """ Returns difference between the creation time and
+            the current time of the file in days """
+
+        if os.path.isfile(path):
+            ctime = os.path.getctime(path)
+            days = datetime.fromtimestamp(int(time()-ctime)).strftime('%d')
+            return int(days)
+        self.logger.debug(f"{path} is not a file")
+        return 0
+
+    def delete_old_files(self, folder_path, time_limit_in_days):
+        """ Delete files in a folder older than the time limit. """
+
+        for name in os.listdir(folder_path):
+            fpath = os.path.join(folder_path, name)
+            if self._creation_time_in_days(fpath) >= time_limit_in_days:
+                self.delete_file(fpath)
+
+    def file_amount(self, folder_path) -> int:
+        """ Returns file amount in a folder """
+
+        _, _, files = next(os.walk(folder_path))
+        self.logger.debug(f"File amount in {folder_path} is {len(files)}")
+        return len(files)
+
+    def largest_folder(self, *args) -> str:
+        """ Finds folder which has the most amount
+            of files among a list of paths. """
+        
+        self.logger.debug(f"Finding largest folder")
+        
+        largest_folder = args[0]
+        for i in range(1, len(args)):
+            if self.file_amount(args[i]) > self.file_amount(largest_folder):
+                largest_folder = args[i]
+        self.logger.debug(f"Largest folder: {largest_folder}")
+        return largest_folder
 
 streamanalyser_filehandler = FileHandler(
     storage_path='C:\\Stream Analyser'

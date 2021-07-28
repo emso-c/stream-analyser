@@ -139,8 +139,9 @@ class StreamAnalyser():
         return not any(self._check_integrity(self))
 
     def enforce_integrity(self):
-        """ Enforces file integrity by recollecting
-            missing data and deleting unnecessary files """
+        """ Enforces file integrity by recollecting missing
+            data and deleting unnecessary cache files """
+
         missing_files, _ = self._check_integrity(
             autofix = True
         )
@@ -162,8 +163,8 @@ class StreamAnalyser():
                         self.thumb_res_lvl
                     )
                 )
-        
-        # TODO fetch new messages
+
+        # TODO reimplement add fetch missing messages feature
 
     def generate_wordcloud(self, font_path=None, scale=3) -> WordCloud:
         """ Returns word cloud of the stream
@@ -313,3 +314,4 @@ class StreamAnalyser():
         return len(self.messages) 
     
     #TODO Add output methods (graph, print etc.)
+    

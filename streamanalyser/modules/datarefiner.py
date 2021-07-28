@@ -67,10 +67,3 @@ class DataRefiner():
         self.authors = list(authors)
         self.logger.debug(f"{len(self.authors)} authors has been found")
         return self.authors
-
-    def __del__(self):
-        #self.logger.info("Destructing refiner")
-        handlers = self.logger.handlers[:]
-        for handler in handlers:
-            handler.close()
-            self.logger.removeHandler(handler)
