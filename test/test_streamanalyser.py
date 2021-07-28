@@ -1,4 +1,4 @@
-from streamanalyser.modules import chatanalyser
+import shutil
 import unittest
 import warnings
 import os
@@ -232,7 +232,7 @@ class TestStreamAnalyser(unittest.TestCase):
          )
 
    def test_enforce_integrity(self):
-      with sa.StreamAnalyser('um196SMIoR8', 1) as analyser:
+      with sa.StreamAnalyser('um196SMIoR8', 1, True) as analyser:
          analyser.collect_data()
 
          # intentionally delete cache files
@@ -251,6 +251,54 @@ class TestStreamAnalyser(unittest.TestCase):
 
          self.assertEqual(missing_files, [])
          self.assertEqual(unnecessary_files, [])
+
+   def test_export(self):
+      with sa.StreamAnalyser('um196SMIoR8', 1, True) as analyser:
+         msg_path = os.path.join(
+            analyser.filehandler.sid_path,
+            analyser.filehandler.message_fname+".gz"
+         )
+         mdata_pth = os.path.join(
+            analyser.filehandler.sid_path,
+            analyser.filehandler.metadata_fname,
+         )
+         thumb_pth = os.path.join(
+            analyser.filehandler.sid_path,
+            analyser.filehandler.thumbnail_fname,
+         )
+
+         analyser._raw_messages = sample_raw_messages
+         analyser.refine_data()
+         analyser.highlights = [sa.structures.Highlight(
+            'testid',0, 10, 
+            sa.structures.Intensity(
+               'lvl', 2, sa.structures.AnsiFore.GREEN
+            ), 5, analyser.messages, ["kword"], ["contxt"]
+         )]
+
+         with open(msg_path, 'w'):
+            pass
+         with open(mdata_pth, 'w'):
+            pass
+         with open(thumb_pth, 'w'):
+            pass
+
+         analyser.export_data(folder_name="test235234")
+         test_export_folder = os.path.join(
+            analyser.filehandler.export_path,
+            "test235234"
+         )
+         fnames = analyser.filehandler.get_filenames(
+            test_export_folder
+         )
+         cheklist = ['highlights', 'messages', 'metadata',
+                     'thumbnail', 'wordcloud']
+         for item in cheklist:
+            self.assertTrue(item in fnames)
+
+         shutil.rmtree(test_export_folder)
+         analyser.clear_cache()
+
 
 sample_raw_messages = [
    {'author': {'id': 'UCX07ffYvacTkgo89MjNpweg', 'name': 'RathalosRE'},

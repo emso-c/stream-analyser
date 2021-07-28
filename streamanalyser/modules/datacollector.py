@@ -1,9 +1,7 @@
 import urllib
 import json
-import requests
 
 from chat_downloader import ChatDownloader
-from requests.exceptions import HTTPError
 
 from .loggersetup import create_logger
 from .utils import percentage

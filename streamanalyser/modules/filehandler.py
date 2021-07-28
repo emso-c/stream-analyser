@@ -1,4 +1,3 @@
-from enum import auto
 import os
 import json
 import shutil
@@ -19,11 +18,12 @@ class FileHandler():
     Storage/
         Cache/
             Exampleid/
-                messages.json
+                messages.json.gz
                 metadata.yaml
                 thumbnail.jpg
             ...
         Logs/
+        Exports/
     
     """
     
@@ -32,16 +32,22 @@ class FileHandler():
             storage_path,
             cache_fname='Cache',
             log_fname='Logs',
+            export_fname='Exports',
             message_fname = 'messages.json',
             metadata_fname = 'metadata.yaml',
             thumbnail_fname = 'thumbnail.png',
+            graph_fname = 'graph.png',
+            wordcloud_fname = 'wordcloud.jpg'
         ):
         self.storage_path = storage_path
         self.cache_path = os.path.join(self.storage_path, cache_fname)
         self.log_path = os.path.join(self.storage_path, log_fname)
+        self.export_path = os.path.join(self.storage_path, export_fname)
         self.message_fname = message_fname
         self.metadata_fname = metadata_fname
         self.thumbnail_fname = thumbnail_fname
+        self.graph_fname = metadata_fname
+        self.wordcloud_fname = metadata_fname
 
         # create_logger is seperately implemented to prevent circular imports
         self.logger = self._create_logger(__file__)
@@ -149,12 +155,15 @@ class FileHandler():
         self._decompress_file(fpath)
         with open(fpath, 'r', encoding='utf-8') as f:
             data = json.load(f)
+        self.logger.info("Read messages")
+        self._compress_file(fpath)
         return data
 
     def read_metadata(self):
         """ Reads cached messages.
             Returns a dict. """
         fpath = os.path.join(self.sid_path, self.metadata_fname)
+        self.logger.info("Read metadata")
         return yaml.load(open(fpath, 'r'), Loader=yaml.Loader)
 
     def _compress_file(self, jsonpath):

@@ -1,8 +1,10 @@
 from collections import Counter
 import os
 import random
+from shutil import copyfile
 import traceback
 from typing import Tuple
+from time import time
 
 from wordcloud import WordCloud
 
@@ -40,6 +42,7 @@ class StreamAnalyser():
         self.highlights = []
         self.context_path = chatanalyser.CONTEXT_PATH
         self.metadata = {}
+        self.wordcloud = None
         self.logger = loggersetup.create_logger(__file__, sid=sid)
         self.filehandler = filehandler.streamanalyser_filehandler
         self.collector = datacollector.DataCollector(
@@ -106,6 +109,8 @@ class StreamAnalyser():
             self._raw_messages,
             self.msglimit
         )
+        # we don't need raw messages anymore
+        # empty them so they don't take up space
         self._raw_messages = None
         self.authors = self.refiner.get_authors()
 
@@ -201,7 +206,8 @@ class StreamAnalyser():
 
         if self.verbose:
             print("Generating word cloud... done")
-        return word_cloud
+        self.wordcloud = word_cloud
+        return self.wordcloud
 
     def find_messages(self, search_phrase, exact=False, ignore_case=True) -> list[structures.Message]:
         """ Finds messages containing a specific phrase or exactly the same phrase.
@@ -312,6 +318,99 @@ class StreamAnalyser():
     @property
     def total_message_amount(self):
         return len(self.messages) 
-    
+
     #TODO Add output methods (graph, print etc.)
-    
+
+    def export_data(self, folder_name=None, path=None, open_folder=False):
+        """ Exports the analysed data to the path.
+
+        Args:
+            folder_name (str|None, optional): File name to export the results. Defaults to None,
+                which exports data under the file named current UNIX timestamp.
+            path (str|None, optional): Path to export the results. Defaults to None,
+                which exports data to the default path.
+            open_folder (bool, optional): Open the export folder in file explorer
+                after exporting. Defaults to false
+
+        """
+
+        self.logger.info("Exporting data")
+        self.logger.debug(f"{folder_name=}")
+        self.logger.debug(f"{path=}")
+
+        if not path:
+            path = self.filehandler.export_path
+        
+        try:
+            self.filehandler.create_dir_if_not_exists(path)
+        except PermissionError as pe:
+            self.logger.error(pe)
+            return
+        
+        if not folder_name:
+            folder_name = str(int(time()))
+        else:
+            # check if there's already a file with the same name
+            # if so, add UNIX timestamp to make it unique
+            for name in os.listdir(path):
+                if os.path.isdir(os.path.join(path, name)) and name == folder_name:
+                    folder_name = folder_name+'_'+str(int(time()))
+                    warn_msg = f"{name} already exists, renaming to {folder_name}"
+                    self.logger.warning(warn_msg)
+                    break
+
+        target_path = path+'\\'+folder_name
+        self.filehandler.create_dir_if_not_exists(target_path)
+        
+        # export messages
+        self.filehandler._decompress_file(
+            os.path.join(self.filehandler.sid_path, self.filehandler.message_fname)
+        )
+        copyfile(
+            src=os.path.join(self.filehandler.sid_path, self.filehandler.message_fname), 
+            dst=os.path.join(target_path, self.filehandler.message_fname), 
+        )
+        self.filehandler._compress_file(
+            os.path.join(self.filehandler.sid_path, self.filehandler.message_fname)
+        )
+        self.logger.info("Exported messages")
+
+        # export metadata
+        copyfile(
+            src=os.path.join(self.filehandler.sid_path, self.filehandler.metadata_fname), 
+            dst=os.path.join(target_path, self.filehandler.metadata_fname), 
+        )
+        self.logger.info("Exported metadata")
+
+        # export thumbnail
+        copyfile(
+            src=os.path.join(self.filehandler.sid_path, self.filehandler.thumbnail_fname), 
+            dst=os.path.join(target_path, self.filehandler.thumbnail_fname), 
+        )
+        self.logger.info("Exported thumbnail")
+
+        # export word cloud
+        if self.messages:
+            self.generate_wordcloud().to_file(
+                os.path.join(target_path, 'wordcloud.jpg')
+            )
+            self.logger.info("Exported wordcloud")
+
+        # export highlights
+        if self.highlights:
+            hl_path = os.path.join(target_path, "highlights.txt")
+            with open(hl_path, 'w', encoding='utf-8') as file:
+                file.writelines([hl.colorless_str+'\n' for hl in self.highlights])
+            self.logger.info("Exported highlights")
+
+        #TODO export graph
+        #if self.fig:
+        #    self.fig.savefig(os.path.join(target_path, 'graph.png'))
+        #    self.logger.info("Exported graph")
+
+        if open_folder:
+            try:
+                os.startfile(target_path)
+                self.logger.info(f"Opened {target_path} in file explorer")
+            except FileNotFoundError:
+                self.logger.error(f"Couldn't find {target_path}")
