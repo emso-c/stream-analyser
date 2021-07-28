@@ -1,10 +1,12 @@
 from collections import Counter
+from datetime import timedelta
 import os
 import random
 from shutil import copyfile
 import traceback
 from typing import Tuple
 from time import time
+from colorama.ansi import Back, Style
 
 from wordcloud import WordCloud
 
@@ -319,8 +321,6 @@ class StreamAnalyser():
     def total_message_amount(self):
         return len(self.messages) 
 
-    #TODO Add output methods (graph, print etc.)
-
     def export_data(self, folder_name=None, path=None, open_folder=False):
         """ Exports the analysed data to the path.
 
@@ -414,3 +414,138 @@ class StreamAnalyser():
                 self.logger.info(f"Opened {target_path} in file explorer")
             except FileNotFoundError:
                 self.logger.error(f"Couldn't find {target_path}")
+
+    #TODO Add output methods (graph, print etc.)
+    def draw_graph(self):
+        pass
+
+    def print_summary(self, top=None, intensity_filters=[]) -> list[structures.Highlight]:
+        """ Only prints time and intensity of the highlights.
+
+        Args:
+            top (int, optional): Top n highlights to print, sorted by intensity. 
+                Defaults to None, which returns all.
+            intensity_filters (list[str]): Intensity levels to filter out. Defaults to [].
+
+        Returns:
+            list[Highlight]: list of printed highlights
+        """
+        
+        self.logger.info("Printing summary")
+        self.logger.debug(f"{top=}")
+        self.logger.debug(f"{intensity_filters=}")
+        if top and top < 0:
+            self.logger.error("Top value cannot be negative")
+            raise ValueError("Top value cannot be negative.")
+
+        highlights_to_return = []
+        if top:
+            highlights = sorted(self.highlights, key=lambda x: x.fdelta, reverse=True)
+        else:
+            highlights = self.highlights
+
+        print('\n'+Back.RED+"Summary:"+Style.RESET_ALL)
+        for _count, highlight in enumerate(highlights):
+            if not highlight.intensity in intensity_filters:
+                print(f'{timedelta(seconds=int(highlight.time))}: {highlight.intensity.colored_level}')
+                highlights_to_return.append(highlight)
+                self.logger.debug(highlight.colorless_str)
+
+                if top and _count == top:
+                    return highlights_to_return
+
+        return highlights_to_return
+
+    def print_highlights(self, top=None, include=[], 
+                not_include=[], intensity_filters=[]) -> list[structures.Highlight]:
+        """ Prints found highlights.
+
+        Args:
+            top (int, optional): Top n highlights to print, sorted by intensity. 
+                Defaults to None, which returns all.
+            include (list[str], optional): List of reactions to see. Defaults to [].
+                Reaction names can be found in `context.json`.
+            not_include (list[str], optional): List of reactions to not see. 
+                Overrides include. Defaults to [].
+                Reaction names can be found in `context.json`.
+            intensity_filters (list[str]): Intensity levels to filter out. Defaults to [].
+
+        Returns:
+            list[Highlight]: List of printed highlights
+
+        """
+
+        self.logger.info("Printing highlights")
+        self.logger.debug(f"{top=}")
+        self.logger.debug(f"{intensity_filters=}")
+        if top and top < 0:
+            self.logger.error("Top value cannot be negative")
+            raise ValueError("Top value cannot be negative.")
+
+        _count = 0
+        highlights_to_return = []
+        if top:
+            highlights = sorted(self.highlights, key=lambda x: x.fdelta, reverse=True)
+        else:
+            highlights = self.highlights
+
+        print('\n'+Back.RED+"Highlights:"+Style.RESET_ALL)
+        for highlight in highlights:
+            skip = False
+            for context in highlight.contexts:
+                if not_include and context in not_include:
+                    skip = True
+                    break
+            if skip:
+                continue
+            for context in highlight.contexts:
+                if (include and context in include) or not include:
+                    if not highlight.intensity.level in intensity_filters:
+                        print(highlight)
+                        highlights_to_return.append(highlight)
+                        self.logger.debug(highlight.colorless_str)
+                        _count+=1
+                        if top and _count == top:
+                            return highlights_to_return
+                        break
+        
+        return highlights_to_return
+
+    def print_urls(self, top=None, intensity_filters=[])  -> list[structures.Highlight]:
+        """ Prints urls of highlights (with timestamps)
+
+            args:
+                top (int, optional): Top n highlights to print, sorted by intensity.
+                    Defaults to None, which returns all.
+                intensity_filters (list[str]): Intensity levels to filter out.
+                    Defaults to [].
+
+            example:
+            >>> analyserObject.show_urls():
+            >>> "00:02:12 -> https://youtu.be/wAPCSnAhhC8?t=132"
+        """
+        
+        self.logger.info("Printing url's")
+        self.logger.debug(f"{top=}")
+        self.logger.debug(f"{intensity_filters=}")
+        if top and top < 0:
+            self.logger.error("Top value cannot be negative")
+            raise ValueError("Top value cannot be negative.")
+
+        highlights_to_return = []
+
+        if top:
+            highlights = sorted(self.highlights, key=lambda x: x.fdelta, reverse=True)
+        else:
+            highlights = self.highlights
+
+        print('\n'+Back.RED+"Links:"+Style.RESET_ALL)
+        for _count, hl in enumerate(highlights):
+            if not hl.intensity.level in intensity_filters:
+                print(hl.intensity.color+str(timedelta(seconds=int(hl.time)))+Style.RESET_ALL, '->' ,hl.url)
+                self.logger.debug(f"{str(timedelta(seconds=int(hl.time)))} -> {hl.url}")
+                highlights_to_return.append(hl)
+                if top and _count == top:
+                    return highlights_to_return
+
+        return highlights_to_return
