@@ -79,6 +79,7 @@ class TestStreamAnalyser(unittest.TestCase):
          analyser.messages = analyser.refiner.refine_raw_messages(
             sample_raw_messages
          )
+         analyser.metadata = {'title':'test'}
          analyser.analyse_data()
 
          self.assertEqual(
@@ -270,7 +271,7 @@ class TestStreamAnalyser(unittest.TestCase):
          analyser._raw_messages = sample_raw_messages
          analyser.refine_data()
          analyser.highlights = [sa.structures.Highlight(
-            'testid',0, 10, 
+            'testid', 0, 10,
             sa.structures.Intensity(
                'lvl', 2, sa.structures.AnsiFore.GREEN
             ), 5, analyser.messages, ["kword"], ["contxt"]

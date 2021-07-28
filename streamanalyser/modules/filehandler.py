@@ -202,8 +202,8 @@ class FileHandler():
             self.logger.error(e)
 
     def check_integrity(self, autofix=False) -> Tuple[list, list]:
-        """ Checks integrity of the cached files. Note that it
-            only detects files by their names, not content.
+        """ Checks integrity of the cached files. 
+        Note that it detects files by their names, not content.
 
         Args:
             autofix (bool, optional): Attempts to automatically fix issues

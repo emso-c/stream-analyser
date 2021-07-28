@@ -2,8 +2,8 @@ from collections import Counter
 from datetime import timedelta
 import os
 import random
-from shutil import copyfile
 import traceback
+from shutil import copyfile
 from typing import Tuple
 from time import time
 from colorama.ansi import Back, Style
@@ -45,6 +45,7 @@ class StreamAnalyser():
         self.context_path = chatanalyser.CONTEXT_PATH
         self.metadata = {}
         self.wordcloud = None
+        self.fig = None
         self.logger = loggersetup.create_logger(__file__, sid=sid)
         self.filehandler = filehandler.streamanalyser_filehandler
         self.collector = datacollector.DataCollector(
@@ -127,8 +128,9 @@ class StreamAnalyser():
         )
         if self.disable_logs:
             canalyser.logger.disabled = True
-        canalyser.analyse()
+        canalyser.analyse(graph_title=self.metadata["title"])
         self.highlights = canalyser.highlights
+        self.fig = canalyser.fig
 
     def analyse(self):
         if not self.is_cached:
@@ -403,10 +405,11 @@ class StreamAnalyser():
                 file.writelines([hl.colorless_str+'\n' for hl in self.highlights])
             self.logger.info("Exported highlights")
 
+        #TODO fix empty export
         #TODO export graph
-        #if self.fig:
-        #    self.fig.savefig(os.path.join(target_path, 'graph.png'))
-        #    self.logger.info("Exported graph")
+        if self.fig:
+            self.fig.savefig(os.path.join(target_path, 'graph.png'))
+            self.logger.info("Exported graph")
 
         if open_folder:
             try:
@@ -414,10 +417,6 @@ class StreamAnalyser():
                 self.logger.info(f"Opened {target_path} in file explorer")
             except FileNotFoundError:
                 self.logger.error(f"Couldn't find {target_path}")
-
-    #TODO Add output methods (graph, print etc.)
-    def draw_graph(self):
-        pass
 
     def print_summary(self, top=None, intensity_filters=[]) -> list[structures.Highlight]:
         """ Only prints time and intensity of the highlights.
@@ -549,3 +548,6 @@ class StreamAnalyser():
                     return highlights_to_return
 
         return highlights_to_return
+
+    def show_graph(self):
+        self.fig.show()

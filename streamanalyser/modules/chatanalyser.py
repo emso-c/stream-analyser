@@ -1,8 +1,14 @@
 import os
 import json
-import numpy as np
 from collections import Counter
 from colorama import Fore
+import numpy as np
+from matplotlib import (
+    collections,
+    pyplot as plt,
+    font_manager as fm,
+    rcParams
+)
 
 from .loggersetup import create_logger
 from . import utils
@@ -16,9 +22,14 @@ from .exceptions import (
     ConstantsNotUniqueError
 )
 
+
 CONTEXT_PATH = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
     '..', "data", "context.json"
+)
+DEFAULT_FONT_PATH = os.path.join(
+    os.path.dirname(os.path.realpath(__file__)),
+    "..", "fonts", "NotoSansCJKjp-Bold.ttf"
 )
 
 class ChatAnalyser:
@@ -427,10 +438,55 @@ class ChatAnalyser:
         self.guess_context()
         return self.highlights
 
-    def analyse(self):        
+    def draw_graph(self, title=None) -> plt:
+        """ Draw graph of the analysed data
+            - Message frequency   
+            - Moving average of message frequency   
+            - Highlights
+        """
+
+        #TODO make a better looking graph
+
+        self.logger.info("Drawing graph")
+        if self.verbose:
+            print(f"Drawing graph...", end='\r')
+
+        #TODO background img
+        #img = mpimg.imread(f"{self.config['path-to']['thumbnails']}\\{self.stream_id}.jpg")
+
+        fig, ax = plt.subplots(2, constrained_layout = True)
+
+        #TODO fix this
+        #fm.fontManager.addfont(DEFAULT_FONT_PATH)
+        #rcParams['font.family'] = [fm.get_font(DEFAULT_FONT_PATH).family_name]
+        fprop = fm.FontProperties(fname=DEFAULT_FONT_PATH)
+        fig.suptitle(title, fontproperties=fprop, fontsize=16)
+        
+        xAxis = list(self.frequency)
+        yAxis = self.smooth_avg
+        lines = [((x0,y0), (x1,y1)) for x0, y0, x1, y1 in zip(xAxis[:-1], yAxis[:-1], xAxis[1:], yAxis[1:])]
+        colors = self.line_colors()
+        colored_lines = collections.LineCollection(lines, colors=colors, linewidths=(2,))
+        ax[0].add_collection(colored_lines)
+        ax[0].autoscale_view()
+        ax[0].set_title('Highlights')
+
+        yAxis = list(self.frequency.values())
+        ax[1].bar(xAxis, yAxis)
+        yAxis = list(self.fre_mov_avg.values())
+        ax[1].plot(xAxis, yAxis, 'm--')
+        ax[1].set_title('Message frequency')
+        
+        if self.verbose:
+            print(f"Drawing graph... done")
+        
+        self.fig = plt
+        return plt
+
+    def analyse(self, graph_title=None):
         self.get_frequency()
         self.calculate_moving_average()
         self.smoothen_mov_avg()
         self.create_highlight_annotation()
         self.get_highlights()
-        
+        self.draw_graph(graph_title)
