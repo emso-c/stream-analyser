@@ -6,6 +6,7 @@ import yaml
 import gzip
 import logging
 import requests
+import random
 from shutil import copyfileobj
 from datetime import datetime
 from time import time
@@ -46,8 +47,8 @@ class FileHandler():
         self.message_fname = message_fname
         self.metadata_fname = metadata_fname
         self.thumbnail_fname = thumbnail_fname
-        self.graph_fname = metadata_fname
-        self.wordcloud_fname = metadata_fname
+        self.graph_fname = graph_fname
+        self.wordcloud_fname = wordcloud_fname
 
         # create_logger is seperately implemented to prevent circular imports
         self.logger = self._create_logger(__file__)
@@ -192,20 +193,75 @@ class FileHandler():
             raise e
         self.logger.info(f'{jsonpath} decompressed')
 
-    def clear_cache(self):
-        """ Clears cached files """
-        if not self.sid_path:
-            self.logger.warning("Cache path could not be found")
+    def clear_cache(self, cache_deletion_algorithm=None):
+        """ Clears cached files according to cache deletion
+            algorithm. Default behavior is deleting the 
+            cache of the current session.
+
+        Args:
+            cache_deletion_algorithm (str|None, optional): Algorithm to
+                delete cached files. Options are as follows:
+                    - lru (Least recently used): Deletes least recently
+                        used cache.
+                    - mru (Most recently used): Deletes most recently
+                        used cache.
+                    - fifo (First in first out): Deletes oldest cache.
+                    - rr (Random replacement): Deletes random cache. (uhh...)
+                If set to None, deletes cache of the current session.
+                Defaults to None.
+            
+            current (bool, optional): Deletes cache of the current
+                session if True. Overrides `cache_deletion_algorithm`.
+                Defaults to False.
+        """
+        if not cache_deletion_algorithm:
+            try:
+                shutil.rmtree(self.sid_path)
+            except Exception as e:
+                self.logger.error(e)
+            return
+
+        if cache_deletion_algorithm == 'mru':
+            dir_to_delete = self.most_recently_used_folder(
+                self.cache_path
+            )
+        elif cache_deletion_algorithm == 'lru':
+            dir_to_delete = self.least_recently_used_folder(
+                self.cache_path
+            )
+        elif cache_deletion_algorithm == 'fifo':
+            dir_to_delete = self.oldest_folder(
+                self.cache_path
+            )
+        elif cache_deletion_algorithm == 'rr':
+            dir_to_delete = self.random_folder(
+                self.cache_path
+            )
+        else:
+            self.logger.error("Invalid deletion algorithm: {}".format(
+                cache_deletion_algorithm
+            ))
+            raise ValueError("Invalid deletion algorithm: {}".format(
+                cache_deletion_algorithm
+            ))
+ 
         try:
-            shutil.rmtree(self.sid_path)
+            shutil.rmtree(os.path.join(
+                self.cache_path,
+                dir_to_delete
+            ))
         except Exception as e:
             self.logger.error(e)
 
-    def check_integrity(self, autofix=False) -> Tuple[list, list]:
+    def check_integrity(self, cache_path=None, autofix=False) -> Tuple[list, list]:
         """ Checks integrity of the cached files. 
         Note that it detects files by their names, not content.
 
         Args:
+            cache_path (str|None, optional): Path to the cache files
+                of a stream. Defaults to None, which sets the path to
+                the current stream id.
+
             autofix (bool, optional): Attempts to automatically fix issues
                 by deleting unnecessary files and compressing uncompressed
                 messages. Missing files must be dealt manually.
@@ -216,9 +272,13 @@ class FileHandler():
         """
 
         self.logger.info("Checking cache integrity")
+        self.logger.debug(f"{cache_path=}")
         self.logger.debug(f"{autofix=}")
+
+        if not cache_path:
+            cache_path = self.sid_path
         
-        files = self.get_filenames(self.sid_path, show_extension=True)
+        files = self.get_filenames(cache_path, show_extension=True)
         necessary_files = [self.message_fname+".gz",
                            self.metadata_fname,
                            self.thumbnail_fname]
@@ -232,10 +292,10 @@ class FileHandler():
             for file in unnecesary_files:                
                 # it might be a json file that is not compressed
                 if file == self.message_fname:
-                    self._compress_file(os.path.join(self.sid_path, file))
+                    self._compress_file(os.path.join(cache_path, file))
                     missing_files.remove(file+".gz")
                     continue
-                self.delete_file(os.path.join(self.sid_path, file))
+                self.delete_file(os.path.join(cache_path, file))
             unnecesary_files = []
 
         return missing_files, unnecesary_files
@@ -282,6 +342,13 @@ class FileHandler():
         self.logger.debug(f"File amount in {folder_path} is {len(files)}")
         return len(files)
 
+    def dir_amount(self, folder_path) -> int:
+        """ Returns folder amount in a folder """
+
+        _, dirs, _ = next(os.walk(folder_path))
+        self.logger.debug(f"Folder amount in {folder_path} is {len(dirs)}")
+        return len(dirs)
+
     def largest_folder(self, *args) -> str:
         """ Finds folder which has the most amount
             of files among a list of paths. """
@@ -294,6 +361,112 @@ class FileHandler():
                 largest_folder = args[i]
         self.logger.debug(f"Largest folder: {largest_folder}")
         return largest_folder
+
+    def least_recently_used_folder(self, fpath) -> str:
+        """ Returns least recenty used folder in path
+            by checking last access time of the
+            message file inside the folder """
+
+        least_recently_used_folder = None
+        last_access_time = time()
+
+        for root, dirs, _ in os.walk(fpath):
+            for dname in dirs:
+                if os.path.join(root, dname) == self.sid_path:
+                    continue
+                try:
+                    path = os.path.join(
+                        root, dname, self.message_fname+".gz"
+                    )
+                except:
+                    try:
+                        self.check_integrity(
+                            cache_path=os.path.join(root, dname),
+                            autofix=True
+                        )
+                        path = os.path.join(
+                            root, dname, self.message_fname+".gz"
+                        )
+                    except:
+                        msg = "Message cache couldn't be found"
+                        self.logger.error(msg)
+                        raise Exception(msg)
+                if os.path.getatime(path) < last_access_time:
+                    last_access_time = os.path.getatime(path)
+                    least_recently_used_folder = dname
+        self.logger.debug('Least recently used id: {} ({})'.format(
+            least_recently_used_folder,
+            last_access_time
+        ))
+        return least_recently_used_folder
+
+    def most_recently_used_folder(self, fpath) -> str:
+        """ Returns most recenty used folder in path
+            by checking last access time of the
+            message file inside the folder """
+
+        most_recently_used_folder = None
+        last_access_time = 0
+
+        for root, dirs, _ in os.walk(fpath):
+            for dname in dirs:
+                if os.path.join(root, dname) == self.sid_path:
+                    continue
+                try:
+                    path = os.path.join(
+                        root, dname, self.message_fname+".gz"
+                    )
+                except:
+                    try:
+                        self.check_integrity(
+                            cache_path=os.path.join(root, dname),
+                            autofix=True
+                        )
+                        path = os.path.join(
+                            root, dname, self.message_fname+".gz"
+                        )
+                    except:
+                        msg = "Message cache couldn't be found"
+                        self.logger.error(msg)
+                        raise Exception(msg)
+                if os.path.getatime(path) > last_access_time:
+                    last_access_time = os.path.getatime(path)
+                    most_recently_used_folder = dname
+        self.logger.debug('Most recently used id: {} ({})'.format(
+            most_recently_used_folder,
+            last_access_time
+        ))
+        return most_recently_used_folder
+
+    def oldest_folder(self, fpath) -> str:
+        """ Returns oldest folder in path """
+
+        oldest_folder = None
+        creation_time = time()
+
+        for root, dirs, _ in os.walk(fpath):
+            for dname in dirs:
+                if os.path.join(root, dname) == self.sid_path:
+                    continue
+                path = os.path.join(root, dname)
+                if os.path.getctime(path) < creation_time:
+                    creation_time = os.path.getctime(path)
+                    oldest_folder = dname
+
+        self.logger.debug(f"Oldest folder: {oldest_folder} ({creation_time})")
+        return oldest_folder
+
+    def random_folder(self, fpath) -> str:
+        """ Returns a random folder in cache path """
+        for root, dirs, _ in os.walk(fpath):
+            if len(dirs) == 1:
+                return dirs[0]
+            while True:
+                choice = random.choice(dirs)
+                if os.path.join(root, choice) != self.sid_path:
+                    break
+            self.logger.debug(f"Random folder: {choice}")
+            return choice
 
 streamanalyser_filehandler = FileHandler(
     storage_path='C:\\Stream Analyser'

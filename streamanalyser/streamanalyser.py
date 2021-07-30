@@ -24,19 +24,76 @@ DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 DEFAULT_FONT_PATH = os.path.join(DIR_PATH, "fonts", "NotoSansCJKjp-Bold.ttf")
 
 class StreamAnalyser():
-    """[summary]
+    """ A class that analyses live streams.
+
+    Args:
+        sid (str): Video id of the stream.
+
+        msglimit (int|None, optional): Message amount to fetch. Defaults to None.
+
+        res_lvl (int, optional): Resolution level of the thumbnail.
+            Resolution levels are sorted by quality with 0 being lowest
+            and 3 being highest. Defaults to 2.
+
+        verbose (bool, optional): Print output to console. Defaults to False.
+
+        disable_logs (bool, optional): Disable logging for debugging purposes.
+            Log files' location can be found in `filehandler` module. 
+            Defaults to False.
+
+        keep_logs (bool, optional): Do not delete logs. See `log_duration`
+            for more information. Defaults to False.
+
+        log_duration (int, optional): Log duration in days. Logs that are
+            older than this value will be deleted if `keep_logs` option is
+            False. Cache of the week can only be deleted after 7 days.
+            Defaults to 15.
+
+        not_cache(bool, optional): Not cache stream data when using
+            `analyse` function.
+            Isn't recommended to use since fetching live chat messages
+            takes quite a lot of time. The mere use-case is if the data
+            will be used only for once. Even so, the cache can be deleted
+            later with the `clear_cache` function. Defaults to False.
+
+        keep_cache (bool, optional): Do not delete any of the 
+            cached files, anytime. Isn't recommended to use since
+            lots of cached data might take up unnecessary space
+            if not handled. If set to False, cached data will be
+            deleted occasionally according to the chosen algorithm.
+            See `cache_deletion_algorithm` for more info.
+            Defaults to False.
+
+        cache_deletion_algorithm (str, optional): Algorithm to delete
+            cached files. Options are as follows:
+                - lru (Least recently used): Deletes least recently
+                    used cache. (recommended)
+                - mru (Most recently used): Deletes most recently
+                    used cache, which is the current sessions cache.
+                - fifo (First in first out): Deletes oldest cache.
+                - rr (Random replacement): Deletes random cache. (uhh...)
+            Defaults to 'lru'.
+        
+        cache_limit (int, optional): Cache file amount to keep. Cached
+            files will be deleted if file amount exceeds this value
+            according to `cache_deletion_algorithm` option. Defaults to 20.
     """
 
     def __init__(
-            self, sid, msglimit=None, disable_logs = False, thumb_res_lvl = 2,
-            verbose=False
+            self, sid, msglimit=None, verbose=False, thumb_res_lvl = 2,
+            disable_logs = False, keep_logs=False, log_duration=15,
+            not_cache=False, keep_cache=False, cache_deletion_algorithm='lru',
+            cache_limit = 20
         ):
 
         self.sid = sid
         self.msglimit = msglimit
-        self.disable_logs = disable_logs
-        self.thumb_res_lvl = thumb_res_lvl
         self.verbose = verbose
+        self.thumb_res_lvl = thumb_res_lvl
+        self.disable_logs = disable_logs
+        self.not_cache = not_cache
+        self.keep_cache = keep_cache
+        self.cache_limit = cache_limit
 
         self._raw_messages = {}
         self.messages = []
@@ -57,8 +114,21 @@ class StreamAnalyser():
         if disable_logs:
             self._disable_logs()
 
+        if not keep_logs:
+            self.filehandler.delete_old_files(
+                self.filehandler.log_path, log_duration
+            )
         self.logger.info("Session start ==================================")
         self.filehandler.create_cache_dir(self.sid)
+        famount = self.filehandler.dir_amount(
+            self.filehandler.cache_path
+        )
+        if famount > cache_limit:
+            self.logger.warning(f"Cache limit has been exceeded by {famount-cache_limit}")
+        while famount > cache_limit:
+            self.clear_cache(cache_deletion_algorithm)
+            famount -= 1
+
 
     def __enter__(self):
         return self
@@ -82,8 +152,8 @@ class StreamAnalyser():
     def _cache_thumbnail(self, thumbnail_url):
         self.filehandler.download_thumbnail(thumbnail_url)
 
-    def clear_cache(self):
-        self.filehandler.clear_cache()
+    def clear_cache(self, cache_deletion_algorithm=None):
+        self.filehandler.clear_cache(cache_deletion_algorithm)
 
     def collect_data(self):
         """ Collects and caches stream data:
@@ -139,13 +209,15 @@ class StreamAnalyser():
         self.read_data()
         self.refine_data()
         self.analyse_data()
+        if self.not_cache:
+            self.clear_cache()
 
     def _check_integrity(self, autofix=False) -> Tuple[list, list]:
         return self.filehandler.check_integrity(autofix=autofix)
 
     @property
     def is_cached(self):
-        return not any(self._check_integrity(self))
+        return not any(self._check_integrity())
 
     def enforce_integrity(self):
         """ Enforces file integrity by recollecting missing
@@ -321,7 +393,7 @@ class StreamAnalyser():
 
     @property
     def total_message_amount(self):
-        return len(self.messages) 
+        return len(self.messages)
 
     def export_data(self, folder_name=None, path=None, open_folder=False):
         """ Exports the analysed data to the path.

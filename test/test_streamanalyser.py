@@ -12,12 +12,12 @@ class TestStreamAnalyser(unittest.TestCase):
    
    def tearDown(self):
       # clear caches of used id's
-      for testid in ['um196SMIoR8', 'vFWfaqZl3WQ', 'testid']:
-         with sa.StreamAnalyser(testid, 0, True) as analyser:
+      for id in ['testid','um196SMIoR8']: 
+         with sa.StreamAnalyser(id, 0, disable_logs=True) as analyser:
             analyser.clear_cache()
 
    def test_cache_messages(self):
-      with sa.StreamAnalyser('testid', 1, True) as analyser:
+      with sa.StreamAnalyser('testid', 1, disable_logs=True) as analyser:
          analyser._cache_messages([{}])
          self.assertTrue(os.path.isfile(
             os.path.join(
@@ -26,7 +26,7 @@ class TestStreamAnalyser(unittest.TestCase):
          )))
 
    def test_cache_metadata(self):
-      with sa.StreamAnalyser('testid', 1, True) as analyser:
+      with sa.StreamAnalyser('testid', 1, disable_logs=True) as analyser:
          analyser._cache_metadata({})
 
          self.assertTrue(os.path.isfile(
@@ -36,7 +36,7 @@ class TestStreamAnalyser(unittest.TestCase):
          )))
 
    def test_cache_thumbnail(self):
-      with sa.StreamAnalyser('vFWfaqZl3WQ', 0, True) as analyser:
+      with sa.StreamAnalyser('um196SMIoR8', 0, disable_logs=True) as analyser:
          analyser._cache_thumbnail(
             analyser.collector.get_thumbnail_url(0)
          )
@@ -48,7 +48,7 @@ class TestStreamAnalyser(unittest.TestCase):
          )))
 
    def test_collect_read_data(self):
-      with sa.StreamAnalyser('um196SMIoR8', 1, True) as analyser:
+      with sa.StreamAnalyser('um196SMIoR8', 1, disable_logs=True) as analyser:
          analyser.collect_data()
          analyser.read_data()
          self.assertTrue(
@@ -62,7 +62,7 @@ class TestStreamAnalyser(unittest.TestCase):
          )
 
    def test_refine_data(self):
-      with sa.StreamAnalyser('um196SMIoR8', 1, True) as analyser:
+      with sa.StreamAnalyser('um196SMIoR8', 1, disable_logs=True) as analyser:
          analyser._raw_messages = sample_raw_messages
          analyser.refine_data()
          self.assertEqual(
@@ -75,7 +75,7 @@ class TestStreamAnalyser(unittest.TestCase):
          )
 
    def test_analyse_data(self):
-      with sa.StreamAnalyser('um196SMIoR8', 1, True) as analyser:
+      with sa.StreamAnalyser('um196SMIoR8', 1, disable_logs=True) as analyser:
          analyser.messages = analyser.refiner.refine_raw_messages(
             sample_raw_messages
          )
@@ -89,7 +89,7 @@ class TestStreamAnalyser(unittest.TestCase):
          )
 
    def test_generate_wordcloud(self):
-      with sa.StreamAnalyser('um196SMIoR8', 1, True) as analyser:
+      with sa.StreamAnalyser('um196SMIoR8', 1, disable_logs=True) as analyser:
          analyser.messages = analyser.refiner.refine_raw_messages(
             sample_raw_messages
          )
@@ -98,7 +98,7 @@ class TestStreamAnalyser(unittest.TestCase):
          )
 
    def test_find_messages(self):
-      with sa.StreamAnalyser('um196SMIoR8', 1, True) as analyser:
+      with sa.StreamAnalyser('um196SMIoR8', 1, disable_logs=True) as analyser:
          analyser.messages = analyser.refiner.refine_raw_messages(
             sample_raw_messages
          )
@@ -122,7 +122,7 @@ class TestStreamAnalyser(unittest.TestCase):
          )
 
    def test_find_user_messages(self):
-      with sa.StreamAnalyser('um196SMIoR8', 1, True) as analyser:
+      with sa.StreamAnalyser('um196SMIoR8', 1, disable_logs=True) as analyser:
          analyser.messages = analyser.refiner.refine_raw_messages(
             sample_raw_messages
          )
@@ -136,7 +136,7 @@ class TestStreamAnalyser(unittest.TestCase):
          )
 
    def test_most_used_phrase(self):
-      with sa.StreamAnalyser('um196SMIoR8', 1, True) as analyser:
+      with sa.StreamAnalyser('um196SMIoR8', 1, disable_logs=True) as analyser:
          analyser.messages = analyser.refiner.refine_raw_messages(
             sample_raw_messages
          )
@@ -170,7 +170,7 @@ class TestStreamAnalyser(unittest.TestCase):
          )
 
    def test_analyse(self):
-      with sa.StreamAnalyser('um196SMIoR8', 100, True) as analyser:
+      with sa.StreamAnalyser('um196SMIoR8', 100, disable_logs=True) as analyser:
          analyser.analyse()
          self.assertEqual(
             analyser.highlights[0].contexts,
@@ -178,7 +178,7 @@ class TestStreamAnalyser(unittest.TestCase):
          )
 
    def test_check_integrity(self):
-      with sa.StreamAnalyser('um196SMIoR8', 1, True) as analyser:
+      with sa.StreamAnalyser('um196SMIoR8', 1, disable_logs=True) as analyser:
          analyser.collect_data()
 
          # intentionally delete metadata file
@@ -233,7 +233,7 @@ class TestStreamAnalyser(unittest.TestCase):
          )
 
    def test_enforce_integrity(self):
-      with sa.StreamAnalyser('um196SMIoR8', 1, True) as analyser:
+      with sa.StreamAnalyser('um196SMIoR8', 1, disable_logs=True) as analyser:
          analyser.collect_data()
 
          # intentionally delete cache files
@@ -254,7 +254,7 @@ class TestStreamAnalyser(unittest.TestCase):
          self.assertEqual(unnecessary_files, [])
 
    def test_export(self):
-      with sa.StreamAnalyser('um196SMIoR8', 1, True) as analyser:
+      with sa.StreamAnalyser('um196SMIoR8', 1, disable_logs=True) as analyser:
          msg_path = os.path.join(
             analyser.filehandler.sid_path,
             analyser.filehandler.message_fname+".gz"
@@ -298,8 +298,62 @@ class TestStreamAnalyser(unittest.TestCase):
             self.assertTrue(item in fnames)
 
          shutil.rmtree(test_export_folder)
-         analyser.clear_cache()
 
+#   def test_cache_options(self):
+#      with sa.StreamAnalyser("testid", 0, cache_limit=10,
+#         disable_logs=False) as analyser:
+#         # create dummy files in the cache folder
+#         # and pass cache limit intentionally
+#         msg_path = os.path.join(
+#               analyser.filehandler.cache_path,
+#               "testid",
+#               analyser.filehandler.message_fname+".gz"
+#            )
+#         with open(msg_path, 'w'):
+#            pass
+#         for i in range(analyser.cache_limit):
+#            analyser.filehandler.create_dir_if_not_exists(
+#               os.path.join(
+#                  analyser.filehandler.cache_path,
+#                  "testid"+str(i),
+#               )
+#            )
+#            msg_path = os.path.join(
+#               analyser.filehandler.cache_path,
+#               "testid"+str(i),
+#               analyser.filehandler.message_fname+".gz"
+#            )
+#            with open(msg_path, 'w'):
+#               pass
+#
+#      with sa.StreamAnalyser('testid', 0, disable_logs=False,
+#         cache_limit=10, cache_deletion_algorithm='mru') as analyser:
+#         # most recently created folder must have been deleted
+#         self.assertFalse(
+#            os.path.exists(os.path.join(
+#               analyser.filehandler.cache_path,
+#               "testid"+str(analyser.cache_limit-1)
+#            ))
+#         )
+#      
+#      with sa.StreamAnalyser('testid', 0, disable_logs=False,
+#         cache_limit=9, cache_deletion_algorithm='fifo') as analyser:
+#         # least recently created folder must have been deleted
+#         self.assertFalse(
+#            os.path.exists(
+#               os.path.join(analyser.filehandler.cache_path,"testid0")
+#            )
+#         )
+#
+#      with sa.StreamAnalyser('testid', 0, disable_logs=False,
+#         cache_limit=8, cache_deletion_algorithm='lru') as analyser:
+#         # least recently created folder must have been deleted
+#         self.assertFalse(
+#            os.path.exists(os.path.join(
+#               analyser.filehandler.cache_path,
+#               "testid1"
+#            ))
+#         )
 
 sample_raw_messages = [
    {'author': {'id': 'UCX07ffYvacTkgo89MjNpweg', 'name': 'RathalosRE'},
