@@ -1,7 +1,3 @@
-from .loggersetup import create_logger
-
-logger = create_logger(__file__)
-
 percentage = lambda current, out_of: round(int(current*100/out_of))
 
 def normalize(text) -> str:

@@ -6,7 +6,7 @@ from streamanalyser.modules.structures import (
    Intensity,
    Message,
    Author
-) 
+)
 from streamanalyser.modules.chatanalyser import (
    ChatAnalyser,
    Fore

@@ -10,7 +10,7 @@ from colorama.ansi import Back, Style
 
 from wordcloud import WordCloud
 
-from .modules import (
+from modules import (
     loggersetup,
     filehandler,
     datacollector,
@@ -46,30 +46,30 @@ class StreamAnalyser():
 
         log_duration (int, optional): Log duration in days. Logs that are
             older than this value will be deleted if `keep_logs` option is
-            False. Cache of the week can only be deleted after 7 days.
+            False. Cache of the current week can only be deleted after 7 days.
             Defaults to 15.
 
         not_cache(bool, optional): Not cache stream data when using
-            `analyse` function.
-            Isn't recommended to use since fetching live chat messages
-            takes quite a lot of time. The mere use-case is if the data
-            will be used only for once. Even so, the cache can be deleted
-            later with the `clear_cache` function. Defaults to False.
+            `analyse` function. Isn't recommended to use since fetching
+            live chat messages takes quite a lot of time. The mere use-case
+            is if the data will be used only for once. Even so, the cache
+            can be deleted later on with the `clear_cache` function. Defaults
+            to False.
 
-        keep_cache (bool, optional): Do not delete any of the 
-            cached files, anytime. Isn't recommended to use since
-            lots of cached data might take up unnecessary space
-            if not handled. If set to False, cached data will be
-            deleted occasionally according to the chosen algorithm.
-            See `cache_deletion_algorithm` for more info.
-            Defaults to False.
+        keep_cache (bool, optional): Do not delete any of the cached
+            files, anytime (except the current session's cache if
+            `not_cache` is True). Isn't recommended to use since lots
+            of cached data might take up unnecessary space if not
+            handled. If set to False, cached data will be deleted
+            occasionally according to the chosen algorithm. See
+            `cache_deletion_algorithm` for more info. Defaults to False.
 
         cache_deletion_algorithm (str, optional): Algorithm to delete
             cached files. Options are as follows:
                 - lru (Least recently used): Deletes least recently
                     used cache. (recommended)
                 - mru (Most recently used): Deletes most recently
-                    used cache, which is the current sessions cache.
+                    used cache.
                 - fifo (First in first out): Deletes oldest cache.
                 - rr (Random replacement): Deletes random cache. (uhh...)
             Defaults to 'lru'.
@@ -80,10 +80,10 @@ class StreamAnalyser():
     """
 
     def __init__(
-            self, sid, msglimit=None, verbose=False, thumb_res_lvl = 2,
-            disable_logs = False, keep_logs=False, log_duration=15,
+            self, sid, msglimit=None, verbose=False, thumb_res_lvl=2,
+            disable_logs=False, keep_logs=False, log_duration=15,
             not_cache=False, keep_cache=False, cache_deletion_algorithm='lru',
-            cache_limit = 20
+            cache_limit=20
         ):
 
         self.sid = sid
@@ -120,14 +120,16 @@ class StreamAnalyser():
             )
         self.logger.info("Session start ==================================")
         self.filehandler.create_cache_dir(self.sid)
-        famount = self.filehandler.dir_amount(
-            self.filehandler.cache_path
-        )
-        if famount > cache_limit:
-            self.logger.warning(f"Cache limit has been exceeded by {famount-cache_limit}")
-        while famount > cache_limit:
-            self.clear_cache(cache_deletion_algorithm)
-            famount -= 1
+
+        if not keep_cache:
+            famount = self.filehandler.dir_amount(
+                self.filehandler.cache_path
+            )
+            if famount > cache_limit:
+                self.logger.warning(f"Cache limit has been exceeded by {famount-cache_limit}")
+            while famount > cache_limit:
+                self.clear_cache(cache_deletion_algorithm)
+                famount -= 1
 
 
     def __enter__(self):

@@ -60,6 +60,7 @@ def parseargs():
     return parser.parse_args()
 
 def main():
+    #TODO reimplement
     args = parseargs()
     analyser = sa.StreamAnalyser(
         args.id,
