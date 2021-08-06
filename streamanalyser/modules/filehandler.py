@@ -135,6 +135,10 @@ class FileHandler():
             raise RuntimeError(f"Could not cache metadata: {e.__class__.__name__}:{e}")
 
     def cache_thumbnail(self, url):
+        """ Alias for `download_thumbnail` """
+        self.download_thumbnail(url)
+
+    def download_thumbnail(self, url):
         fpath = os.path.join(self.sid_path, self.thumbnail_fname)
         self.logger.info("Downloading thumbnail")
         try:
@@ -144,10 +148,6 @@ class FileHandler():
         except Exception as e:
             self.delete_file(fpath)
             raise RuntimeError(f"Could not download thumbnail: {e.__class__.__name__}:{e}")
-
-    def download_thumbnail(self, url):
-        """ Alias for cache_thumbnail """
-        self.cache_thumbnail(url)
 
     def read_messages(self):
         """ Reads cached messages.
@@ -467,6 +467,10 @@ class FileHandler():
                     break
             self.logger.debug(f"Random folder: {choice}")
             return choice
+
+    def show_cached_ids(self) -> str:
+        pass
+
 
 streamanalyser_filehandler = FileHandler(
     storage_path='C:\\Stream Analyser'

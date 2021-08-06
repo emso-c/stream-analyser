@@ -93,7 +93,6 @@ class Highlight():
     
     def open_in_browser(self, browser='chrome', browser_path=None):
         """ Open highlight in browser
-        
 
         Args:
             browser (str): Browser name to get default path.
@@ -113,7 +112,7 @@ class Highlight():
             webbrowser.get(browser_path).open(self.url)
             return
 
-        # TODO modify default path for other platforms
+        # TODO modify default path for other OS's
         if browser == "chrome":
             browser_path = r'C:/Program Files/Google/Chrome/Application/chrome.exe %s'
         elif browser == "edge":
@@ -128,4 +127,3 @@ class Highlight():
     @property
     def time_in_hms(self):
         return datetime.timedelta(seconds=int(self.time))
-        

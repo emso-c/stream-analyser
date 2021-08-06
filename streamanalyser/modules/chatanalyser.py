@@ -34,7 +34,7 @@ DEFAULT_FONT_PATH = os.path.join(
 
 class ChatAnalyser:
     """ A class to analyse live chat messages 
-    
+
     Args:
         refined_messages (list[Message]): List of messages of the stream refined by
             the DataRefiner class.
@@ -43,7 +43,7 @@ class ChatAnalyser:
 
         min_duration (int): Minimum highlight duration (in seconds) to detect. Defaults to 5
 
-        window (int, optional):  Time interval to calculate averages. Defaults to 30.
+        window (int, optional):  Time interval to calculate moving averages. Defaults to 30.
 
         threshold_constant(int, optional): The value that divides average highlight duration. 
             Defaults to 3.
@@ -51,7 +51,7 @@ class ChatAnalyser:
         keyword_limit(int, optional): Keyword amount to retrieve. Defaults to 4.
 
         keyword_filters(list, optional): Keywords to filter. Defaults to [].
-        
+
         context_path(str, optional): Path to context file. Defaults to CONTEXT_PATH.
 
         verbose (bool, optional): Make the output verbose. Defaults to False.
@@ -79,7 +79,7 @@ class ChatAnalyser:
         self.context_path = context_path
         self.verbose = verbose
         self.logger = create_logger(__file__)
-        
+
         if not self.window > 1:
             self.logger.error('Interval must be bigger than one')
             raise ValueError('Interval must be bigger than one')
@@ -270,12 +270,12 @@ class ChatAnalyser:
             if start_time and self.highlight_annotation[current_time] != 1:
                 duration = current_time - start_time
                 if duration < self.min_duration:
-                    self.logger.debug(f"Highlight @{start_time} not added, duration was {duration}")
+                    self.logger.debug(f"Highlight @{start_time} was not added, duration was {duration}")
                     start_time = 0
                     continue
                 delta = self.smooth_avg[current_time] - initial_frequency
                 if delta < 0:
-                    self.logger.debug(f"Highlight @{start_time} not added, delta was {delta}")
+                    self.logger.debug(f"Highlight @{start_time} was not added, delta was {delta}")
                     start_time = 0
                     continue
                 self.highlights.append(Highlight(self.stream_id, start_time, duration, fdelta=delta))
@@ -290,7 +290,7 @@ class ChatAnalyser:
 
         # TODO consider highlight value 
         self.logger.info("Correcting highlights")
-        
+
         if not self.highlights:
             return []
 
@@ -372,8 +372,8 @@ class ChatAnalyser:
                         if utils.normalize(word):
                             #self.logger.debug(f"\t\t{word} normalised: {utils.normalize(word)}")
                             words.append(utils.normalize(word))
-            
-        
+
+
             for filter in self.keyword_filters:
                 try:
                     while True:

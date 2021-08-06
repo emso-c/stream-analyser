@@ -77,13 +77,27 @@ class StreamAnalyser():
         cache_limit (int, optional): Cache file amount to keep. Cached
             files will be deleted if file amount exceeds this value
             according to `cache_deletion_algorithm` option. Defaults to 20.
+
+        min_duration (int): Minimum highlight duration (in seconds) to detect. 
+            Defaults to 5
+
+        window (int, optional): Time interval to calculate moving averages.
+            Defaults to 30.
+
+        threshold_constant(int, optional): The value that divides average
+            highlight duration. Defaults to 3.
+
+        keyword_limit(int, optional): Keyword amount to retrieve. Defaults to 4.
+
+        keyword_filters(list, optional): Keywords to filter. Defaults to [].
     """
 
     def __init__(
             self, sid, msglimit=None, verbose=False, thumb_res_lvl=2,
             disable_logs=False, keep_logs=False, log_duration=15,
             not_cache=False, keep_cache=False, cache_deletion_algorithm='lru',
-            cache_limit=20
+            cache_limit=20, min_duration=5, window=30, threshold_constant=3,
+            keyword_limit=4, keyword_filters=[], 
         ):
 
         self.sid = sid
@@ -94,15 +108,21 @@ class StreamAnalyser():
         self.not_cache = not_cache
         self.keep_cache = keep_cache
         self.cache_limit = cache_limit
+        self.min_duration = min_duration
+        self.window = window
+        self.threshold_constant = threshold_constant
+        self.keyword_limit = keyword_limit
+        self.keyword_filters = keyword_filters
 
         self._raw_messages = {}
         self.messages = []
         self.authors = []
         self.highlights = []
-        self.context_path = chatanalyser.CONTEXT_PATH
-        self.metadata = {}
         self.wordcloud = None
         self.fig = None
+        self.context_path = chatanalyser.CONTEXT_PATH
+        self.metadata = {}
+
         self.logger = loggersetup.create_logger(__file__, sid=sid)
         self.filehandler = filehandler.streamanalyser_filehandler
         self.collector = datacollector.DataCollector(
@@ -130,7 +150,6 @@ class StreamAnalyser():
             while famount > cache_limit:
                 self.clear_cache(cache_deletion_algorithm)
                 famount -= 1
-
 
     def __enter__(self):
         return self
@@ -196,7 +215,12 @@ class StreamAnalyser():
             refined_messages = self.messages,
             stream_id = self.sid,
             context_path = self.context_path,
-            verbose = self.verbose
+            verbose = self.verbose,
+            keyword_filters = self.keyword_filters,
+            keyword_limit = self.keyword_limit,
+            min_duration = self.min_duration,
+            threshold_constant = self.threshold_constant,
+            window = self.window,
         )
         if self.disable_logs:
             canalyser.logger.disabled = True
@@ -377,21 +401,21 @@ class StreamAnalyser():
         if isinstance(exclude, str):
             exclude = list(exclude)
         
-        _words = []
+        words = []
         for message in self.messages:
-            _words.extend(message.text.split(' '))
+            words.extend(message.text.split(' '))
 
         if normalize:
-            _words = [utils.normalize(word) for word in _words]
+            words = [utils.normalize(word) for word in words]
         
-        _idx = 0
-        while exclude and Counter(_words).most_common(1+_idx)[_idx][0] in exclude:
-            _idx+=1
-            if _idx == len(_words)-1:
-                return Counter(_words).most_common(1+_idx)[_idx]
+        idx = 0
+        while exclude and Counter(words).most_common(1+idx)[idx][0] in exclude:
+            idx+=1
+            if idx == len(words)-1:
+                return Counter(words).most_common(1+idx)[idx]
 
-        self.logger.debug(f"Most used phrase: {Counter(_words).most_common(1+_idx)[_idx]}")
-        return Counter(_words).most_common(1+_idx)[_idx]
+        self.logger.debug(f"Most used phrase: {Counter(words).most_common(1+idx)[idx]}")
+        return Counter(words).most_common(1+idx)[idx]
 
     @property
     def total_message_amount(self):
@@ -479,8 +503,6 @@ class StreamAnalyser():
                 file.writelines([hl.colorless_str+'\n' for hl in self.highlights])
             self.logger.info("Exported highlights")
 
-        #TODO fix empty export
-        #TODO export graph
         if self.fig:
             self.fig.savefig(os.path.join(target_path, 'graph.png'))
             self.logger.info("Exported graph")
@@ -529,8 +551,9 @@ class StreamAnalyser():
 
         return highlights_to_return
 
+    #TODO refactor print methods 
     def print_highlights(self, top=None, include=[], 
-                not_include=[], intensity_filters=[]) -> list[structures.Highlight]:
+                exclude=[], intensity_filters=[]) -> list[structures.Highlight]:
         """ Prints found highlights.
 
         Args:
@@ -538,7 +561,7 @@ class StreamAnalyser():
                 Defaults to None, which returns all.
             include (list[str], optional): List of reactions to see. Defaults to [].
                 Reaction names can be found in `context.json`.
-            not_include (list[str], optional): List of reactions to not see. 
+            exclude (list[str], optional): List of reactions to not see. 
                 Overrides include. Defaults to [].
                 Reaction names can be found in `context.json`.
             intensity_filters (list[str]): Intensity levels to filter out. Defaults to [].
@@ -550,7 +573,14 @@ class StreamAnalyser():
 
         self.logger.info("Printing highlights")
         self.logger.debug(f"{top=}")
+        self.logger.debug(f"{include=}")
+        self.logger.debug(f"{exclude=}")
         self.logger.debug(f"{intensity_filters=}")
+
+        if isinstance(exclude, str):
+            exclude = list(exclude)
+        # ....
+
         if top and top < 0:
             self.logger.error("Top value cannot be negative")
             raise ValueError("Top value cannot be negative.")
@@ -566,7 +596,7 @@ class StreamAnalyser():
         for highlight in highlights:
             skip = False
             for context in highlight.contexts:
-                if not_include and context in not_include:
+                if exclude and context in exclude:
                     skip = True
                     break
             if skip:
