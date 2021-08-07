@@ -5,10 +5,10 @@ from streamanalyser.modules.loggersetup import create_logger, get_logname
 
 class TestLoggerSetup(unittest.TestCase):
    def test_createlogger(self):
-      testlogpath = os.path.join('C:\\Stream Analyser\\Logs\\test.log')
+      testlogpath = os.path.join('C:\\Stream Analyser\\Logs\\_test.log')
       logger = create_logger(
          __file__,
-         fname='test.log',
+         fname='_test.log',
          sid=None,
          format='%(module)s:%(levelname)s:%(message)s',
          mode='w',

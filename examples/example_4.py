@@ -9,8 +9,5 @@ if __name__ == "__main__":
 
     with analyser:
         analyser.analyse()
-
-        highlights = analyser.print_highlights(top=1)
-        for highlight in highlights:
-            highlight.open_in_browser("chrome")
+        analyser.get_highlights(top=1)[0].open_in_browser("chrome")
         

@@ -49,6 +49,12 @@ class StreamAnalyser():
             False. Cache of the current week can only be deleted after 7 days.
             Defaults to 15.
 
+        storage_path (str, optional): Folder to store files related to this
+            module. Defaults to "C:\\Stream Analyser"
+
+        reset (bool, optional): Clear existing cache when initializing the object.
+            Defaults to False
+
         not_cache(bool, optional): Not cache stream data when using
             `analyse` function. Isn't recommended to use since fetching
             live chat messages takes quite a lot of time. The mere use-case
@@ -94,7 +100,7 @@ class StreamAnalyser():
 
     def __init__(
             self, sid, msglimit=None, verbose=False, thumb_res_lvl=2,
-            disable_logs=False, keep_logs=False, log_duration=15,
+            disable_logs=False, keep_logs=False, log_duration=15, reset=False,
             not_cache=False, keep_cache=False, cache_deletion_algorithm='lru',
             cache_limit=20, min_duration=5, window=30, threshold_constant=3,
             keyword_limit=4, keyword_filters=[], 
@@ -140,11 +146,15 @@ class StreamAnalyser():
             )
         self.logger.info("Session start ==================================")
         self.filehandler.create_cache_dir(self.sid)
+        if reset:
+            self.clear_cache(delete_root_folder=False)
 
         if not keep_cache:
             famount = self.filehandler.dir_amount(
                 self.filehandler.cache_path
             )
+            if cache_limit < 1:
+                raise ValueError("Cache limit must be a natural number")
             if famount > cache_limit:
                 self.logger.warning(f"Cache limit has been exceeded by {famount-cache_limit}")
             while famount > cache_limit:
@@ -157,6 +167,8 @@ class StreamAnalyser():
     def __exit__(self, exc_type, exc_value, tb):
         if exc_type is not None:
             traceback.print_exception(exc_type, exc_value, tb)
+        if self.not_cache:
+            self.clear_cache()
 
     def _disable_logs(self):
         self.logger.disabled = True
@@ -173,8 +185,8 @@ class StreamAnalyser():
     def _cache_thumbnail(self, thumbnail_url):
         self.filehandler.download_thumbnail(thumbnail_url)
 
-    def clear_cache(self, cache_deletion_algorithm=None):
-        self.filehandler.clear_cache(cache_deletion_algorithm)
+    def clear_cache(self, cache_deletion_algorithm=None, delete_root_folder=True):
+        self.filehandler.clear_cache(cache_deletion_algorithm, delete_root_folder)
 
     def collect_data(self):
         """ Collects and caches stream data:
@@ -210,7 +222,6 @@ class StreamAnalyser():
 
     def analyse_data(self):
         """ Analyses refined data and finds highligths """
-        #TODO Add other arguments too
         canalyser = chatanalyser.ChatAnalyser(
             refined_messages = self.messages,
             stream_id = self.sid,
@@ -235,15 +246,13 @@ class StreamAnalyser():
         self.read_data()
         self.refine_data()
         self.analyse_data()
-        if self.not_cache:
-            self.clear_cache()
 
     def _check_integrity(self, autofix=False) -> Tuple[list, list]:
         return self.filehandler.check_integrity(autofix=autofix)
 
     @property
     def is_cached(self):
-        return not any(self._check_integrity())
+        return self.filehandler.is_cached()
 
     def enforce_integrity(self):
         """ Enforces file integrity by recollecting missing
@@ -514,85 +523,63 @@ class StreamAnalyser():
             except FileNotFoundError:
                 self.logger.error(f"Couldn't find {target_path}")
 
-    def print_summary(self, top=None, intensity_filters=[]) -> list[structures.Highlight]:
-        """ Only prints time and intensity of the highlights.
+    def get_highlights(self, top=None, output_mode=None, include=[],
+                       exclude=[], intensity_filters=[]) -> list[structures.Highlight]:
+        """ A method to return filtered highlights.
 
         Args:
             top (int, optional): Top n highlights to print, sorted by intensity. 
                 Defaults to None, which returns all.
-            intensity_filters (list[str]): Intensity levels to filter out. Defaults to [].
 
-        Returns:
-            list[Highlight]: list of printed highlights
-        """
-        
-        self.logger.info("Printing summary")
-        self.logger.debug(f"{top=}")
-        self.logger.debug(f"{intensity_filters=}")
-        if top and top < 0:
-            self.logger.error("Top value cannot be negative")
-            raise ValueError("Top value cannot be negative.")
+            output_mode (str, optional): Mode to print output of the highlights on
+                the console. Options are:
+                    - 'detailed': Show details of the highlights.
+                    - 'summary': Show only time and intensity of the highlights
+                    - 'url': Show only time and url of the highlights
+                    - None: No output.
+                Defaults to None.
 
-        highlights_to_return = []
-        if top:
-            highlights = sorted(self.highlights, key=lambda x: x.fdelta, reverse=True)
-        else:
-            highlights = self.highlights
+            include (list[str]|str, optional): List of reactions to see. Defaults to [].
+                Reaction names can be found in `data\context.json`.
 
-        print('\n'+Back.RED+"Summary:"+Style.RESET_ALL)
-        for _count, highlight in enumerate(highlights):
-            if not highlight.intensity in intensity_filters:
-                print(f'{timedelta(seconds=int(highlight.time))}: {highlight.intensity.colored_level}')
-                highlights_to_return.append(highlight)
-                self.logger.debug(highlight.colorless_str)
-
-                if top and _count == top:
-                    return highlights_to_return
-
-        return highlights_to_return
-
-    #TODO refactor print methods 
-    def print_highlights(self, top=None, include=[], 
-                exclude=[], intensity_filters=[]) -> list[structures.Highlight]:
-        """ Prints found highlights.
-
-        Args:
-            top (int, optional): Top n highlights to print, sorted by intensity. 
-                Defaults to None, which returns all.
-            include (list[str], optional): List of reactions to see. Defaults to [].
-                Reaction names can be found in `context.json`.
-            exclude (list[str], optional): List of reactions to not see. 
+            exclude (list[str]|str, optional): List of reactions to not see. 
                 Overrides include. Defaults to [].
-                Reaction names can be found in `context.json`.
-            intensity_filters (list[str]): Intensity levels to filter out. Defaults to [].
+                Reaction names can be found in `data\context.json`.
+
+            intensity_filters (list[str]|str, optional): Intensity levels to filter out.
+                Defaults to [].
 
         Returns:
-            list[Highlight]: List of printed highlights
-
+            list[Highlight]: List of highlights
         """
 
         self.logger.info("Printing highlights")
         self.logger.debug(f"{top=}")
+        self.logger.debug(f"{output_mode=}")
         self.logger.debug(f"{include=}")
         self.logger.debug(f"{exclude=}")
         self.logger.debug(f"{intensity_filters=}")
 
+        if isinstance(include, str):
+            include = list(include)
         if isinstance(exclude, str):
             exclude = list(exclude)
-        # ....
+        if isinstance(intensity_filters, str):
+            intensity_filters = list(intensity_filters)
 
         if top and top < 0:
             self.logger.error("Top value cannot be negative")
             raise ValueError("Top value cannot be negative.")
 
-        _count = 0
+        count = 0
         highlights_to_return = []
         if top:
             highlights = sorted(self.highlights, key=lambda x: x.fdelta, reverse=True)
         else:
             highlights = self.highlights
 
-        print('\n'+Back.RED+"Highlights:"+Style.RESET_ALL)
+        if output_mode:
+            print('\n'+Back.RED+"Highlights:"+Style.RESET_ALL)
         for highlight in highlights:
             skip = False
             for context in highlight.contexts:
@@ -604,53 +591,31 @@ class StreamAnalyser():
             for context in highlight.contexts:
                 if (include and context in include) or not include:
                     if not highlight.intensity.level in intensity_filters:
-                        print(highlight)
+                        if output_mode == "detailed":
+                            print(highlight)
+                        elif output_mode == "summary":
+                            print("{}: {}".format(
+                                timedelta(seconds=int(highlight.time)),
+                                highlight.intensity.colored_level
+                            ))
+                        elif output_mode == "url":
+                            print(
+                                highlight.intensity.color+
+                                str(timedelta(seconds=int(highlight.time)))+
+                                Style.RESET_ALL, '->' ,highlight.url
+                            )
+                        elif output_mode is None:
+                            pass
+                        else:
+                            self.logger.error("Invalid output mode")
+                            raise ValueError(f'Invalid output mode: "{output_mode}"')
                         highlights_to_return.append(highlight)
                         self.logger.debug(highlight.colorless_str)
-                        _count+=1
-                        if top and _count == top:
+                        count+=1
+                        if top and count == top:
                             return highlights_to_return
                         break
         
-        return highlights_to_return
-
-    def print_urls(self, top=None, intensity_filters=[])  -> list[structures.Highlight]:
-        """ Prints urls of highlights (with timestamps)
-
-            args:
-                top (int, optional): Top n highlights to print, sorted by intensity.
-                    Defaults to None, which returns all.
-                intensity_filters (list[str]): Intensity levels to filter out.
-                    Defaults to [].
-
-            example:
-            >>> analyserObject.show_urls():
-            >>> "00:02:12 -> https://youtu.be/wAPCSnAhhC8?t=132"
-        """
-        
-        self.logger.info("Printing url's")
-        self.logger.debug(f"{top=}")
-        self.logger.debug(f"{intensity_filters=}")
-        if top and top < 0:
-            self.logger.error("Top value cannot be negative")
-            raise ValueError("Top value cannot be negative.")
-
-        highlights_to_return = []
-
-        if top:
-            highlights = sorted(self.highlights, key=lambda x: x.fdelta, reverse=True)
-        else:
-            highlights = self.highlights
-
-        print('\n'+Back.RED+"Links:"+Style.RESET_ALL)
-        for _count, hl in enumerate(highlights):
-            if not hl.intensity.level in intensity_filters:
-                print(hl.intensity.color+str(timedelta(seconds=int(hl.time)))+Style.RESET_ALL, '->' ,hl.url)
-                self.logger.debug(f"{str(timedelta(seconds=int(hl.time)))} -> {hl.url}")
-                highlights_to_return.append(hl)
-                if top and _count == top:
-                    return highlights_to_return
-
         return highlights_to_return
 
     def show_graph(self):

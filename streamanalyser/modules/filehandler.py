@@ -93,7 +93,7 @@ class FileHandler():
     def delete_file(self, path):
         try:
             os.remove(path)
-            self.logger.info(f'{path} removed')
+            self.logger.debug(f'{path} removed')
         except FileNotFoundError:
             self.logger.debug(f"{path} could not be found")
         except Exception:
@@ -193,7 +193,7 @@ class FileHandler():
             raise e
         self.logger.info(f'{jsonpath} decompressed')
 
-    def clear_cache(self, cache_deletion_algorithm=None):
+    def clear_cache(self, cache_deletion_algorithm=None, delete_root_folder=True):
         """ Clears cached files according to cache deletion
             algorithm. Default behavior is deleting the 
             cache of the current session.
@@ -201,24 +201,36 @@ class FileHandler():
         Args:
             cache_deletion_algorithm (str|None, optional): Algorithm to
                 delete cached files. Options are as follows:
-                    - lru (Least recently used): Deletes least recently
+                    - lru: Deletes least recently
                         used cache.
-                    - mru (Most recently used): Deletes most recently
+                    - mru: Deletes most recently
                         used cache.
-                    - fifo (First in first out): Deletes oldest cache.
-                    - rr (Random replacement): Deletes random cache. (uhh...)
+                    - fifo: Deletes oldest cache.
+                    - rr: Deletes random cache. (uhh...)
                 If set to None, deletes cache of the current session.
                 Defaults to None.
+            
+            delete_root_folder (bool, optional): Delete the folder itself too.
+                Otherwise only deletes contents in the folder. Defaults to True.
             
             current (bool, optional): Deletes cache of the current
                 session if True. Overrides `cache_deletion_algorithm`.
                 Defaults to False.
         """
+
+        self.logger.info("Clearing cache")
+        self.logger.debug(f"{cache_deletion_algorithm=}")
+        self.logger.debug(f"{delete_root_folder=}")
+
         if not cache_deletion_algorithm:
-            try:
-                shutil.rmtree(self.sid_path)
-            except Exception as e:
-                self.logger.error(e)
+            if self.sid_path:
+                try:
+                    shutil.rmtree(self.sid_path)
+                    self.logger.debug(f"Deleted '{self.sid_path}'")
+                    if not delete_root_folder:
+                        os.makedirs(self.sid_path)
+                except Exception as e:
+                    self.logger.error(e)
             return
 
         if cache_deletion_algorithm == 'mru':
@@ -244,12 +256,13 @@ class FileHandler():
             raise ValueError("Invalid deletion algorithm: {}".format(
                 cache_deletion_algorithm
             ))
- 
+
+        path = os.path.join(self.cache_path, dir_to_delete)
         try:
-            shutil.rmtree(os.path.join(
-                self.cache_path,
-                dir_to_delete
-            ))
+            shutil.rmtree(path)
+            self.logger.debug(f"Deleted '{self.sid_path}'")
+            if not delete_root_folder:
+                os.makedirs(path)
         except Exception as e:
             self.logger.error(e)
 
@@ -315,7 +328,6 @@ class FileHandler():
         except Exception as e:
             self.logger.error(e)
 
-    # TODO test these new functions
     def _creation_time_in_days(self, path) -> int:
         """ Returns difference between the creation time and
             the current time of the file in days """
@@ -348,19 +360,6 @@ class FileHandler():
         _, dirs, _ = next(os.walk(folder_path))
         self.logger.debug(f"Folder amount in {folder_path} is {len(dirs)}")
         return len(dirs)
-
-    def largest_folder(self, *args) -> str:
-        """ Finds folder which has the most amount
-            of files among a list of paths. """
-        
-        self.logger.debug(f"Finding largest folder")
-        
-        largest_folder = args[0]
-        for i in range(1, len(args)):
-            if self.file_amount(args[i]) > self.file_amount(largest_folder):
-                largest_folder = args[i]
-        self.logger.debug(f"Largest folder: {largest_folder}")
-        return largest_folder
 
     def least_recently_used_folder(self, fpath) -> str:
         """ Returns least recenty used folder in path
@@ -467,6 +466,26 @@ class FileHandler():
                     break
             self.logger.debug(f"Random folder: {choice}")
             return choice
+    
+    def is_cached(self, sid=None) -> bool:
+        """ Returns False if all necessary files are absent """
+
+        self.logger.info("Checking if cached")
+        self.logger.debug(f"{sid=}")
+
+        if sid:
+            path = os.path.join(self.cache_path, sid)
+        else:
+            path = self.sid_path
+        
+        files = self.get_filenames(path, show_extension=True)
+        necessary_files = [self.message_fname+".gz",
+                           self.metadata_fname,
+                           self.thumbnail_fname]
+        missing_files = list(set(necessary_files) - set(files))
+
+        self.logger.debug(f"is_cached: {(not len(missing_files) == 3)}")
+        return not len(missing_files) == 3
 
     def show_cached_ids(self) -> str:
         pass
