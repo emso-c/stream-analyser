@@ -96,6 +96,16 @@ class StreamAnalyser():
         keyword_limit(int, optional): Keyword amount to retrieve. Defaults to 4.
 
         keyword_filters(list, optional): Keywords to filter. Defaults to [].
+
+        intensity_levels (list[str], optional): See `init_intensity` function in
+            `chat_analyser` module for information. Defaults to [].
+        
+        intensity_constants (list[str], optional): See `init_intensity` function in
+            `chat_analyser` module for information. Defaults to [].
+
+        intensity_colors (list[str], optional): See `init_intensity` function in
+            `chat_analyser` module for information. Defaults to [].
+
     """
 
     def __init__(
@@ -103,7 +113,8 @@ class StreamAnalyser():
             disable_logs=False, keep_logs=False, log_duration=15, reset=False,
             not_cache=False, keep_cache=False, cache_deletion_algorithm='lru',
             cache_limit=20, min_duration=5, window=30, threshold_constant=3,
-            keyword_limit=4, keyword_filters=[], 
+            keyword_limit=4, keyword_filters=[], intensity_levels = [],
+            intensity_constants = [], intensity_colors = [],
         ):
 
         self.sid = sid
@@ -119,6 +130,9 @@ class StreamAnalyser():
         self.threshold_constant = threshold_constant
         self.keyword_limit = keyword_limit
         self.keyword_filters = keyword_filters
+        self.intensity_levels = intensity_levels
+        self.intensity_constants = intensity_constants
+        self.intensity_colors = intensity_colors
 
         self._raw_messages = {}
         self.messages = []
@@ -235,7 +249,13 @@ class StreamAnalyser():
         )
         if self.disable_logs:
             canalyser.logger.disabled = True
-        canalyser.analyse(graph_title=self.metadata["title"])
+        
+        canalyser.analyse(
+            graph_title=self.metadata["title"],
+            levels=self.intensity_levels,
+            constants=self.intensity_constants,
+            colors=self.intensity_colors,
+        )
         self.highlights = canalyser.highlights
         self.fig = canalyser.fig
 
@@ -267,12 +287,12 @@ class StreamAnalyser():
                 self.filehandler.cache_messages(
                     self.collector.fetch_raw_messages()
                 )
-            if missing_file == self.filehandler.metadata_fname:
+            elif missing_file == self.filehandler.metadata_fname:
                 self.logger.warning("Metadata file is missing")
                 self.filehandler.cache_metadata(
                     self.collector.collect_metadata()
                 )
-            if missing_file == self.filehandler.thumbnail_fname:
+            elif missing_file == self.filehandler.thumbnail_fname:
                 self.logger.warning("Thumbnail file is missing")
                 self.filehandler.download_thumbnail(
                     self.collector.get_thumbnail_url(
@@ -291,7 +311,7 @@ class StreamAnalyser():
                 Might want to decrease it for more performance. Defaults to 3.
         """
 
-        #TODO Stylize the wordcloud
+        #TODO stylize the wordcloud
 
         self.logger.info("Generating word cloud")
         self.logger.debug(f"{font_path=}")

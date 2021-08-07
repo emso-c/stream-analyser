@@ -101,8 +101,6 @@ class ChatAnalyser:
     def get_frequency(self) -> dict:
         """ Creates frequency table of messages """
 
-        #TODO frequencies = sorted(frequencies.items(), key=itemgetter(1), reverse=True)
-
         self.logger.info("Calculating frequency")
 
         # create frequency table
@@ -288,7 +286,7 @@ class ChatAnalyser:
     def correct_highlights(self) -> list[Highlight]:
         """ Corrects highlights by removing highlights that are too short or filtered """
 
-        # TODO consider highlight value 
+        # TODO consider highlight value
         self.logger.info("Correcting highlights")
 
         if not self.highlights:
@@ -483,10 +481,16 @@ class ChatAnalyser:
         self.fig = plt
         return plt
 
-    def analyse(self, graph_title=None):
+    def analyse(self, graph_title=None, levels=None, constants=None, colors=None):
         self.get_frequency()
         self.calculate_moving_average()
         self.smoothen_mov_avg()
         self.create_highlight_annotation()
-        self.get_highlights()
+        self.detect_highlight_times()
+        self.correct_highlights()
+        self.init_intensity(levels, constants, colors)
+        self.set_highlight_intensities()
+        self.get_highlight_messages()
+        self.get_highlight_keywords()
+        self.guess_context()
         self.draw_graph(graph_title)
