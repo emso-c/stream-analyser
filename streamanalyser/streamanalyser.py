@@ -467,6 +467,9 @@ class StreamAnalyser():
         self.logger.debug(f"{folder_name=}")
         self.logger.debug(f"{path=}")
 
+        if self.verbose:
+            print("Exporting data...", end='\r')
+
         if not path:
             path = self.filehandler.export_path
         
@@ -542,6 +545,9 @@ class StreamAnalyser():
                 self.logger.info(f"Opened {target_path} in file explorer")
             except FileNotFoundError:
                 self.logger.error(f"Couldn't find {target_path}")
+
+        if self.verbose:
+            print("Exporting data... done")
 
     def get_highlights(self, top=None, output_mode=None, include=[],
                        exclude=[], intensity_filters=[]) -> list[structures.Highlight]:
