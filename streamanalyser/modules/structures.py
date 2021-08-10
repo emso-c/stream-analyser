@@ -3,11 +3,12 @@ import datetime
 import webbrowser
 from colorama import init, Fore, Style
 from colorama.ansi import AnsiFore
+
 init()
 
 
 @dataclass
-class Author():
+class Author:
     id: str
     name: str
 
@@ -19,7 +20,7 @@ class Author():
 
 
 @dataclass
-class Message():
+class Message:
     id: str
     text: str
     time: int
@@ -32,15 +33,16 @@ class Message():
     @property
     def colorless_str(self):
         return f"[{self.time_in_hms}] {self.author.name}: {self.text}"
-    
+
     def __repr__(self):
         return f"[{self.time_in_hms}] {Fore.YELLOW+self.author.name+Style.RESET_ALL}: {self.text}"
-    
+
     def __hash__(self):
         return hash(self.id)
 
+
 @dataclass
-class Intensity():
+class Intensity:
     level: str
     constant: int
     color: AnsiFore
@@ -50,11 +52,11 @@ class Intensity():
 
     @property
     def colored_level(self):
-        return self.color+self.level+Style.RESET_ALL
+        return self.color + self.level + Style.RESET_ALL
 
 
 @dataclass
-class Highlight():
+class Highlight:
     stream_id: str
     time: int
     duration: int
@@ -67,43 +69,43 @@ class Highlight():
     def __repr__(self):
         return "[{0}] {1}: {2} ({3} messages, {4} intensity, {5:.3f} diff, {6}s duration)".format(
             self.time_in_hms,
-            Fore.LIGHTRED_EX+'/'.join(self.contexts)+Style.RESET_ALL,
-            ', '.join(self.keywords),
-            len(self.messages) if self.messages else 'No',
+            Fore.LIGHTRED_EX + "/".join(self.contexts) + Style.RESET_ALL,
+            ", ".join(self.keywords),
+            len(self.messages) if self.messages else "No",
             self.intensity.colored_level,
             self.fdelta,
-            self.duration
+            self.duration,
         )
 
     @property
     def colorless_str(self):
         return "[{0}] {1}: {2} ({3} messages, {4} intensity, {5:.3f} diff, {6}s duration)".format(
             self.time_in_hms,
-            '/'.join(self.contexts),
-            ', '.join(self.keywords),
-            len(self.messages) if self.messages else 'No',
+            "/".join(self.contexts),
+            ", ".join(self.keywords),
+            len(self.messages) if self.messages else "No",
             self.intensity.level,
             self.fdelta,
-            self.duration
+            self.duration,
         )
 
     @property
     def url(self):
-        return f'https://youtu.be/{self.stream_id}?t={self.time}'
-    
-    def open_in_browser(self, browser='chrome', browser_path=None):
-        """ Open highlight in browser
+        return f"https://youtu.be/{self.stream_id}?t={self.time}"
+
+    def open_in_browser(self, browser="chrome", browser_path=None):
+        """Open highlight in browser
 
         Args:
             browser (str): Browser name to get default path.
                 Current choices are:
-                    - chrome
-                    - edge
-                    - firefox
-                    - opera
+                - chrome
+                - edge
+                - firefox
+                - opera
                 Defaults to 'chrome'.
 
-            browser_path (str, optional): Path to executable 
+            browser_path (str, optional): Path to executable
                 browser file. Overrides browser argument.
                 Defaults to None.
         """
@@ -114,13 +116,15 @@ class Highlight():
 
         # TODO modify default path for other OS's
         if browser == "chrome":
-            browser_path = r'C:/Program Files/Google/Chrome/Application/chrome.exe %s'
+            browser_path = r"C:/Program Files/Google/Chrome/Application/chrome.exe %s"
         elif browser == "edge":
-            browser_path = r'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe %s'
+            browser_path = (
+                r"C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe %s"
+            )
         elif browser == "firefox":
-            browser_path = r'C:/Program Files/Mozilla Firefox/FireFox.exe %s'
+            browser_path = r"C:/Program Files/Mozilla Firefox/FireFox.exe %s"
         elif browser == "opera":
-            browser_path = r'C:/Program Files/Opera/Launcher.exe %s'
+            browser_path = r"C:/Program Files/Opera/Launcher.exe %s"
 
         webbrowser.get(browser_path).open(self.url)
 

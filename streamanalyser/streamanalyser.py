@@ -17,14 +17,15 @@ from modules import (
     datarefiner,
     chatanalyser,
     structures,
-    utils
+    utils,
 )
 
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 DEFAULT_FONT_PATH = os.path.join(DIR_PATH, "fonts", "NotoSansCJKjp-Bold.ttf")
 
-class StreamAnalyser():
-    """ A class that analyses live streams.
+
+class StreamAnalyser:
+    """A class that analyses live streams.
 
     Args:
         sid (str): Video id of the stream.
@@ -38,7 +39,7 @@ class StreamAnalyser():
         verbose (bool, optional): Print output to console. Defaults to False.
 
         disable_logs (bool, optional): Disable logging for debugging purposes.
-            Log files' location can be found in `filehandler` module. 
+            Log files' location can be found in `filehandler` module.
             Defaults to False.
 
         keep_logs (bool, optional): Do not delete logs. See `log_duration`
@@ -79,12 +80,12 @@ class StreamAnalyser():
                 - fifo (First in first out): Deletes oldest cache.
                 - rr (Random replacement): Deletes random cache. (uhh...)
             Defaults to 'lru'.
-        
+
         cache_limit (int, optional): Cache file amount to keep. Cached
             files will be deleted if file amount exceeds this value
-            according to `cache_deletion_algorithm` option. Defaults to 20.
+            according to `cache_deletion_algorithm` option. Defaults to 50.
 
-        min_duration (int): Minimum highlight duration (in seconds) to detect. 
+        min_duration (int): Minimum highlight duration (in seconds) to detect.
             Defaults to 5
 
         window (int, optional): Time interval to calculate moving averages.
@@ -99,7 +100,7 @@ class StreamAnalyser():
 
         intensity_levels (list[str], optional): See `init_intensity` function in
             `chat_analyser` module for information. Defaults to [].
-        
+
         intensity_constants (list[str], optional): See `init_intensity` function in
             `chat_analyser` module for information. Defaults to [].
 
@@ -109,13 +110,28 @@ class StreamAnalyser():
     """
 
     def __init__(
-            self, sid, msglimit=None, verbose=False, thumb_res_lvl=2,
-            disable_logs=False, keep_logs=False, log_duration=15, reset=False,
-            not_cache=False, keep_cache=False, cache_deletion_algorithm='lru',
-            cache_limit=20, min_duration=5, window=30, threshold_constant=3,
-            keyword_limit=4, keyword_filters=[], intensity_levels = [],
-            intensity_constants = [], intensity_colors = [],
-        ):
+        self,
+        sid,
+        msglimit=None,
+        verbose=False,
+        thumb_res_lvl=2,
+        disable_logs=False,
+        keep_logs=False,
+        log_duration=15,
+        reset=False,
+        not_cache=False,
+        keep_cache=False,
+        cache_deletion_algorithm="lru",
+        cache_limit=50,
+        min_duration=5,
+        window=30,
+        threshold_constant=3,
+        keyword_limit=4,
+        keyword_filters=[],
+        intensity_levels=[],
+        intensity_constants=[],
+        intensity_colors=[],
+    ):
 
         self.sid = sid
         self.msglimit = msglimit
@@ -145,9 +161,7 @@ class StreamAnalyser():
 
         self.logger = loggersetup.create_logger(__file__, sid=sid)
         self.filehandler = filehandler.streamanalyser_filehandler
-        self.collector = datacollector.DataCollector(
-            sid, msglimit, verbose
-        )
+        self.collector = datacollector.DataCollector(sid, msglimit, verbose)
         self.refiner = datarefiner.DataRefiner(self.verbose)
         self.canalyser = None
 
@@ -155,22 +169,20 @@ class StreamAnalyser():
             self._disable_logs()
 
         if not keep_logs:
-            self.filehandler.delete_old_files(
-                self.filehandler.log_path, log_duration
-            )
+            self.filehandler.delete_old_files(self.filehandler.log_path, log_duration)
         self.logger.info("Session start ==================================")
         self.filehandler.create_cache_dir(self.sid)
         if reset:
             self.clear_cache(delete_root_folder=False)
 
         if not keep_cache:
-            famount = self.filehandler.dir_amount(
-                self.filehandler.cache_path
-            )
+            famount = self.filehandler.dir_amount(self.filehandler.cache_path)
             if cache_limit < 1:
                 raise ValueError("Cache limit must be a natural number")
             if famount > cache_limit:
-                self.logger.warning(f"Cache limit has been exceeded by {famount-cache_limit}")
+                self.logger.warning(
+                    f"Cache limit has been exceeded by {famount-cache_limit}"
+                )
             while famount > cache_limit:
                 self.clear_cache(cache_deletion_algorithm)
                 famount -= 1
@@ -192,7 +204,7 @@ class StreamAnalyser():
 
     def _cache_metadata(self, metadata):
         self.filehandler.cache_metadata(metadata)
-    
+
     def _cache_messages(self, raw_messages):
         self.filehandler.cache_messages(raw_messages)
 
@@ -203,10 +215,10 @@ class StreamAnalyser():
         self.filehandler.clear_cache(cache_deletion_algorithm, delete_root_folder)
 
     def collect_data(self):
-        """ Collects and caches stream data:
-            - metadata (title, channel etc.)
-            - messages
-            - thumbnail
+        """Collects and caches stream data:
+        - metadata (title, channel etc.)
+        - messages
+        - thumbnail
         """
         # collect data
         metadata = self.collector.collect_metadata()
@@ -219,15 +231,14 @@ class StreamAnalyser():
         self._cache_thumbnail(thumbnail_url)
 
     def read_data(self):
-        """ Reads cached data """
+        """Reads cached data"""
         self._raw_messages = self.filehandler.read_messages()
         self.metadata.update(self.filehandler.read_metadata())
-        
+
     def refine_data(self):
-        """ Refines read data """
+        """Refines read data"""
         self.messages = self.refiner.refine_raw_messages(
-            self._raw_messages,
-            self.msglimit
+            self._raw_messages, self.msglimit
         )
         # we don't need raw messages anymore
         # empty them so they don't take up space
@@ -235,21 +246,21 @@ class StreamAnalyser():
         self.authors = self.refiner.get_authors()
 
     def analyse_data(self):
-        """ Analyses refined data and finds highligths """
+        """Analyses refined data and finds highligths"""
         canalyser = chatanalyser.ChatAnalyser(
-            refined_messages = self.messages,
-            stream_id = self.sid,
-            context_path = self.context_path,
-            verbose = self.verbose,
-            keyword_filters = self.keyword_filters,
-            keyword_limit = self.keyword_limit,
-            min_duration = self.min_duration,
-            threshold_constant = self.threshold_constant,
-            window = self.window,
+            refined_messages=self.messages,
+            stream_id=self.sid,
+            context_path=self.context_path,
+            verbose=self.verbose,
+            keyword_filters=self.keyword_filters,
+            keyword_limit=self.keyword_limit,
+            min_duration=self.min_duration,
+            threshold_constant=self.threshold_constant,
+            window=self.window,
         )
         if self.disable_logs:
             canalyser.logger.disabled = True
-        
+
         canalyser.analyse(
             graph_title=self.metadata["title"],
             levels=self.intensity_levels,
@@ -275,35 +286,27 @@ class StreamAnalyser():
         return self.filehandler.is_cached()
 
     def enforce_integrity(self):
-        """ Enforces file integrity by recollecting missing
-            data and deleting unnecessary cache files """
+        """Enforces file integrity by recollecting missing
+        data and deleting unnecessary cache files"""
 
-        missing_files, _ = self._check_integrity(
-            autofix = True
-        )
+        missing_files, _ = self._check_integrity(autofix=True)
         for missing_file in missing_files:
-            if missing_file == self.filehandler.message_fname+".gz":
+            if missing_file == self.filehandler.message_fname + ".gz":
                 self.logger.warning("Message file is missing")
-                self.filehandler.cache_messages(
-                    self.collector.fetch_raw_messages()
-                )
+                self.filehandler.cache_messages(self.collector.fetch_raw_messages())
             elif missing_file == self.filehandler.metadata_fname:
                 self.logger.warning("Metadata file is missing")
-                self.filehandler.cache_metadata(
-                    self.collector.collect_metadata()
-                )
+                self.filehandler.cache_metadata(self.collector.collect_metadata())
             elif missing_file == self.filehandler.thumbnail_fname:
                 self.logger.warning("Thumbnail file is missing")
                 self.filehandler.download_thumbnail(
-                    self.collector.get_thumbnail_url(
-                        self.thumb_res_lvl
-                    )
+                    self.collector.get_thumbnail_url(self.thumb_res_lvl)
                 )
 
         # TODO reimplement add fetch missing messages feature
 
     def generate_wordcloud(self, font_path=None, scale=3) -> WordCloud:
-        """ Returns word cloud of the stream
+        """Returns word cloud of the stream
 
         Args:
             font_path (str, optional): Custom font path. Defaults to None.
@@ -311,37 +314,38 @@ class StreamAnalyser():
                 Might want to decrease it for more performance. Defaults to 3.
         """
 
-        #TODO stylize the wordcloud
+        # TODO stylize the wordcloud
 
         self.logger.info("Generating word cloud")
         self.logger.debug(f"{font_path=}")
         self.logger.debug(f"{scale=}")
 
         if self.verbose:
-            print("Generating word cloud...", end='\r')
-        
+            print("Generating word cloud...", end="\r")
+
         if not font_path:
             font_path = DEFAULT_FONT_PATH
-        
+
         # get all words from the chat
-        wordlist = [msg.text.replace("_","") for msg in self.messages]
-        
+        wordlist = [msg.text.replace("_", "") for msg in self.messages]
+
         # shuffle word list to minimize the issue where repeating
         # consecutive messages merge together in the word cloud
         random.shuffle(wordlist)
-        
-        word_cloud = WordCloud(
-            font_path = font_path,
-            scale = scale
-        ).generate(" ".join(wordlist))
+
+        word_cloud = WordCloud(font_path=font_path, scale=scale).generate(
+            " ".join(wordlist)
+        )
 
         if self.verbose:
             print("Generating word cloud... done")
         self.wordcloud = word_cloud
         return self.wordcloud
 
-    def find_messages(self, search_phrase, exact=False, ignore_case=True) -> list[structures.Message]:
-        """ Finds messages containing a specific phrase or exactly the same phrase.
+    def find_messages(
+        self, search_phrase, exact=False, ignore_case=True
+    ) -> list[structures.Message]:
+        """Finds messages containing a specific phrase or exactly the same phrase.
 
         Args:
             search_phrase (str): The phrase to search.
@@ -351,7 +355,7 @@ class StreamAnalyser():
         Returns:
             list[Message]: List of messages that contains the given phrase.
         """
-        
+
         messages_to_return = []
         self.logger.info("Finding messages")
         self.logger.debug(f"{search_phrase=}")
@@ -366,17 +370,18 @@ class StreamAnalyser():
             tmp_message = original_message.text
             if ignore_case:
                 tmp_message = tmp_message.lower()
-            if  (exact and search_phrase == tmp_message) or \
-                (not exact and search_phrase in tmp_message):
+            if (exact and search_phrase == tmp_message) or (
+                not exact and search_phrase in tmp_message
+            ):
                 messages_to_return.append(original_message)
         return messages_to_return
 
     def find_user_messages(self, username=None, id=None) -> list[structures.Message]:
-        """ Finds messages by either username or user id.
+        """Finds messages by either username or user id.
 
         Args:
             username (str, optional): Target username. Defaults to None.
-                Note that it's more reliable to use id since there might 
+                Note that it's more reliable to use id since there might
                 be same users with the same name or username changes.
 
             id (str, optional): Target user id. Defaults to None.
@@ -397,61 +402,62 @@ class StreamAnalyser():
             raise ValueError("Should provide either username or id.")
         if username and id:
             self.logger.warning("Should only provide one argument. Moving on with id.")
-            username=None
+            username = None
 
         messages_to_return = []
         for message in self.messages:
-            if  (id and message.author.id == id) or \
-                (username and message.author.name == username):
+            if (id and message.author.id == id) or (
+                username and message.author.name == username
+            ):
                 messages_to_return.append(message)
 
         return messages_to_return
 
     def most_used_phrase(self, exclude=[], normalize=True) -> Tuple[str, int]:
-        """ Returns most frequently used phrase
+        """Returns most frequently used phrase
 
         Args:
             exclude (list, optional): List of words to exclude from the search.
                 Defaults to [].
 
-            normalize (bool, optional): Option for the word be normalized 
+            normalize (bool, optional): Option for the word be normalized
                 to cover more instances. Defaults to True.
 
         Returns:
-            Tuple[str, int]: Most used word and it's frequency 
+            Tuple[str, int]: Most used word and it's frequency
         """
 
-        #return "草"    # would probably work lol
+        # return "草"    # would probably work lol
 
         self.logger.info("Finding most used word")
         self.logger.debug(f"{exclude=}")
         self.logger.debug(f"{normalize=}")
-        
+
         if isinstance(exclude, str):
             exclude = list(exclude)
-        
+
         words = []
         for message in self.messages:
-            words.extend(message.text.split(' '))
+            words.extend(message.text.split(" "))
 
         if normalize:
             words = [utils.normalize(word) for word in words]
-        
+
         idx = 0
-        while exclude and Counter(words).most_common(1+idx)[idx][0] in exclude:
-            idx+=1
-            if idx == len(words)-1:
-                return Counter(words).most_common(1+idx)[idx]
+        while exclude and Counter(words).most_common(1 + idx)[idx][0] in exclude:
+            idx += 1
+            if idx == len(words) - 1:
+                return Counter(words).most_common(1 + idx)[idx]
 
         self.logger.debug(f"Most used phrase: {Counter(words).most_common(1+idx)[idx]}")
-        return Counter(words).most_common(1+idx)[idx]
+        return Counter(words).most_common(1 + idx)[idx]
 
     @property
     def total_message_amount(self):
         return len(self.messages)
 
     def export_data(self, folder_name=None, path=None, open_folder=False):
-        """ Exports the analysed data to the path.
+        """Exports the analysed data to the path.
 
         Args:
             folder_name (str|None, optional): File name to export the results. Defaults to None,
@@ -468,17 +474,17 @@ class StreamAnalyser():
         self.logger.debug(f"{path=}")
 
         if self.verbose:
-            print("Exporting data...", end='\r')
+            print("Exporting data...", end="\r")
 
         if not path:
             path = self.filehandler.export_path
-        
+
         try:
             self.filehandler.create_dir_if_not_exists(path)
         except PermissionError as pe:
             self.logger.error(pe)
             return
-        
+
         if not folder_name:
             folder_name = str(int(time()))
         else:
@@ -486,21 +492,21 @@ class StreamAnalyser():
             # if so, add UNIX timestamp to make it unique
             for name in os.listdir(path):
                 if os.path.isdir(os.path.join(path, name)) and name == folder_name:
-                    folder_name = folder_name+'_'+str(int(time()))
+                    folder_name = folder_name + "_" + str(int(time()))
                     warn_msg = f"{name} already exists, renaming to {folder_name}"
                     self.logger.warning(warn_msg)
                     break
 
-        target_path = path+'\\'+folder_name
+        target_path = path + "\\" + folder_name
         self.filehandler.create_dir_if_not_exists(target_path)
-        
+
         # export messages
         self.filehandler._decompress_file(
             os.path.join(self.filehandler.sid_path, self.filehandler.message_fname)
         )
         copyfile(
-            src=os.path.join(self.filehandler.sid_path, self.filehandler.message_fname), 
-            dst=os.path.join(target_path, self.filehandler.message_fname), 
+            src=os.path.join(self.filehandler.sid_path, self.filehandler.message_fname),
+            dst=os.path.join(target_path, self.filehandler.message_fname),
         )
         self.filehandler._compress_file(
             os.path.join(self.filehandler.sid_path, self.filehandler.message_fname)
@@ -509,34 +515,38 @@ class StreamAnalyser():
 
         # export metadata
         copyfile(
-            src=os.path.join(self.filehandler.sid_path, self.filehandler.metadata_fname), 
-            dst=os.path.join(target_path, self.filehandler.metadata_fname), 
+            src=os.path.join(
+                self.filehandler.sid_path, self.filehandler.metadata_fname
+            ),
+            dst=os.path.join(target_path, self.filehandler.metadata_fname),
         )
         self.logger.info("Exported metadata")
 
         # export thumbnail
         copyfile(
-            src=os.path.join(self.filehandler.sid_path, self.filehandler.thumbnail_fname), 
-            dst=os.path.join(target_path, self.filehandler.thumbnail_fname), 
+            src=os.path.join(
+                self.filehandler.sid_path, self.filehandler.thumbnail_fname
+            ),
+            dst=os.path.join(target_path, self.filehandler.thumbnail_fname),
         )
         self.logger.info("Exported thumbnail")
 
         # export word cloud
         if self.messages:
             self.generate_wordcloud().to_file(
-                os.path.join(target_path, 'wordcloud.jpg')
+                os.path.join(target_path, "wordcloud.jpg")
             )
             self.logger.info("Exported wordcloud")
 
         # export highlights
         if self.highlights:
             hl_path = os.path.join(target_path, "highlights.txt")
-            with open(hl_path, 'w', encoding='utf-8') as file:
-                file.writelines([hl.colorless_str+'\n' for hl in self.highlights])
+            with open(hl_path, "w", encoding="utf-8") as file:
+                file.writelines([hl.colorless_str + "\n" for hl in self.highlights])
             self.logger.info("Exported highlights")
 
         if self.fig:
-            self.fig.savefig(os.path.join(target_path, 'graph.png'))
+            self.fig.savefig(os.path.join(target_path, "graph.png"))
             self.logger.info("Exported graph")
 
         if open_folder:
@@ -549,12 +559,13 @@ class StreamAnalyser():
         if self.verbose:
             print("Exporting data... done")
 
-    def get_highlights(self, top=None, output_mode=None, include=[],
-                       exclude=[], intensity_filters=[]) -> list[structures.Highlight]:
-        """ A method to return filtered highlights.
+    def get_highlights(
+        self, top=None, output_mode=None, include=[], exclude=[], intensity_filters=[]
+    ) -> list[structures.Highlight]:
+        """A method to return filtered highlights.
 
         Args:
-            top (int, optional): Top n highlights to print, sorted by intensity. 
+            top (int, optional): Top n highlights to print, sorted by intensity.
                 Defaults to None, which returns all.
 
             output_mode (str, optional): Mode to print output of the highlights on
@@ -568,7 +579,7 @@ class StreamAnalyser():
             include (list[str]|str, optional): List of reactions to see. Defaults to [].
                 Reaction names can be found in `data\context.json`.
 
-            exclude (list[str]|str, optional): List of reactions to not see. 
+            exclude (list[str]|str, optional): List of reactions to not see.
                 Overrides include. Defaults to [].
                 Reaction names can be found in `data\context.json`.
 
@@ -605,7 +616,7 @@ class StreamAnalyser():
             highlights = self.highlights
 
         if output_mode:
-            print('\n'+Back.RED+"Highlights:"+Style.RESET_ALL)
+            print("\n" + Back.RED + "Highlights:" + Style.RESET_ALL)
         for highlight in highlights:
             skip = False
             for context in highlight.contexts:
@@ -620,15 +631,19 @@ class StreamAnalyser():
                         if output_mode == "detailed":
                             print(highlight)
                         elif output_mode == "summary":
-                            print("{}: {}".format(
-                                timedelta(seconds=int(highlight.time)),
-                                highlight.intensity.colored_level
-                            ))
+                            print(
+                                "{}: {}".format(
+                                    timedelta(seconds=int(highlight.time)),
+                                    highlight.intensity.colored_level,
+                                )
+                            )
                         elif output_mode == "url":
                             print(
-                                highlight.intensity.color+
-                                str(timedelta(seconds=int(highlight.time)))+
-                                Style.RESET_ALL, '->' ,highlight.url
+                                highlight.intensity.color
+                                + str(timedelta(seconds=int(highlight.time)))
+                                + Style.RESET_ALL,
+                                "->",
+                                highlight.url,
                             )
                         elif output_mode is None:
                             pass
@@ -637,12 +652,15 @@ class StreamAnalyser():
                             raise ValueError(f'Invalid output mode: "{output_mode}"')
                         highlights_to_return.append(highlight)
                         self.logger.debug(highlight.colorless_str)
-                        count+=1
+                        count += 1
                         if top and count == top:
                             return highlights_to_return
                         break
-        
+
         return highlights_to_return
+
+    def cached_ids(self):
+        return self.filehandler.get_cached_ids()
 
     def show_graph(self):
         self.fig.show()

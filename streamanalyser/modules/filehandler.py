@@ -12,9 +12,9 @@ from datetime import datetime
 from time import time
 
 
-class FileHandler():
-    """ A class to manage cache and log files. 
-    
+class FileHandler:
+    """A class to manage cache and log files.
+
     Folder structure:
     Storage/
         Cache/
@@ -25,21 +25,21 @@ class FileHandler():
             ...
         Logs/
         Exports/
-    
+
     """
-    
+
     def __init__(
-            self,
-            storage_path,
-            cache_fname='Cache',
-            log_fname='Logs',
-            export_fname='Exports',
-            message_fname = 'messages.json',
-            metadata_fname = 'metadata.yaml',
-            thumbnail_fname = 'thumbnail.png',
-            graph_fname = 'graph.png',
-            wordcloud_fname = 'wordcloud.jpg'
-        ):
+        self,
+        storage_path,
+        cache_fname="Cache",
+        log_fname="Logs",
+        export_fname="Exports",
+        message_fname="messages.json",
+        metadata_fname="metadata.yaml",
+        thumbnail_fname="thumbnail.png",
+        graph_fname="graph.png",
+        wordcloud_fname="wordcloud.jpg",
+    ):
         self.storage_path = storage_path
         self.cache_path = os.path.join(self.storage_path, cache_fname)
         self.log_path = os.path.join(self.storage_path, log_fname)
@@ -56,25 +56,22 @@ class FileHandler():
         self.sid_path = None
 
     def __repr__(self) -> str:
-        return "Storing files into "+self.project_path
+        return "Storing files into " + self.project_path
 
     def _create_logger(self, name, def_level=logging.ERROR, level=logging.DEBUG):
         for handler in logging.root.handlers[:]:
             logging.root.removeHandler(handler)
 
-        format = f'%(asctime)s:%(module)s[%(lineno)d]:%(levelname)s:%(message)s'
-        
+        format = f"%(asctime)s:%(module)s[%(lineno)d]:%(levelname)s:%(message)s"
+
         if not os.path.exists(self.log_path):
             os.makedirs(self.log_path)
 
         logging.basicConfig(
             level=def_level,
             format=format,
-            filename=os.path.join(
-                self.log_path, 
-                self._get_logname()
-            ),
-            encoding='utf-8',
+            filename=os.path.join(self.log_path, self._get_logname()),
+            encoding="utf-8",
         )
         console = logging.StreamHandler()
         console.setLevel(def_level)
@@ -85,15 +82,18 @@ class FileHandler():
         return logger
 
     def _get_logname(self) -> str:
-        """ Gets log name in Y-M-Wn format where n is week number, starts from 0
-            Example: 2021-06-W0 """
-        weekno = datetime.today().isocalendar()[1] - datetime.today().replace(day=1).isocalendar()[1]
-        return datetime.today().strftime('%Y-%m-W')+str(weekno)+".log"
-        
+        """Gets log name in Y-M-Wn format where n is week number, starts from 0
+        Example: 2021-06-W0"""
+        weekno = (
+            datetime.today().isocalendar()[1]
+            - datetime.today().replace(day=1).isocalendar()[1]
+        )
+        return datetime.today().strftime("%Y-%m-W") + str(weekno) + ".log"
+
     def delete_file(self, path):
         try:
             os.remove(path)
-            self.logger.debug(f'{path} removed')
+            self.logger.debug(f"{path} removed")
         except FileNotFoundError:
             self.logger.debug(f"{path} could not be found")
         except Exception:
@@ -105,7 +105,9 @@ class FileHandler():
                 os.makedirs(path)
                 self.logger.debug(f"'{path}' created")
             except PermissionError as e:
-                print(f"{e}\nTry another path or re-run the program in administrator mode.")
+                print(
+                    f"{e}\nTry another path or re-run the program in administrator mode."
+                )
                 self.logger.error(f"Permission denied to '{path}'")
 
     def create_cache_dir(self, stream_id):
@@ -116,7 +118,7 @@ class FileHandler():
         self.logger.info("Caching messages")
         fpath = os.path.join(self.sid_path, self.message_fname)
         try:
-            with open(fpath, 'w', encoding='utf-8') as f:
+            with open(fpath, "w", encoding="utf-8") as f:
                 f.write(json.dumps(message_dict, ensure_ascii=False, indent=4))
         except Exception as e:
             self.delete_file(fpath)
@@ -128,14 +130,14 @@ class FileHandler():
         self.logger.info("Caching metadata")
         fpath = os.path.join(self.sid_path, self.metadata_fname)
         try:
-            with open(fpath, 'w', encoding='utf-8') as file:
+            with open(fpath, "w", encoding="utf-8") as file:
                 yaml.dump(metadata_dict, file, default_flow_style=False)
         except Exception as e:
             self.delete_file(fpath)
             raise RuntimeError(f"Could not cache metadata: {e.__class__.__name__}:{e}")
 
     def cache_thumbnail(self, url):
-        """ Alias for `download_thumbnail` """
+        """Alias for `download_thumbnail`"""
         self.download_thumbnail(url)
 
     def download_thumbnail(self, url):
@@ -147,55 +149,57 @@ class FileHandler():
                 f.write(response.content)
         except Exception as e:
             self.delete_file(fpath)
-            raise RuntimeError(f"Could not download thumbnail: {e.__class__.__name__}:{e}")
+            raise RuntimeError(
+                f"Could not download thumbnail: {e.__class__.__name__}:{e}"
+            )
 
     def read_messages(self):
-        """ Reads cached messages.
-            Returns a dict. """
+        """Reads cached messages.
+        Returns a dict."""
         fpath = os.path.join(self.sid_path, self.message_fname)
         self._decompress_file(fpath)
-        with open(fpath, 'r', encoding='utf-8') as f:
+        with open(fpath, "r", encoding="utf-8") as f:
             data = json.load(f)
         self.logger.info("Read messages")
         self._compress_file(fpath)
         return data
 
     def read_metadata(self):
-        """ Reads cached messages.
-            Returns a dict. """
+        """Reads cached messages.
+        Returns a dict."""
         fpath = os.path.join(self.sid_path, self.metadata_fname)
         self.logger.info("Read metadata")
-        return yaml.load(open(fpath, 'r'), Loader=yaml.Loader)
+        return yaml.load(open(fpath, "r"), Loader=yaml.Loader)
 
     def _compress_file(self, jsonpath):
-        """ Compresses a json file with gzip """
+        """Compresses a json file with gzip"""
         try:
-            with open(jsonpath, 'rb') as f_in:
-                with gzip.open(jsonpath+".gz", 'wb') as f_out:
+            with open(jsonpath, "rb") as f_in:
+                with gzip.open(jsonpath + ".gz", "wb") as f_out:
                     copyfileobj(f_in, f_out)
             os.remove(jsonpath)
         except Exception as e:
-            os.remove(jsonpath+".gz")
+            os.remove(jsonpath + ".gz")
             self.logger.critical(e)
             raise e
-        self.logger.info(f'{jsonpath} compressed')
+        self.logger.info(f"{jsonpath} compressed")
 
     def _decompress_file(self, jsonpath):
-        """ Decompresses a json gzip file """
+        """Decompresses a json gzip file"""
         try:
-            with gzip.open(jsonpath+'.gz', 'rb') as f_in:
-                with open(jsonpath, 'wb') as f_out:
+            with gzip.open(jsonpath + ".gz", "rb") as f_in:
+                with open(jsonpath, "wb") as f_out:
                     copyfileobj(f_in, f_out)
-            os.remove(jsonpath+'.gz')
+            os.remove(jsonpath + ".gz")
         except Exception as e:
             os.remove(jsonpath)
             self.logger.critical(e)
             raise e
-        self.logger.info(f'{jsonpath} decompressed')
+        self.logger.info(f"{jsonpath} decompressed")
 
     def clear_cache(self, cache_deletion_algorithm=None, delete_root_folder=True):
-        """ Clears cached files according to cache deletion
-            algorithm. Default behavior is deleting the 
+        """Clears cached files according to cache deletion
+            algorithm. Default behavior is deleting the
             cache of the current session.
 
         Args:
@@ -209,10 +213,10 @@ class FileHandler():
                     - rr: Deletes random cache. (uhh...)
                 If set to None, deletes cache of the current session.
                 Defaults to None.
-            
+
             delete_root_folder (bool, optional): Delete the folder itself too.
                 Otherwise only deletes contents in the folder. Defaults to True.
-            
+
             current (bool, optional): Deletes cache of the current
                 session if True. Overrides `cache_deletion_algorithm`.
                 Defaults to False.
@@ -233,29 +237,21 @@ class FileHandler():
                     self.logger.error(e)
             return
 
-        if cache_deletion_algorithm == 'mru':
-            dir_to_delete = self.most_recently_used_folder(
-                self.cache_path
-            )
-        elif cache_deletion_algorithm == 'lru':
-            dir_to_delete = self.least_recently_used_folder(
-                self.cache_path
-            )
-        elif cache_deletion_algorithm == 'fifo':
-            dir_to_delete = self.oldest_folder(
-                self.cache_path
-            )
-        elif cache_deletion_algorithm == 'rr':
-            dir_to_delete = self.random_folder(
-                self.cache_path
-            )
+        if cache_deletion_algorithm == "mru":
+            dir_to_delete = self.most_recently_used_folder(self.cache_path)
+        elif cache_deletion_algorithm == "lru":
+            dir_to_delete = self.least_recently_used_folder(self.cache_path)
+        elif cache_deletion_algorithm == "fifo":
+            dir_to_delete = self.oldest_folder(self.cache_path)
+        elif cache_deletion_algorithm == "rr":
+            dir_to_delete = self.random_folder(self.cache_path)
         else:
-            self.logger.error("Invalid deletion algorithm: {}".format(
-                cache_deletion_algorithm
-            ))
-            raise ValueError("Invalid deletion algorithm: {}".format(
-                cache_deletion_algorithm
-            ))
+            self.logger.error(
+                "Invalid deletion algorithm: {}".format(cache_deletion_algorithm)
+            )
+            raise ValueError(
+                "Invalid deletion algorithm: {}".format(cache_deletion_algorithm)
+            )
 
         path = os.path.join(self.cache_path, dir_to_delete)
         try:
@@ -267,7 +263,7 @@ class FileHandler():
             self.logger.error(e)
 
     def check_integrity(self, cache_path=None, autofix=False) -> Tuple[list, list]:
-        """ Checks integrity of the cached files. 
+        """Checks integrity of the cached files.
         Note that it detects files by their names, not content.
 
         Args:
@@ -290,23 +286,25 @@ class FileHandler():
 
         if not cache_path:
             cache_path = self.sid_path
-        
+
         files = self.get_filenames(cache_path, show_extension=True)
-        necessary_files = [self.message_fname+".gz",
-                           self.metadata_fname,
-                           self.thumbnail_fname]
+        necessary_files = [
+            self.message_fname + ".gz",
+            self.metadata_fname,
+            self.thumbnail_fname,
+        ]
         unnecesary_files = list(set(files) - set(necessary_files))
         missing_files = list(set(necessary_files) - set(files))
 
         self.logger.debug(f"{unnecesary_files=}")
         self.logger.debug(f"{missing_files=}")
-        
+
         if autofix:
-            for file in unnecesary_files:                
+            for file in unnecesary_files:
                 # it might be a json file that is not compressed
                 if file == self.message_fname:
                     self._compress_file(os.path.join(cache_path, file))
-                    missing_files.remove(file+".gz")
+                    missing_files.remove(file + ".gz")
                     continue
                 self.delete_file(os.path.join(cache_path, file))
             unnecesary_files = []
@@ -314,7 +312,7 @@ class FileHandler():
         return missing_files, unnecesary_files
 
     def get_filenames(self, path, show_extension=False) -> list[str]:
-        """ Returns file names in a path """
+        """Returns file names in a path"""
 
         self.logger.info(f"Finding file names in {path}")
         if not os.path.exists(path):
@@ -328,19 +326,29 @@ class FileHandler():
         except Exception as e:
             self.logger.error(e)
 
+    def get_foldernames(self, path) -> list[str]:
+        """Returns folder names in a path"""
+
+        self.logger.info(f"Finding folder names in {path}")
+        try:
+            return next(os.walk(path))[1]
+        except Exception as e:
+            self.logger.error(e)
+            raise e
+
     def _creation_time_in_days(self, path) -> int:
-        """ Returns difference between the creation time and
-            the current time of the file in days """
+        """Returns difference between the creation time and
+        the current time of the file in days"""
 
         if os.path.isfile(path):
             ctime = os.path.getctime(path)
-            days = datetime.fromtimestamp(int(time()-ctime)).strftime('%d')
+            days = datetime.fromtimestamp(int(time() - ctime)).strftime("%d")
             return int(days)
         self.logger.debug(f"{path} is not a file")
         return 0
 
     def delete_old_files(self, folder_path, time_limit_in_days):
-        """ Delete files in a folder older than the time limit. """
+        """Delete files in a folder older than the time limit."""
 
         for name in os.listdir(folder_path):
             fpath = os.path.join(folder_path, name)
@@ -348,23 +356,23 @@ class FileHandler():
                 self.delete_file(fpath)
 
     def file_amount(self, folder_path) -> int:
-        """ Returns file amount in a folder """
+        """Returns file amount in a folder"""
 
         _, _, files = next(os.walk(folder_path))
         self.logger.debug(f"File amount in {folder_path} is {len(files)}")
         return len(files)
 
     def dir_amount(self, folder_path) -> int:
-        """ Returns folder amount in a folder """
+        """Returns folder amount in a folder"""
 
         _, dirs, _ = next(os.walk(folder_path))
         self.logger.debug(f"Folder amount in {folder_path} is {len(dirs)}")
         return len(dirs)
 
     def least_recently_used_folder(self, fpath) -> str:
-        """ Returns least recenty used folder in path
-            by checking last access time of the
-            message file inside the folder """
+        """Returns least recenty used folder in path
+        by checking last access time of the
+        message file inside the folder"""
 
         least_recently_used_folder = None
         last_access_time = time()
@@ -374,18 +382,13 @@ class FileHandler():
                 if os.path.join(root, dname) == self.sid_path:
                     continue
                 try:
-                    path = os.path.join(
-                        root, dname, self.message_fname+".gz"
-                    )
+                    path = os.path.join(root, dname, self.message_fname + ".gz")
                 except:
                     try:
                         self.check_integrity(
-                            cache_path=os.path.join(root, dname),
-                            autofix=True
+                            cache_path=os.path.join(root, dname), autofix=True
                         )
-                        path = os.path.join(
-                            root, dname, self.message_fname+".gz"
-                        )
+                        path = os.path.join(root, dname, self.message_fname + ".gz")
                     except:
                         msg = "Message cache couldn't be found"
                         self.logger.error(msg)
@@ -393,16 +396,17 @@ class FileHandler():
                 if os.path.getatime(path) < last_access_time:
                     last_access_time = os.path.getatime(path)
                     least_recently_used_folder = dname
-        self.logger.debug('Least recently used id: {} ({})'.format(
-            least_recently_used_folder,
-            last_access_time
-        ))
+        self.logger.debug(
+            "Least recently used id: {} ({})".format(
+                least_recently_used_folder, last_access_time
+            )
+        )
         return least_recently_used_folder
 
     def most_recently_used_folder(self, fpath) -> str:
-        """ Returns most recenty used folder in path
-            by checking last access time of the
-            message file inside the folder """
+        """Returns most recenty used folder in path
+        by checking last access time of the
+        message file inside the folder"""
 
         most_recently_used_folder = None
         last_access_time = 0
@@ -412,18 +416,13 @@ class FileHandler():
                 if os.path.join(root, dname) == self.sid_path:
                     continue
                 try:
-                    path = os.path.join(
-                        root, dname, self.message_fname+".gz"
-                    )
+                    path = os.path.join(root, dname, self.message_fname + ".gz")
                 except:
                     try:
                         self.check_integrity(
-                            cache_path=os.path.join(root, dname),
-                            autofix=True
+                            cache_path=os.path.join(root, dname), autofix=True
                         )
-                        path = os.path.join(
-                            root, dname, self.message_fname+".gz"
-                        )
+                        path = os.path.join(root, dname, self.message_fname + ".gz")
                     except:
                         msg = "Message cache couldn't be found"
                         self.logger.error(msg)
@@ -431,14 +430,15 @@ class FileHandler():
                 if os.path.getatime(path) > last_access_time:
                     last_access_time = os.path.getatime(path)
                     most_recently_used_folder = dname
-        self.logger.debug('Most recently used id: {} ({})'.format(
-            most_recently_used_folder,
-            last_access_time
-        ))
+        self.logger.debug(
+            "Most recently used id: {} ({})".format(
+                most_recently_used_folder, last_access_time
+            )
+        )
         return most_recently_used_folder
 
     def oldest_folder(self, fpath) -> str:
-        """ Returns oldest folder in path """
+        """Returns oldest folder in path"""
 
         oldest_folder = None
         creation_time = time()
@@ -456,7 +456,7 @@ class FileHandler():
         return oldest_folder
 
     def random_folder(self, fpath) -> str:
-        """ Returns a random folder in cache path """
+        """Returns a random folder in cache path"""
         for root, dirs, _ in os.walk(fpath):
             if len(dirs) == 1:
                 return dirs[0]
@@ -466,9 +466,9 @@ class FileHandler():
                     break
             self.logger.debug(f"Random folder: {choice}")
             return choice
-    
+
     def is_cached(self, sid=None) -> bool:
-        """ Returns False if all necessary files are absent """
+        """Returns False if all necessary files are absent"""
 
         self.logger.info("Checking if cached")
         self.logger.debug(f"{sid=}")
@@ -477,20 +477,21 @@ class FileHandler():
             path = os.path.join(self.cache_path, sid)
         else:
             path = self.sid_path
-        
+
         files = self.get_filenames(path, show_extension=True)
-        necessary_files = [self.message_fname+".gz",
-                           self.metadata_fname,
-                           self.thumbnail_fname]
+        necessary_files = [
+            self.message_fname + ".gz",
+            self.metadata_fname,
+            self.thumbnail_fname,
+        ]
         missing_files = list(set(necessary_files) - set(files))
 
         self.logger.debug(f"is_cached: {(not len(missing_files) == 3)}")
         return not len(missing_files) == 3
 
-    def show_cached_ids(self) -> str:
-        pass
+    def get_cached_ids(self) -> list[str]:
+        """Returns list of cached ids"""
+        return [f for f in self.get_foldernames(self.cache_path) if self.is_cached(f)]
 
 
-streamanalyser_filehandler = FileHandler(
-    storage_path='C:\\Stream Analyser'
-)
+streamanalyser_filehandler = FileHandler(storage_path="C:\\Stream Analyser")

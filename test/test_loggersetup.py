@@ -3,28 +3,29 @@ import unittest
 
 from streamanalyser.modules.loggersetup import create_logger, get_logname
 
+
 class TestLoggerSetup(unittest.TestCase):
-   def test_createlogger(self):
-      testlogpath = os.path.join('C:\\Stream Analyser\\Logs\\_test.log')
-      logger = create_logger(
-         __file__,
-         fname='_test.log',
-         sid=None,
-         format='%(module)s:%(levelname)s:%(message)s',
-         mode='w',
-      )
-      self.assertTrue(os.path.exists(testlogpath))
+    def test_createlogger(self):
+        testlogpath = os.path.join("C:\\Stream Analyser\\Logs\\_test.log")
+        logger = create_logger(
+            __file__,
+            fname="_test.log",
+            sid=None,
+            format="%(module)s:%(levelname)s:%(message)s",
+            mode="w",
+        )
+        self.assertTrue(os.path.exists(testlogpath))
 
-      logger.info('test')
-      logger.debug('test')
-      logger.warning('test')
-      #logger.error('test')
-      #logger.critical('test')
-      lvs = ['INFO','DEBUG','WARNING'] #'ERROR','CRITICAL']
-      with open(testlogpath, 'r') as f:
-         for i, line in enumerate(f.readlines()):
-            self.assertEqual(line, f'test_loggersetup:{lvs[i]}:test\n')
+        logger.info("test")
+        logger.debug("test")
+        logger.warning("test")
+        # logger.error('test')
+        # logger.critical('test')
+        lvs = ["INFO", "DEBUG", "WARNING"]  #'ERROR','CRITICAL']
+        with open(testlogpath, "r") as f:
+            for i, line in enumerate(f.readlines()):
+                self.assertEqual(line, f"test_loggersetup:{lvs[i]}:test\n")
 
 
-if __name__ == '__main__':
-   unittest.main()
+if __name__ == "__main__":
+    unittest.main()
