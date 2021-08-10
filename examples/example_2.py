@@ -1,5 +1,6 @@
 import streamanalyser as sa
 
+
 # Find users that typed more than one comment
 if __name__ == "__main__":
     analyser = sa.StreamAnalyser(

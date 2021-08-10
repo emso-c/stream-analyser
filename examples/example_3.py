@@ -15,20 +15,19 @@ if __name__ == "__main__":
         user_name = "Rarely Spotted"
 
         def solution1():
-            msgs = []
-            for msg in analyser.find_messages(
-                message_to_search, exact=True, ignore_case=False
-            ):
+            found_messages = analyser.find_messages(
+                message_to_search,
+                exact=True,
+                ignore_case=False,
+            )
+            for msg in found_messages:
                 if msg.author.name == user_name:
-                    msgs.append(msg)
-            return msgs
+                    yield msg
 
         def solution2():
-            msgs = []
             for msg in analyser.find_user_messages(username=user_name):
                 if msg.text == message_to_search:
-                    msgs.append(msg)
-            return msgs
+                    yield msg
 
         print("Solution 1")
         [print(msg) for msg in solution1()]

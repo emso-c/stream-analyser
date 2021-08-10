@@ -1,5 +1,6 @@
 import streamanalyser as sa
 
+
 # Get n most frequently used words with a recursive approach
 if __name__ == "__main__":
     analyser = sa.StreamAnalyser(

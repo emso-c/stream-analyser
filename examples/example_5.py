@@ -1,6 +1,7 @@
 from colorama import Fore
 import streamanalyser as sa
 
+
 # Customize intensity options
 if __name__ == "__main__":
     analyser_obj = sa.StreamAnalyser(
