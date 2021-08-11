@@ -484,7 +484,7 @@ class ChatAnalyser:
         return self.highlights
 
     def draw_graph(self, title=None) -> plt:
-        """Draws graph of the analysed data including:
+        """Draws a basic graph of the analysed data including:
         - Message frequency
         - Moving average of message frequency
         - Highlights
@@ -501,7 +501,6 @@ class ChatAnalyser:
 
         fig, ax = plt.subplots(2, constrained_layout=True)
 
-        # TODO fix this
         # fm.fontManager.addfont(DEFAULT_FONT_PATH)
         # rcParams['font.family'] = [fm.get_font(DEFAULT_FONT_PATH).family_name]
         fprop = fm.FontProperties(fname=DEFAULT_FONT_PATH)

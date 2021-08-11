@@ -169,7 +169,7 @@ class StreamAnalyser:
             self._disable_logs()
 
         if not keep_logs:
-            self.filehandler.delete_old_files(self.filehandler.log_path, log_duration)
+            self.filehandler._delete_old_files(self.filehandler.log_path, log_duration)
         self.logger.info("Session start ==================================")
         self.filehandler.create_cache_dir(self.sid)
         if reset:
@@ -208,9 +208,6 @@ class StreamAnalyser:
     def _cache_messages(self, raw_messages):
         self.filehandler.cache_messages(raw_messages)
 
-    def _cache_thumbnail(self, thumbnail_url):
-        self.filehandler.download_thumbnail(thumbnail_url)
-
     def clear_cache(self, cache_deletion_algorithm=None, delete_root_folder=True):
         self.filehandler.clear_cache(cache_deletion_algorithm, delete_root_folder)
 
@@ -218,17 +215,14 @@ class StreamAnalyser:
         """Collects and caches stream data:
         - metadata (title, channel etc.)
         - messages
-        - thumbnail
         """
         # collect data
         metadata = self.collector.collect_metadata()
         raw_messages = self.collector.fetch_raw_messages()
-        thumbnail_url = self.collector.get_thumbnail_url(self.thumb_res_lvl)
 
         # cache data
         self._cache_metadata(metadata)
         self._cache_messages(raw_messages)
-        self._cache_thumbnail(thumbnail_url)
 
     def read_data(self):
         """Reads cached data"""
@@ -297,11 +291,6 @@ class StreamAnalyser:
             elif missing_file == self.filehandler.metadata_fname:
                 self.logger.warning("Metadata file is missing")
                 self.filehandler.cache_metadata(self.collector.collect_metadata())
-            elif missing_file == self.filehandler.thumbnail_fname:
-                self.logger.warning("Thumbnail file is missing")
-                self.filehandler.download_thumbnail(
-                    self.collector.get_thumbnail_url(self.thumb_res_lvl)
-                )
 
         # TODO reimplement fetch missing messages feature
 
@@ -527,11 +516,9 @@ class StreamAnalyser:
         self.logger.info("Exported metadata")
 
         # export thumbnail
-        copyfile(
-            src=os.path.join(
-                self.filehandler.sid_path, self.filehandler.thumbnail_fname
-            ),
-            dst=os.path.join(target_path, self.filehandler.thumbnail_fname),
+        self.filehandler.download_thumbnail(
+            self.collector.get_thumbnail_url(self.thumb_res_lvl),
+            os.path.join(target_path, self.filehandler.thumbnail_fname),
         )
         self.logger.info("Exported thumbnail")
 

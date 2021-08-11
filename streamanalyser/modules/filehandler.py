@@ -21,11 +21,9 @@ class FileHandler:
             Exampleid/
                 messages.json.gz
                 metadata.yaml
-                thumbnail.jpg
             ...
         Logs/
         Exports/
-
     """
 
     def __init__(
@@ -140,15 +138,14 @@ class FileHandler:
         """Alias for `download_thumbnail`"""
         self.download_thumbnail(url)
 
-    def download_thumbnail(self, url):
-        fpath = os.path.join(self.sid_path, self.thumbnail_fname)
+    def download_thumbnail(self, url, destination):
         self.logger.info("Downloading thumbnail")
         try:
             response = requests.get(url)
-            with open(fpath, "wb") as f:
+            with open(destination, "wb") as f:
                 f.write(response.content)
         except Exception as e:
-            self.delete_file(fpath)
+            self.delete_file(destination)
             raise RuntimeError(
                 f"Could not download thumbnail: {e.__class__.__name__}:{e}"
             )
@@ -291,7 +288,6 @@ class FileHandler:
         necessary_files = [
             self.message_fname + ".gz",
             self.metadata_fname,
-            self.thumbnail_fname,
         ]
         unnecesary_files = list(set(files) - set(necessary_files))
         missing_files = list(set(necessary_files) - set(files))
@@ -347,7 +343,7 @@ class FileHandler:
         self.logger.debug(f"{path} is not a file")
         return 0
 
-    def delete_old_files(self, folder_path, time_limit_in_days):
+    def _delete_old_files(self, folder_path, time_limit_in_days):
         """Delete files in a folder older than the time limit."""
 
         for name in os.listdir(folder_path):
@@ -482,7 +478,6 @@ class FileHandler:
         necessary_files = [
             self.message_fname + ".gz",
             self.metadata_fname,
-            self.thumbnail_fname,
         ]
         missing_files = list(set(necessary_files) - set(files))
 

@@ -41,19 +41,6 @@ class TestStreamAnalyser(unittest.TestCase):
                 )
             )
 
-    def test_cache_thumbnail(self):
-        with sa.StreamAnalyser("um196SMIoR8", 0, disable_logs=True) as analyser:
-            analyser._cache_thumbnail(analyser.collector.get_thumbnail_url(0))
-
-            self.assertTrue(
-                os.path.isfile(
-                    os.path.join(
-                        analyser.filehandler.sid_path,
-                        analyser.filehandler.thumbnail_fname,
-                    )
-                )
-            )
-
     def test_collect_read_data(self):
         with sa.StreamAnalyser("um196SMIoR8", 1, disable_logs=True) as analyser:
             analyser.collect_data()
@@ -233,10 +220,6 @@ class TestStreamAnalyser(unittest.TestCase):
                 analyser.filehandler.sid_path,
                 analyser.filehandler.metadata_fname,
             )
-            thumb_pth = os.path.join(
-                analyser.filehandler.sid_path,
-                analyser.filehandler.thumbnail_fname,
-            )
 
             analyser._raw_messages = sample_raw_messages
             analyser.refine_data()
@@ -256,8 +239,6 @@ class TestStreamAnalyser(unittest.TestCase):
             with open(msg_path, "w"):
                 pass
             with open(mdata_pth, "w"):
-                pass
-            with open(thumb_pth, "w"):
                 pass
 
             analyser.export_data(folder_name="test235234")
