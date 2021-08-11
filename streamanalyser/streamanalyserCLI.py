@@ -11,10 +11,10 @@ def parseargs():
     parser = argparse.ArgumentParser()
     parser.add_argument("id", help="id of the YouTube live stream")
     parser.add_argument(
-        "-v",
-        "--verbose",
+        "-s",
+        "--silent",
         action="store_true",
-        help="make output verbose",
+        help="make output silent",
     )
     parser.add_argument(
         "-l", "--limit", default=None, type=int, help="message limit to fetch"
@@ -61,13 +61,13 @@ def parseargs():
         help="window to calculate moving average of message frequency",
     )
     parser.add_argument(
-        "-s", "--summary", action="store_true", help="print highlight summary"
+        "-sum", "--summary", action="store_true", help="print highlight summary"
     )
     parser.add_argument(
         "-hl", "--highlights", action="store_true", help="print highlights"
     )
     parser.add_argument(
-        "-hlu",
+        "-url",
         "--highlight-urls",
         action="store_true",
         help="print highlights in url form",
@@ -182,7 +182,7 @@ def main():
     analyser = sa.StreamAnalyser(
         args.id,
         msglimit=args.limit,
-        verbose=args.verbose,
+        verbose=not args.silent,
         thumb_res_lvl=args.thumb_res_lvl,
         disable_logs=args.disable_logs,
         log_duration=args.log_duration,

@@ -303,7 +303,7 @@ class StreamAnalyser:
                     self.collector.get_thumbnail_url(self.thumb_res_lvl)
                 )
 
-        # TODO reimplement add fetch missing messages feature
+        # TODO reimplement fetch missing messages feature
 
     def generate_wordcloud(self, font_path=None, scale=3) -> WordCloud:
         """Returns word cloud of the stream

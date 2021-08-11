@@ -8,7 +8,7 @@ setup(
     version="v0.0.1",
     author="emso-c",
     author_email="emsoc192@gmail.com",
-    description=("Live stream analyser"),
+    description=("A tool that analyses live streams"),
     keywords=["youtube", "live", "stream", "chat", "highlight", "analyser"],
     url="https://github.com/emso-c/stream-analyser",
     long_description=long_desc,
