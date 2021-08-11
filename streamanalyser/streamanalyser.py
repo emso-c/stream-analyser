@@ -305,20 +305,22 @@ class StreamAnalyser:
 
         # TODO reimplement fetch missing messages feature
 
-    def generate_wordcloud(self, font_path=None, scale=3) -> WordCloud:
-        """Returns word cloud of the stream
+    def generate_wordcloud(
+        self, font_path=None, scale=3, background="aliceblue"
+    ) -> WordCloud:
+        """Returns a basic word cloud
 
         Args:
             font_path (str, optional): Custom font path. Defaults to None.
             scale (int, optional): Scale of the resulting wordcloud.
                 Might want to decrease it for more performance. Defaults to 3.
+            background (str, optional): Background color. Defaults to "aliceblue".
         """
-
-        # TODO stylize the wordcloud
 
         self.logger.info("Generating word cloud")
         self.logger.debug(f"{font_path=}")
         self.logger.debug(f"{scale=}")
+        self.logger.debug(f"{background=}")
 
         if self.verbose:
             print("Generating word cloud...", end="\r")
@@ -333,9 +335,11 @@ class StreamAnalyser:
         # consecutive messages merge together in the word cloud
         random.shuffle(wordlist)
 
-        word_cloud = WordCloud(font_path=font_path, scale=scale).generate(
-            " ".join(wordlist)
-        )
+        word_cloud = WordCloud(
+            font_path=font_path,
+            scale=scale,
+            background_color=background,
+        ).generate(" ".join(wordlist))
 
         if self.verbose:
             print("Generating word cloud... done")
