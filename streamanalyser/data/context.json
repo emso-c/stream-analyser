@@ -176,7 +176,8 @@
             {"phrase": "tskr", "is_exact": false},
             {"phrase": "助かる", "is_exact": false},
             {"phrase": "たすかる", "is_exact": false},
-            {"phrase": "ありがとう", "is_exact": false}
+            {"phrase": "ありがとう", "is_exact": true},
+            {"phrase": "ありがとうございます", "is_exact": true}
         ]
     },
     {

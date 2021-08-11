@@ -225,7 +225,7 @@ def main():
 
         if args.open_in_chrome and top_highlights:
             for highlight in top_highlights:
-                highlight.open_in_chrome()
+                highlight.open_in_browser()
 
         if args.export:
             path = None if args.export == "default" else args.export
