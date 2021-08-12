@@ -140,4 +140,4 @@ dmypy.json
 cython_debug/
 
 # Yes, I've been shamelessly using a text file to keep track of things, how unprofessional.
-TODO.txt
+TODO

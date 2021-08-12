@@ -22,8 +22,23 @@ from modules import (
 
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 DEFAULT_FONT_PATH = os.path.join(DIR_PATH, "fonts", "NotoSansCJKjp-Bold.ttf")
-DEFAULT_KEYWORD_FILTERS = ['of', 'a', 'the', 'i', 'be', 'am', 'and', 'it', 'is',
-"isnt", 'was', 'you', 'can', "can't", "me"]
+DEFAULT_KEYWORD_FILTERS = [
+    "of",
+    "a",
+    "the",
+    "i",
+    "be",
+    "am",
+    "and",
+    "it",
+    "is",
+    "isnt",
+    "was",
+    "you",
+    "can",
+    "can't",
+    "me",
+]
 
 
 class StreamAnalyser:
@@ -147,7 +162,7 @@ class StreamAnalyser:
         self.window = window
         self.threshold_constant = threshold_constant
         self.keyword_limit = keyword_limit
-        self.keyword_filters = keyword_filters+DEFAULT_KEYWORD_FILTERS
+        self.keyword_filters = keyword_filters + DEFAULT_KEYWORD_FILTERS
         self.intensity_levels = intensity_levels
         self.intensity_constants = intensity_constants
         self.intensity_colors = intensity_colors
@@ -280,6 +295,10 @@ class StreamAnalyser:
     @property
     def is_cached(self):
         return self.filehandler.is_cached()
+
+    # TODO implement this
+    def check_missing_messages(self):
+        pass
 
     def enforce_integrity(self):
         """Enforces file integrity by recollecting missing
