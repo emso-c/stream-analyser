@@ -8,7 +8,7 @@ from streamanalyser.modules.datacollector import DataCollector
 # On: Chatdownloader call with limit
 # Warning: unclosed <ssl.SSLSocket> on break
 
-# TODO add test_get_thumbnail_url
+
 class TestDataCollector(unittest.TestCase):
     def test_collect_metadata(self):
         metadata = self.collector.collect_metadata()

@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 import datetime
 import webbrowser
+import platform
 from colorama import init, Fore, Style
 from colorama.ansi import AnsiFore
 
@@ -115,16 +116,25 @@ class Highlight:
             return
 
         # TODO modify default path for other OS's
-        if browser == "chrome":
-            browser_path = r"C:/Program Files/Google/Chrome/Application/chrome.exe %s"
-        elif browser == "edge":
-            browser_path = (
-                r"C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe %s"
-            )
-        elif browser == "firefox":
-            browser_path = r"C:/Program Files/Mozilla Firefox/FireFox.exe %s"
-        elif browser == "opera":
-            browser_path = r"C:/Program Files/Opera/Launcher.exe %s"
+        if platform.system == "Windows":
+            if browser == "chrome":
+                browser_path = (
+                    r"C:/Program Files/Google/Chrome/Application/chrome.exe %s"
+                )
+            elif browser == "edge":
+                browser_path = (
+                    r"C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe %s"
+                )
+            elif browser == "firefox":
+                browser_path = r"C:/Program Files/Mozilla Firefox/FireFox.exe %s"
+            elif browser == "opera":
+                browser_path = r"C:/Program Files/Opera/Launcher.exe %s"
+        elif platform.system == "Linux":
+            pass
+        elif platform.system == "Darwin":
+            pass
+        else:
+            pass
 
         webbrowser.get(browser_path).open(self.url)
 
