@@ -5,7 +5,6 @@ from chat_downloader import ChatDownloader
 
 from .loggersetup import create_logger
 from .utils import percentage
-from .filehandler import streamanalyser_filehandler
 
 
 class DataCollector:

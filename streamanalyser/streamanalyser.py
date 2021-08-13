@@ -49,11 +49,11 @@ class StreamAnalyser:
 
         msglimit (int|None, optional): Message amount to fetch. Defaults to None.
 
+        verbose (bool, optional): Print output to console. Defaults to False.
+
         res_lvl (int, optional): Resolution level of the thumbnail.
             Resolution levels are sorted by quality with 0 being lowest
             and 3 being highest. Defaults to 2.
-
-        verbose (bool, optional): Print output to console. Defaults to False.
 
         disable_logs (bool, optional): Disable logging for debugging purposes.
             Log files' location can be found in `filehandler` module.
