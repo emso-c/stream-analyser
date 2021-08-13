@@ -24,7 +24,16 @@ class TestDataCollector(unittest.TestCase):
             + "dV92TG5QQUNGY3RsbXdvZDVaZ01RUTE2MTk0NjM2MTQzNTE%3D",
         )
 
-        # messages fetched with a limit first time
+        # messages fetched with a limit
+        # should be considered incomplete
+        self.assertFalse(self.collector.iscomplete)
+
+    def test_fetch_missing_messages(self):
+        raw_messages = self.collector.fetch_missing_messages(20, 10, 2)
+
+        self.assertEqual(raw_messages[0]["author"]["id"], "UCjbWfSrdmmtdRSRYcoqjc-Q")
+
+        # messages fetched with a limit
         # should be considered incomplete
         self.assertFalse(self.collector.iscomplete)
 

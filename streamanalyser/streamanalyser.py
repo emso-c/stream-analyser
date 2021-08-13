@@ -230,12 +230,12 @@ class StreamAnalyser:
 
     def collect_data(self):
         """Collects and caches stream data:
-        - metadata (title, channel etc.)
         - messages
+        - metadata (title, channel etc.)
         """
         # collect data
-        metadata = self.collector.collect_metadata()
         raw_messages = self.collector.fetch_raw_messages()
+        metadata = self.collector.collect_metadata()
 
         # cache data
         self._cache_metadata(metadata)
@@ -243,8 +243,20 @@ class StreamAnalyser:
 
     def read_data(self):
         """Reads cached data"""
+        if self.verbose:
+            print("Reading messages...", end="\r")
+
         self._raw_messages = self.filehandler.read_messages()
-        self.metadata.update(self.filehandler.read_metadata())
+        self.update_metadata(self.filehandler.read_metadata())
+
+        if "is-complete" in self.metadata.keys():
+            if not self.metadata["is-complete"]:
+                self.update_metadata({"is-complete": self.collector.iscomplete})
+        else:
+            self.update_metadata({"is-complete": self.collector.iscomplete})
+
+        if self.verbose:
+            print("Reading messages... done")
 
     def refine_data(self):
         """Refines read data"""
@@ -257,7 +269,7 @@ class StreamAnalyser:
         self.authors = self.refiner.get_authors()
 
     def analyse_data(self):
-        """Analyses refined data and finds highligths"""
+        """Analyses refined data and detects highligths"""
         canalyser = chatanalyser.ChatAnalyser(
             refined_messages=self.messages,
             stream_id=self.sid,
@@ -287,6 +299,7 @@ class StreamAnalyser:
         self.enforce_integrity()
         self.read_data()
         self.refine_data()
+        self.fetch_missing_messages()
         self.analyse_data()
 
     def _check_integrity(self, autofix=False) -> Tuple[list, list]:
@@ -296,9 +309,66 @@ class StreamAnalyser:
     def is_cached(self):
         return self.filehandler.is_cached()
 
-    # TODO implement this
-    def check_missing_messages(self):
-        pass
+    def fetch_missing_messages(self):
+        """Checks and fetches missing messages if there's any.
+        Should be used when the message limit is increased or
+        set to None. It also caches, reads and refines the
+        messages by itself as well.
+
+        For instance if 1000 messages had been fetched before,
+        and the user is requesting 1200 messages now, the function
+        will only fetch the last 200 messages instead of starting
+        all over again.
+        """
+
+        self.logger.info("Checking messages")
+
+        if "is-complete" not in self.metadata.keys():
+            self.logger.debug(
+                "Could not fetch missing messages since messages are not collected yet"
+            )
+            return
+
+        if self.metadata["is-complete"]:
+            self.logger.debug("Messages are already complete")
+            return
+        if self.verbose:
+            print("Checking missing messages...", end="\r")
+
+        raw_messages = self.filehandler.read_messages()
+        last_time = raw_messages[-1]["time_in_seconds"]
+        current_amount = len(raw_messages)
+
+        if not self.metadata["is-complete"] and not self.msglimit:
+            target_amount = None
+        else:
+            target_amount = self.msglimit - current_amount
+            if target_amount <= 0:
+                self.logger.debug("No missing messages detected")
+                if self.verbose:
+                    print("Checking missing messages... done")
+                return
+
+        if self.verbose:
+            print("Checking missing messages... done")
+
+        missing_messages = self.collector.fetch_missing_messages(
+            start_time=last_time,
+            current_amount=current_amount,
+            target_amount=target_amount,
+        )
+        self.filehandler.cache_messages(raw_messages + missing_messages)
+        self.messages = self.messages + self.refiner.refine_raw_messages(
+            missing_messages
+        )
+        self.authors = self.authors + self.refiner.get_authors()
+        self.update_metadata({"is-complete": self.collector.iscomplete})
+
+    def update_metadata(self, new_dict):
+        """Updates both metadata file and variable"""
+        self.metadata = {**self.metadata, **new_dict}
+        self.filehandler.cache_metadata(self.metadata)
+        self.logger.info("Updated metadata")
 
     def enforce_integrity(self):
         """Enforces file integrity by recollecting missing
@@ -313,7 +383,10 @@ class StreamAnalyser:
                 self.logger.warning("Metadata file is missing")
                 self.filehandler.cache_metadata(self.collector.collect_metadata())
 
-        # TODO reimplement fetch missing messages feature
+        try:
+            self.fetch_missing_messages()
+        except KeyError:
+            pass
 
     def generate_wordcloud(
         self, font_path=None, scale=3, background="aliceblue"

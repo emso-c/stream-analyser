@@ -300,7 +300,7 @@ class ChatAnalyser:
     def correct_highlights(self) -> list[Highlight]:
         """Corrects highlights by removing highlights that are too short or filtered"""
 
-        # TODO consider highlight value
+        # TODO consider fdelta too
         self.logger.info("Correcting highlights")
 
         if not self.highlights:

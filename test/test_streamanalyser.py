@@ -3,6 +3,8 @@ import unittest
 import warnings
 import os
 
+from modules import filehandler
+
 from streamanalyser import streamanalyser as sa
 
 
@@ -251,6 +253,34 @@ class TestStreamAnalyser(unittest.TestCase):
                 self.assertTrue(item in fnames)
 
             shutil.rmtree(test_export_folder)
+
+    def test_fetch_missing_messages(self):
+        with sa.StreamAnalyser("um196SMIoR8", 2, disable_logs=True) as analyser:
+            analyser.collect_data()
+            analyser.read_data()
+            analyser.refine_data()
+
+            # increase message limit
+            analyser.msglimit = 4
+
+            # call the function
+            analyser.fetch_missing_messages()
+
+            # the missing 2 should be fetched and refined
+            self.assertEqual(len(analyser.messages), 4)
+
+            # set is-complete to True manually
+            # (it's set to true by itself when msg_limit is None in practice)
+            analyser.update_metadata({"is-complete": True})
+
+            # increase message limit again
+            analyser.msglimit = 8
+
+            # call the function
+            analyser.fetch_missing_messages()
+
+            # the messages should NOT be fetched as is-complete is `True`
+            self.assertEqual(len(analyser.messages), 4)
 
 
 #   def test_cache_options(self):

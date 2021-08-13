@@ -481,8 +481,8 @@ class FileHandler:
         ]
         missing_files = list(set(necessary_files) - set(files))
 
-        self.logger.debug(f"is_cached: {(not len(missing_files) == 3)}")
-        return not len(missing_files) == 3
+        self.logger.debug(f"is_cached: {(not len(missing_files) == 2)}")
+        return not len(missing_files) == 2
 
     def get_cached_ids(self) -> list[str]:
         """Returns list of cached ids"""

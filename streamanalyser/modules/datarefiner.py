@@ -45,7 +45,7 @@ class DataRefiner:
         finally:
             self.logger.debug(f"{len(messages)} messages has been refined")
             if self.verbose:
-                print(f"Reading messages... done")
+                print(f"Refining messages... done")
             self.messages = messages
             return messages
 

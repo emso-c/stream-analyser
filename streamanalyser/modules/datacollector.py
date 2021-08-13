@@ -5,6 +5,7 @@ from chat_downloader import ChatDownloader
 
 from .loggersetup import create_logger
 from .utils import percentage
+from .filehandler import streamanalyser_filehandler
 
 
 class DataCollector:
@@ -15,7 +16,6 @@ class DataCollector:
         self.msglimit = msglimit
         self.verbose = verbose
 
-        self.metadata = {}
         self.logger = create_logger(__file__)
         self.iscomplete = False
 
@@ -73,7 +73,7 @@ class DataCollector:
                             },
                         }
                     )
-                except KeyError as e:
+                except KeyError:
                     self.logger.warning(f"Corrupt message data skipped: {raw_message}")
                     corrupted_data_amount += 1
                     continue
@@ -85,9 +85,7 @@ class DataCollector:
             )
             raise e
 
-        self.metadata["iscomplete"] = False
-        if not self.msglimit:
-            self.metadata["iscomplete"] = True
+        self.iscomplete = not bool(self.msglimit)
 
         if self.verbose:
             print(f"Fetching raw messages... done")
@@ -95,6 +93,71 @@ class DataCollector:
         self.logger.info(
             f"{len(raw_messages)-corrupted_data_amount} messages fetched ({corrupted_data_amount} corrupted)"
         )
+        return raw_messages
+
+    def fetch_missing_messages(
+        self, start_time, current_amount, target_amount=None
+    ) -> list[dict]:
+        """Returns missing messages.
+
+        Args:
+            start_time (float): Starting time to fetch messages.
+            current_amount (int): Current message amount.
+            target_amount (int): Target message amount. Defaults to None,
+                which returns all remaining messages.
+
+        Returns:
+            list[dict]: List of missing messages.
+        """
+
+        self.logger.info("Fetching missing messages")
+        self.logger.debug(f"{start_time=}")
+        self.logger.debug(f"{current_amount=}")
+        self.logger.debug(f"{target_amount=}")
+
+        yt_url = "https://www.youtube.com/watch?v=" + self.id
+        corrupted_data_amount = 0
+        raw_messages = []
+        limit = current_amount + target_amount - 1 if target_amount else None
+
+        for counter, raw_message in enumerate(
+            ChatDownloader().get_chat(yt_url, start_time=start_time),
+            start=current_amount,
+        ):
+            if self.verbose:
+                print(
+                    f"Fetching missing messages... {str(percentage(counter, limit))+'%' if target_amount else counter}",
+                    end="\r",
+                )
+            try:
+                raw_messages.append(
+                    {
+                        "message_id": raw_message["message_id"],
+                        "message": raw_message["message"],
+                        "time_in_seconds": raw_message["time_in_seconds"],
+                        "author": {
+                            "name": raw_message["author"]["name"],
+                            "id": raw_message["author"]["id"],
+                        },
+                    }
+                )
+            except KeyError:
+                self.logger.warning(f"Corrupt message data skipped: {raw_message}")
+                corrupted_data_amount += 1
+                continue
+            if target_amount and counter == limit:
+                break
+
+        if not self.iscomplete:
+            self.iscomplete = not bool(target_amount)
+
+        if self.verbose:
+            print(f"Fetching missing messages... done")
+
+        self.logger.info(
+            f"{len(raw_messages)-corrupted_data_amount} messages fetched ({corrupted_data_amount} corrupted)"
+        )
+
         return raw_messages
 
     def get_thumbnail_url(self, res_lvl=2) -> str:
