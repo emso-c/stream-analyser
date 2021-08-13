@@ -11,6 +11,8 @@ from shutil import copyfileobj
 from datetime import datetime
 from time import time
 
+FH_DIR_PATH = os.path.dirname(os.path.realpath(__file__))
+CONTEXT_PATH = os.path.join(FH_DIR_PATH, "..", "data", "context.json")
 
 class FileHandler:
     """A class to manage cache and log files.
@@ -488,5 +490,49 @@ class FileHandler:
         """Returns list of cached ids"""
         return [f for f in self.get_foldernames(self.cache_path) if self.is_cached(f)]
 
+    def add_context(self, reaction_to, phrases):
+        """Add new context. Note that it does not check
+        if the context already exists
+
+        Args:
+            reaction_to (str): What is the reaction for.
+            phrases (list[dict]): Phrase list for the reaction.
+                Each element should be a dictionary that contains:
+                - phrase (str): Phrase that triggers the reaction.
+                - is_exact (boolean): If the message should be exactly the same
+                    or should only include it.
+
+                example: `[{phrase:"lol", is_exact:False}]`
+        """
+        self.logger.info("Adding new context")
+        self.logger.debug(f"{reaction_to=}")
+        self.logger.debug(f"{phrases=}")
+
+        new_context = {
+            "reaction_to": reaction_to,
+            "triggers": [{"phrase": phrase["phrase"], "is_exact": phrase["is_exact"]} for phrase in phrases]
+        }
+        with open(CONTEXT_PATH, "r+", encoding="utf-8") as file:
+            contexts = list(json.load(file))
+            contexts.append(new_context)
+            file.seek(0)
+            file.write(json.dumps(contexts, indent=4, ensure_ascii=False))
+
+    def remove_context(self, reaction_to):
+        """Remove a context
+        Args:
+            reaction_to (str): Reaction to be deleted.
+        """
+        self.logger.info("Removing context")
+        self.logger.debug(f"{reaction_to=}")
+
+        with open(CONTEXT_PATH, 'r', encoding="utf-8") as file:
+            contexts = list(json.load(file))
+        for i in range(len(contexts)):
+            if contexts[i]["reaction_to"] == reaction_to:
+                del contexts[i]
+                break
+        with open(CONTEXT_PATH, 'w', encoding="utf-8") as file:
+            file.write(json.dumps(contexts, indent=4, ensure_ascii=False))
 
 streamanalyser_filehandler = FileHandler(storage_path="C:\\Stream Analyser")
