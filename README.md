@@ -1,4 +1,4 @@
-# Stream Analyser
+# **Stream Analyser**
 
 ### Stream Analyser is a configurable data analysis tool that analyses live streams, detects and classifies highlights based on their intensity, finds keywords, and even guesses contexts.
 
@@ -17,19 +17,36 @@ Also can be expanded to other live stream platforms such as Twitch if there's en
 - [How does it guess contexts](#About-guessing-contexts)
 - [Performance](#About-performance)
 - [Advanced usage](#Advanced-usage)
-    - [TODO](#)
+    - [Fundamentals](#Fundamentals)
+      - [Initializing](##initializing-the-object)
+      - [analyse() function](#analyse-function)
+    - [File handling](#File-handling)
+      - [Caching](#Caching-1)
+      - [Logging](#Logging)
+      - [Exporting](#Exporting)
+      - [CRUD](#CRUD)
+      - [Compressing](#Compressing)
+      - [Integrity checking](#Integrity-checking)
+    - [Logging](#Logging-1)
+    - [Collecting data](#Collecting-data)
+    - [Refining data](#Refining-data)
+    - [Analysing data](#Analysing-data)
+    - [Output](#Output)
+      - [Direct](#Direct)
+      - [With prebuilt functions](#With-prebuilt-functions)
+    - [Custom context](#Custom-context)
 - [Possible issues](#Possible-issues)
 - [Future goals](#Future-goals)
 - [License](#License)
 
-## Installation
+# Installation
 
 Use [pip](https://pip.pypa.io/en/stable/) to install.
 ```bash
 pip install stream-analyser
 ```
 
-## Usage
+# Usage
 
 ```python
 import streamanalyser as sa
@@ -71,7 +88,7 @@ Links:
 
 **Important:** Please see [possible issues](#Possible-issues) if you can't see Japanese characters in console.
 
-### with CLI
+## with CLI
 You can also use a simple pre-built CLI 
 
 ```bash
@@ -87,7 +104,7 @@ if __name__ == '__main__':
 
 See "./examples" for more ways to use the module.
 
-## Key features
+# Key features
 
 - Fetch metadata of the stream
   - title, channel name, url etc.
@@ -105,33 +122,33 @@ See "./examples" for more ways to use the module.
 - Visualize data
 - Export data
 
-## About detecting highlights
+# About detecting highlights
 
 Stream analyser uses live chat reactions to detect highlights and it's accuracy is totally dependant on the participants and the accuracy of the data fetched from YouTube.
 
-## About guessing contexts
+# About guessing contexts
 
 Contexts are hard-coded into the `context.json` file and it requires extensive analysis of the target environments demographics and behaviors to determine them.
 
 As stated in the description, the current contexts are based on Vtuber environment by default, but they can be modified according to your needs, which is explained in [advanced usage](#Advanced-usage) section.
 
-## About performance
+# About performance
 
 Stream analyser is optimized to be as fast as possible while minimizing required storage space.
 
-### **Caching**
+## **Caching**
 
 Stream analyser uses a disc caching mechanism to store useful data such as messages and metadata which would significantly hinder the performance if not cached.
 
-### **Compressing**
+## **Compressing**
 
 Stored messages are compressed right after being fetched and they're only unpacked when needed since they would take up quite a lot of space if not compressed.
 
-### **Exporting**
+## **Exporting**
 
 Other data generated on the run such as graph, word cloud and detected highlights can be exported using `export_data` function.
 
-## Advanced usage
+# **Advanced usage**
 
 # Fundamentals
 
@@ -163,7 +180,7 @@ The other options provide ways to configure methods of analysing, caching, loggi
 - `msglimit`: Message amount to fetch.
 - `verbose`: Make the output verbose.
 
-## `analyse` function
+## `analyse()` function
 Basically the only function needed to analyse a stream. It's a helper function that calls various parts of the whole module in order to analyse the stream. The implementation is as follows:
 ```python
 def analyse(self):
@@ -296,8 +313,11 @@ Finally it draws graph of the analysed data.
 
     - `export_data`: Exports analysed data to a specified path.
 
+# Custom contexts
 
-## Possible issues
+To create a custom context list, you can either use `add_context` and `remove_context` functions or rewrite the `context.json` according to your needs.
+
+# Possible issues
 
 ### It keeps throwing error when reading cached messages
 
