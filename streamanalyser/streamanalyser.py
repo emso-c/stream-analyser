@@ -745,15 +745,16 @@ class StreamAnalyser:
         return highlights_to_return
 
     def add_context(self, reaction_to, phrases):
-        """Add new context. See `filehandler.add_context` for more information"""
         self.filehandler.add_context(reaction_to, phrases)
-    
+
     def remove_context(self, reaction_to):
-        """Remove existing context. See `filehandler.remove_context` for more information"""
         self.filehandler.remove_context(reaction_to)
 
     def cached_ids(self) -> list[str]:
         return self.filehandler.get_cached_ids()
+
+    def open_cache_folder(self):
+        self.filehandler.open_cache_folder(self.sid)
 
     def show_graph(self):
         self.fig.show()

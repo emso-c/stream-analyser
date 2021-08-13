@@ -14,6 +14,7 @@ from time import time
 FH_DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 CONTEXT_PATH = os.path.join(FH_DIR_PATH, "..", "data", "context.json")
 
+
 class FileHandler:
     """A class to manage cache and log files.
 
@@ -131,7 +132,9 @@ class FileHandler:
         fpath = os.path.join(self.sid_path, self.metadata_fname)
         try:
             with open(fpath, "w", encoding="utf-8") as file:
-                yaml.dump(metadata_dict, file, default_flow_style=False)
+                yaml.dump(
+                    metadata_dict, file, default_flow_style=False, allow_unicode=True
+                )
         except Exception as e:
             self.delete_file(fpath)
             raise RuntimeError(f"Could not cache metadata: {e.__class__.__name__}:{e}")
@@ -168,7 +171,7 @@ class FileHandler:
         Returns a dict."""
         fpath = os.path.join(self.sid_path, self.metadata_fname)
         self.logger.info("Read metadata")
-        return yaml.load(open(fpath, "r"), Loader=yaml.Loader)
+        return yaml.load(open(fpath, "r", encoding="utf-8"), Loader=yaml.Loader)
 
     def _compress_file(self, jsonpath):
         """Compresses a json file with gzip"""
@@ -510,7 +513,10 @@ class FileHandler:
 
         new_context = {
             "reaction_to": reaction_to,
-            "triggers": [{"phrase": phrase["phrase"], "is_exact": phrase["is_exact"]} for phrase in phrases]
+            "triggers": [
+                {"phrase": phrase["phrase"], "is_exact": phrase["is_exact"]}
+                for phrase in phrases
+            ],
         }
         with open(CONTEXT_PATH, "r+", encoding="utf-8") as file:
             contexts = list(json.load(file))
@@ -526,13 +532,22 @@ class FileHandler:
         self.logger.info("Removing context")
         self.logger.debug(f"{reaction_to=}")
 
-        with open(CONTEXT_PATH, 'r', encoding="utf-8") as file:
+        with open(CONTEXT_PATH, "r", encoding="utf-8") as file:
             contexts = list(json.load(file))
         for i in range(len(contexts)):
             if contexts[i]["reaction_to"] == reaction_to:
                 del contexts[i]
                 break
-        with open(CONTEXT_PATH, 'w', encoding="utf-8") as file:
+        with open(CONTEXT_PATH, "w", encoding="utf-8") as file:
             file.write(json.dumps(contexts, indent=4, ensure_ascii=False))
+
+    def open_cache_folder(self, sid):
+        target_path = os.path.join(self.cache_path, sid)
+        try:
+            os.startfile(target_path)
+            self.logger.info(f"Opened {target_path} in file explorer")
+        except FileNotFoundError:
+            self.logger.error(f"Could not find {target_path}")
+
 
 streamanalyser_filehandler = FileHandler(storage_path="C:\\Stream Analyser")
