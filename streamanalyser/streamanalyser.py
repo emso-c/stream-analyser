@@ -701,7 +701,13 @@ class StreamAnalyser:
             highlights = self.highlights
 
         if output_mode:
-            print("\n" + Back.RED + "Highlights:" + Style.RESET_ALL)
+            if output_mode == "detailed":
+                title="Highlights:"
+            if output_mode == "url":
+                title="Links:"
+            if output_mode == "summary":
+                title="Summary:"
+            print("\n" + Back.RED + title + Style.RESET_ALL)
         for highlight in highlights:
             skip = False
             for context in highlight.contexts:
