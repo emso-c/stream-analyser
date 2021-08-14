@@ -1,3 +1,2 @@
 include streamanalyser/data/context.json
-include streamanalyser/data/config.yaml
 include streamanalyser/fonts/NotoSansCJKjp-Bold.ttf
