@@ -545,6 +545,13 @@ class StreamAnalyser:
 
     def export_data(self, folder_name=None, path=None, open_folder=False):
         """Exports the analysed data to the path.
+        Exported data are:
+        - messages
+        - highlights
+        - metadata
+        - thumbnail
+        - graph
+        - word cloud
 
         Args:
             folder_name (str|None, optional): File name to export the results. Defaults to None,
@@ -702,11 +709,11 @@ class StreamAnalyser:
 
         if output_mode:
             if output_mode == "detailed":
-                title="Highlights:"
+                title = "Highlights:"
             if output_mode == "url":
-                title="Links:"
+                title = "Links:"
             if output_mode == "summary":
-                title="Summary:"
+                title = "Summary:"
             print("\n" + Back.RED + title + Style.RESET_ALL)
         for highlight in highlights:
             skip = False
