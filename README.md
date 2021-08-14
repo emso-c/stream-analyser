@@ -138,7 +138,7 @@ Stream analyser is optimized to be as fast as possible while minimizing required
 
 ## **Caching**
 
-Stream analyser uses a disc caching mechanism to store useful data such as messages and metadata which would significantly hinder the performance if not cached.
+Stream analyser uses a disk caching mechanism to store useful data such as messages and metadata which would significantly hinder the performance if not cached.
 
 ## **Compressing**
 
@@ -405,8 +405,6 @@ Finally it draws graph of the analysed data.
 
       # open the folder in file explorer after exporting 
       analyser.export_data(open_folder=True)
-
-
       ```
 
 # Custom contexts
