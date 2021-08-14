@@ -130,7 +130,7 @@ Stream analyser uses live chat reactions to detect highlights and it's accuracy 
 
 Contexts are hard-coded into the `context.json` file and it requires extensive analysis of the target environments demographics and behaviors to determine them.
 
-As stated in the description, the current contexts are based on Vtuber environment by default, but they can be modified according to your needs, which is explained in [advanced usage](#Advanced-usage) section.
+As stated in the description, the current contexts are based on Vtuber environment by default, but they can be modified according to your needs, which is explained in [custom contexts](#Custom-contexts) section.
 
 # About performance
 
@@ -301,7 +301,7 @@ Finally it draws graph of the analysed data.
     
     ```python
     with StreamAnalyser(stream_id) as analyser:
-      ...
+      analyser.analyse()
     ```
 
     Data can be accessed and manipulated using these functions:
