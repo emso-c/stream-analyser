@@ -57,7 +57,7 @@ class FileHandler:
         self.sid_path = None
 
     def __repr__(self) -> str:
-        return "Storing files into " + self.project_path
+        return "Storing files into " + self.storage_path
 
     def _create_logger(self, name, def_level=logging.ERROR, level=logging.DEBUG):
         for handler in logging.root.handlers[:]:

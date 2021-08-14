@@ -173,9 +173,9 @@ with StreamAnalyser("l8Hgi4jF7Zc") as sa:
     ...
 ```
 
-The other options provide ways to configure methods of analysing, caching, logging and output. Full docs can be found in the module. Some of the important ones are:
-- `storage_path`: Path to store the related files such as logs and caches.
-- `cache_limit`: Max stream amount to cache.
+The other options provide ways to configure methods of analysing, caching, logging and outputting. Full docs can be found in the module. Some of the important ones are:
+- `storage_path`: Path to store project related files such as logs and caches.
+- `cache_limit`: Max file amount to cache.
 - `cache_deletion_algorithm`: In which order the cached files will be deleted.
 - `msglimit`: Message amount to fetch.
 - `verbose`: Make the output verbose.
@@ -202,7 +202,7 @@ Before diving into the core modules (collector, refiner and analyser), the other
 
 File handling is done with the `filehandler` module. It handles everything related to files from caching to interacting with them. Those external files are store in a designated path (Default path is `"C:\Stream Analyser"`)
 
-Example folder structure is as follows:
+Example storage folder structure is as follows:
 ```
 Stream Analyser
 ├───Cache
@@ -297,25 +297,125 @@ Finally it draws graph of the analysed data.
     print(type(analyser.fig))  # plt
     ```
 - ## With prebuilt functions
-    There are plenty of prebuilt functions to access filter and manipulate the returned data.
+    There are plenty of prebuilt functions to filter and manipulate the returned data. Assuming the object is initialized as follows:
+    
+    ```python
+    with StreamAnalyser(stream_id) as analyser:
+      ...
+    ```
 
-    - `get_highlights`: Returns highlights that can be filtered and sorted by intensity. Can also pretty print to the console using `ouput_mode`. Highlights are color coded by intensity.
+    Data can be accessed and manipulated using these functions:
 
-    - `most_used_phrase`: Returns most used phrase throughout the stream
+    - `get_highlights`: Returns highlights that can be filtered and sorted by intensity. Can also pretty print to the console using `ouput_mode` argument. Highlights are color coded by intensity.
 
-    - `find_messages`: Searches for filtered messages.
+      ```python
+      analyser.get_highlights()
+      # No output on console. This usage is the same as `analyser.highlights` and returns a highlight list.
 
-    - `find_user_messages`: Returns all messages made by an user.
+      analyser.get_highlights(top=10)
+      # Returns top 10 highlights sorted by intensity.
 
+      analyser.get_highlights(output_mode="summary")
+      # Prints the returned highlights on the console.
+
+      analyser.get_highlights(include=["funny"], exclude=["scary"])
+      # Returns highlights that includes "funny" and "cute" contexts and excludes "scary" context. Exclude overrides include. Context names can be found and modified in `.data/contexts.json` file.
+
+      analyser.get_highlights(intensity_filters=["Very high"])
+      # Returns highlights that does not have "Very high" intensity. Default intenisty names can be found in `chatanalyser.init_intenisty()` function and modified using arguments when initializing the object. 
+      
+      ```
+
+    - `most_used_phrase`: Returns most used phrase and its occurance count throughout the stream
+
+      ```python
+      # basic usage
+      phrase, occurance = analyser.most_used_phrase()
+      print(phrase, occurance)
+      # lol 74
+
+      # some phrases can be excluded as well
+      phrase, occurance = analyser.most_used_phrase(exclude=["lol"])
+      print(phrase, occurance)
+      # lmao 64
+
+      # phrases are normalized when finding phrases by default but this behavior can be avoided using `normalize` argument.
+      phrase, occurance = analyser.most_used_phrase(normalize=False)
+      print(phrase, occurance)
+      # lol 68 (notice that occurance count is decreased)
+      ```
+
+    - `find_messages`: Searches for messages. Can be filtered in various ways.
+
+      ```python
+      # basic usage
+      found_messages = analyser.find_messages("lol")
+      [print(message) for message in found_messages]
+      # [0:13:02] Alice: that's funny lol
+      # [0:13:15] Bob: lol
+      # [0:22:25] William: LOL
+
+      # the exact phrase can be searched
+      found_messages = analyser.find_messages("lol", exact=True)
+      [print(message) for message in found_messages]
+      # [0:13:15] Bob: lol
+      # [0:22:25] William: LOL
+
+      # cases are ignored by default, but this behavior can be avoided using `ignore_case` argument. 
+      msgs = analyser.find_messages("lol", ignore_case=False)
+      [print(message) for message in msgs]
+      # [0:13:02] Alice: that's funny lol
+      # [0:13:15] Bob: lol
+      ```
+
+    - `find_user_messages`: Returns all messages made by an user. Can use either username or id.
+      ```python
+      found_messages = analyser.find_user_messages(username="Tom")
+      [print(message) for message in found_messages]
+      # [0:01:42] Tom: That's a nice module
+
+      found_messages = analyser.find_user_messages(
+        id="UCHkbYFoYuUpfg2R9jcCkTZg"
+      )
+      [print(message) for message in found_messages]
+      # [1:23:42] Alice: I love cats
+      ```
     - `generate_wordcloud`: Creates a basic word cloud of the stream.
-
+      ```python
+      analyser.generate_wordcloud().to_image().show()
+      ```
     - `show_graph`: Shows a basic graph that contains message frequency and highlights.
+      ```python
+      # both uses are the same
+      analyser.show_graph()
+      analyser.fig.show()
+      ```
 
     - `export_data`: Exports analysed data to a specified path.
+      ```python
+      # basic usage
+      # exports data to the default export path with the folder name being the current UNIX timestamp
+      analyser.export_data()
+
+      # a custom path and folder name can be used
+      # if the folder name is already used, current UNIX timestamp is added after the folder name
+      analyser.export_data(
+        path="./MyExports", folder_name="MyFolderName"
+      )
+
+      # open the folder in file explorer after exporting 
+      analyser.export_data(open_folder=True)
+
+
+      ```
 
 # Custom contexts
 
 To create a custom context list, you can either use `add_context` and `remove_context` functions or rewrite the `context.json` according to your needs.
+
+<hr>
+
+<br>
 
 # Possible issues
 
