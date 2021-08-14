@@ -61,18 +61,12 @@ def parseargs():
         help="window to calculate moving average of message frequency",
     )
     parser.add_argument(
-        "-sum", "--summary", action="store_true", help="print highlight summary"
-    )
-    parser.add_argument(
-        "-hl", "--highlights", action="store_true", help="print highlights"
-    )
-    parser.add_argument(
-        "-url",
-        "--highlight-urls",
-        action="store_true",
-        help="print highlights in url form",
+        "-ho", "--highlight-output", default="detailed", type=str, help="print highlights. Options are 'detailed', 'summary' and 'url'"
     )
     parser.add_argument("-g", "--graph", action="store_true", help="show graph")
+    parser.add_argument(
+        "-sca", "--show-cached", action="store_true", help="show cached file ids"
+    )
     parser.add_argument(
         "-exp",
         "--export",
@@ -207,25 +201,21 @@ def main():
             for msg in analyser.find_user_messages(args.user_id, args.username):
                 print(msg)
 
-        if args.summary:
-            mode = "summary"
-        elif args.highlights:
-            mode = "detailed"
-        elif args.highlight_urls:
-            mode = "url"
-        else:
-            mode = None
-        top_highlights = analyser.get_highlights(
-            top=args.top,
-            output_mode=mode,
-            include=args.include_context,
-            exclude=args.exclude_context,
-            intensity_filters=args.intensity_filters,
-        )
+        if args.highlight_output:
+            top_highlights = analyser.get_highlights(
+                top=args.top,
+                output_mode=args.highlight_output,
+                include=args.include_context,
+                exclude=args.exclude_context,
+                intensity_filters=args.intensity_filters,
+            )
 
         if args.open_in_chrome and top_highlights:
             for highlight in top_highlights:
                 highlight.open_in_browser()
+
+        if args.show_cached:
+            print(analyser.cached_ids())
 
         if args.export:
             path = None if args.export == "default" else args.export
