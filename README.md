@@ -10,31 +10,32 @@ Also can be expanded to other live stream platforms such as Twitch if there's en
 
 ## Table of contents
 - [Installation](#Installation)
-- [Usage](#Usage)
+- [Basic usage](#Usage)
   - [CLI](#with-CLI)
 - [Key Features](#Key-features)
 - [How does it detect highlights](#About-detecting-highlights)
 - [How does it guess contexts](#About-guessing-contexts)
 - [Performance](#About-performance)
 - [Advanced usage](#Advanced-usage)
-    - [Fundamentals](#Fundamentals)
+    - [1. Fundamentals](#1.-Fundamentals)
       - [Initializing](##initializing-the-object)
       - [analyse() function](#analyse-function)
-    - [File handling](#File-handling)
+    - [2. File handling](#2.-File-handling)
       - [Caching](#Caching-1)
       - [Logging](#Logging)
       - [Exporting](#Exporting)
       - [CRUD](#CRUD)
       - [Compressing](#Compressing)
       - [Integrity checking](#Integrity-checking)
-    - [Logging](#Logging-1)
-    - [Collecting data](#Collecting-data)
-    - [Refining data](#Refining-data)
-    - [Analysing data](#Analysing-data)
-    - [Output](#Output)
+    - [3. Logging](#3.-Logging-1)
+    - [4. Collecting data](#4.-Collecting-data)
+    - [5. Refining data](#5.-Refining-data)
+    - [6. Analysing data](#6.-Analysing-data)
+    - [7. Output](#7.-Output)
       - [Direct](#Direct)
       - [With prebuilt functions](#With-prebuilt-functions)
-    - [Custom context](#Custom-context)
+    - [8. Custom context](#Custom-context)
+- [Testing](#Testing)
 - [Possible issues](#Possible-issues)
 - [Future goals](#Future-goals)
 - [License](#License)
@@ -150,7 +151,7 @@ Other data generated on the run such as graph, word cloud and detected highlight
 
 # **Advanced usage**
 
-# Fundamentals
+# 1. Fundamentals
 
 Stream analyser is divided into sub-modules that handles various parts of the job. To briefly explain each one of them:
 
@@ -198,7 +199,7 @@ As can be seen in the code, it collects, reads, refines and finally analyses the
 
 Before diving into the core modules (collector, refiner and analyser), the other helper modules will be explained.
 
-# File handling
+# 2. File handling
 
 File handling is done with the `filehandler` module. It handles everything related to files from caching to interacting with them. Those external files are store in a designated path (Default path is `"C:\Stream Analyser"`)
 
@@ -247,13 +248,13 @@ Stream Analyser
     
     It also can automatically fix minor mistakes such as compressing files that are unintentionally left decompressed and deleting unnecessary files.
 
-# Logging
+# 3. Logging
 
 Logging is done with `logging` module. All modules share the same log file that changes weekly and all uses `create_logger` function in `loggersetup` module (except `filehandler`) to initialize their own loggers with their own module names. The reason for using seperate loggers is to improve debugging efficiency. 
 
 Log files use *YYYY-MM-WX.log* naming convention where WX is the Xth week of the month (including 0). Duration of a log file is 15 days (unless chosen to be kept indefinitely) but can be configured. It can also be disabled.
 
-# Collecting data
+# 4. Collecting data
 
 Data collection is done with the `datacollector` module, which fetches messages of the stream using the `ChatDownloader` module and metadata using the `urllib` module. It also has methods to fetch missing messages and to get thumbnail image url.
 
@@ -261,7 +262,7 @@ One important part to mention is how `msglimit` (message limit) and `iscomplete`
 
 The fetched data is in it's raw shape and needs to be refined to be actually used.
 
-# Refining data
+# 5. Refining data
 
 Data refining is done with the `datarefiner` module. It's a bridge between collector and analyser modules that shapes data from one form to another. 
 
@@ -269,7 +270,7 @@ The raw data collected with `datacollector` is in the dictionary form and it's s
 
 It also gets names of the authors and shapes them into `Author` dataclass too.
 
-# Analysing data
+# 6. Analysing data
 
 Data analysis is done with the `chatanalyser` module by reading the refined chat data.
 
@@ -285,7 +286,7 @@ After finding highlight timestamps, other crucial information is analysed to get
 
 Finally it draws graph of the analysed data.
 
-# Output
+# 7. Output
 
 - ## Direct
     Data can be accessed directly using the class attributes
@@ -458,6 +459,12 @@ C:\Your\Path> 今日本語が書ける
 ```
 
 Likewise, use `chcp 65001` to go back. Or simply re-open the console.
+
+## Testing
+
+```python
+python -m unittest discover test
+```
 
 ## Future goals
 
