@@ -1,2 +1,3 @@
 include streamanalyser/data/context.json
 include streamanalyser/fonts/NotoSansCJKjp-Bold.ttf
+include requirements.txt
