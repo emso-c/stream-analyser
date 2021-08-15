@@ -3,9 +3,12 @@ from setuptools import setup, find_packages
 with open("README.md", "r", encoding="utf-8") as fh:
     long_desc = fh.read()
 
+with open('requirements.txt') as f:
+    requirements = [rq.replace("==", ">=") for rq in f.read().splitlines()]
+
 setup(
     name="stream-analyser",
-    version="v0.0.1",
+    version="v0.2.0",
     author="emso-c",
     author_email="emsoc192@gmail.com",
     description=("A tool that analyses live streams"),
@@ -27,33 +30,5 @@ setup(
     package_dir={"": "streamanalyser"},
     python_requires=">=3.9",
     include_package_data=True,
-    install_requires=[
-        "build>=0.5.1",
-        "certifi>=2020.12.5",
-        "chardet>=4.0.0",
-        "chat-downloader>=0.0.8",
-        "colorama>=0.4.4",
-        "colorlog>=5.0.1",
-        "cycler>=0.10.0",
-        "DateTime>=4.3",
-        "docstring-parser>=0.8.1",
-        "idna>=2.10",
-        "isodate>=0.6.0",
-        "kiwisolver>=1.3.1",
-        "matplotlib>=3.4.2",
-        "numpy>=1.20.3",
-        "packaging>=21.0",
-        "pep517>=0.10.0",
-        "Pillow>=8.2.0",
-        "pyparsing>=2.4.7",
-        "python-dateutil>=2.8.1",
-        "pytz>=2021.1",
-        "PyYAML>=5.4.1",
-        "regex>=2021.4.4",
-        "requests>=2.25.1",
-        "six>=1.16.0",
-        "toml>=0.10.2",
-        "urllib3>=1.26.5",
-        "zope.interface>=5.4.0",
-    ],
+    install_requires=requirements,
 )
