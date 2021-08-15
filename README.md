@@ -6,6 +6,8 @@ For now the target environment is *Vtuber streams on YouTube (particularly Holol
 
 Also can be expanded to other live stream platforms such as Twitch if there's enough support.
 
+> :warning: Seems like wordcloud package can not be installed via pip on win10 right now. You need to manually install the [wheel file](https://pypi.org/project/wordcloud/#files). So I didn't include it in the requirements for now and it is not necessary if you're not gonna use the word cloud feature.
+
 **Currently in Alpha.**
 
 ## Table of contents

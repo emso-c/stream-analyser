@@ -8,7 +8,10 @@ from typing import Tuple
 from time import time
 from colorama.ansi import Back, Style
 
-from wordcloud import WordCloud
+try:
+    from wordcloud import WordCloud
+except ModuleNotFoundError as e:
+    print("Error:", e)
 
 from modules import (
     loggersetup,
@@ -388,9 +391,7 @@ class StreamAnalyser:
         except KeyError:
             pass
 
-    def generate_wordcloud(
-        self, font_path=None, scale=3, background="aliceblue"
-    ) -> WordCloud:
+    def generate_wordcloud(self, font_path=None, scale=3, background="aliceblue"):
         """Returns a basic word cloud
 
         Args:
@@ -418,11 +419,16 @@ class StreamAnalyser:
         # consecutive messages merge together in the word cloud
         random.shuffle(wordlist)
 
-        word_cloud = WordCloud(
-            font_path=font_path,
-            scale=scale,
-            background_color=background,
-        ).generate(" ".join(wordlist))
+        try:
+            word_cloud = WordCloud(
+                font_path=font_path,
+                scale=scale,
+                background_color=background,
+            ).generate(" ".join(wordlist))
+        except Exception as e:
+            self.logger.error("Could not generate wordcloud: "+e)
+            print("Generating word cloud... error")
+            raise e
 
         if self.verbose:
             print("Generating word cloud... done")
