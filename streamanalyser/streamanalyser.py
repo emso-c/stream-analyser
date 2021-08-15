@@ -426,8 +426,9 @@ class StreamAnalyser:
                 background_color=background,
             ).generate(" ".join(wordlist))
         except Exception as e:
-            self.logger.error("Could not generate wordcloud: "+e)
-            print("Generating word cloud... error")
+            self.logger.error(f"Could not generate wordcloud: {e}")
+            if self.verbose:
+                print("Generating word cloud... error")
             raise e
 
         if self.verbose:
@@ -716,10 +717,13 @@ class StreamAnalyser:
         if output_mode:
             if output_mode == "detailed":
                 title = "Highlights:"
-            if output_mode == "url":
+            elif output_mode == "url":
                 title = "Links:"
-            if output_mode == "summary":
+            elif output_mode == "summary":
                 title = "Summary:"
+            else:
+                self.logger.error("Invalid output_mode")
+                raise ValueError("Invalid output_mode")
             print("\n" + Back.RED + title + Style.RESET_ALL)
         for highlight in highlights:
             skip = False
