@@ -61,7 +61,11 @@ def parseargs():
         help="window to calculate moving average of message frequency",
     )
     parser.add_argument(
-        "-ho", "--highlight-output", default=None, type=str, help="print highlights. Options are 'detailed', 'summary' and 'url'"
+        "-ho",
+        "--highlight-output",
+        default=None,
+        type=str,
+        help="print highlights. Options are 'detailed', 'summary' and 'url'",
     )
     parser.add_argument("-g", "--graph", action="store_true", help="show graph")
     parser.add_argument(

@@ -1,0 +1,9 @@
+[run]
+omit =
+    *\site-packages\*
+    test\*
+    examples\*
+    *\__init__.py
+    streamanalyser\streamanalyserCLI.py
+    setup.py
+    cover.py

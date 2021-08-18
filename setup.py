@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 with open("README.md", "r", encoding="utf-8") as fh:
     long_desc = fh.read()
 
-with open('requirements.txt') as f:
+with open("requirements.txt") as f:
     requirements = [rq.replace("==", ">=") for rq in f.read().splitlines()]
 
 setup(

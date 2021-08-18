@@ -468,6 +468,10 @@ Likewise, use `chcp 65001` to go back. Or simply re-open the console.
 python -m unittest discover test
 ```
 
+```python
+python cover.py
+```
+
 ## Future goals
 
 - Expand to other stream platforms.
