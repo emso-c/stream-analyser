@@ -26,23 +26,8 @@ from modules import (
 
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 DEFAULT_FONT_PATH = os.path.join(DIR_PATH, "fonts", "NotoSansCJKjp-Bold.ttf")
-DEFAULT_KEYWORD_FILTERS = [
-    "of",
-    "a",
-    "the",
-    "i",
-    "be",
-    "am",
-    "and",
-    "it",
-    "is",
-    "isnt",
-    "was",
-    "you",
-    "can",
-    "can't",
-    "me",
-]
+with open(rf"{DIR_PATH}/data/keyword_filters.txt", "r", encoding="utf-8") as f:
+    DEFAULT_KEYWORD_FILTERS = [kw.strip("\n") for kw in f.readlines()]
 
 
 class StreamAnalyser:
@@ -191,7 +176,9 @@ class StreamAnalyser:
 
         if not keep_logs:
             self.filehandler._delete_old_files(self.filehandler.log_path, log_duration)
-        self.logger.info("Session start ==================================")
+        self.logger.info(("=" * 100) + "=" * 15)
+        self.logger.info(f"{'='*20} SESSION START {'='*80}")
+        self.logger.info(("=" * 100) + "=" * 15)
         self.filehandler.create_cache_dir(self.sid)
         if reset:
             self.clear_cache(delete_root_folder=False)
