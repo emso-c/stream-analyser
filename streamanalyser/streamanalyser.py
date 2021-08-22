@@ -21,6 +21,7 @@ from modules import (
     chatanalyser,
     structures,
     utils,
+    cli,
 )
 
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -781,3 +782,7 @@ class StreamAnalyser:
 
     def show_graph(self):
         self.fig.show()
+
+
+if __name__ == "__main__":
+    cli.main()

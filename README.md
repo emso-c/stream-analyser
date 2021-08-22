@@ -2,7 +2,7 @@
 
 ### Stream Analyser is a configurable data analysis tool that analyses live streams, detects and classifies highlights based on their intensity, finds keywords, and even guesses contexts.
 
-For now the target environment is *Vtuber streams on YouTube (particularly Hololive)* by default. Though it can be manually configured to satisfy your needs, which will be explained later.
+About context guessing, for now the target environment is *Vtuber streams on YouTube (particularly Hololive)* by default. Though it can be manually configured to satisfy your needs, which will be explained later.
 
 Also can be expanded to other live stream platforms such as Twitch if there's enough support.
 
@@ -95,14 +95,14 @@ Links:
 You can also use a simple pre-built CLI 
 
 ```bash
-python -m streamanalyserCLI --help
+python -m streamanalyser --help
 ```
 or
 ```python
-import streamanalyserCLI
+from streamanalyser import cli
 
 if __name__ == '__main__':
-    streamanalyserCLI.main()
+    cli.main()
 ```
 
 See "./examples" for more ways to use the module.
@@ -438,7 +438,7 @@ with StreamAnalyser('Vl_N4AXspo') as analyser:
 ```
 or
 ```bash
-python streamanalyserCLI.py [stream-id] --reset
+python -m streamanalyser [stream-id] --reset
 ```
 
 - Open appropriate metadata file and set `is-complete` option to `False`. Then run the program again with `msglimit=None`.
@@ -469,7 +469,7 @@ python -m unittest discover test
 ```
 
 ```python
-python cover.py
+python test_coverage.py
 ```
 
 ## Future goals
