@@ -203,7 +203,7 @@ Before diving into the core modules (collector, refiner and analyser), the other
 
 # 2. File handling
 
-File handling is done with the `filehandler` module. It handles everything related to files from caching to interacting with them. Those external files are store in a designated path (Default path is `"C:\Stream Analyser"`)
+File handling is done with the `filehandler` module. It handles everything related to files from caching to interacting with them. These external files are stored in a designated path (Default path is `"C:\Stream Analyser"`)
 
 Example storage folder structure is as follows:
 ```
@@ -321,7 +321,7 @@ Finally it draws graph of the analysed data.
       analyser.get_highlights(output_mode="summary")
       # Prints the returned highlights on the console.
 
-      analyser.get_highlights(include=["funny"], exclude=["scary"])
+      analyser.get_highlights(include=["funny", "cute"], exclude=["scary"])
       # Returns highlights that includes "funny" and "cute" contexts and excludes "scary" context. Exclude overrides include. Context names can be found and modified in `.data/contexts.json` file.
 
       analyser.get_highlights(intensity_filters=["Very high"])
