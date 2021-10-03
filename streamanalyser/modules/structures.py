@@ -62,7 +62,7 @@ class Highlight:
     time: int
     duration: int
     intensity: Intensity = None
-    fdelta: float = 0.0  # is the difference between frequencies from start to finish
+    fdelta: float = 0.0  # is the frequency difference from start to finish
     messages: list[Message] = field(default_factory=list)
     keywords: list[str] = field(default_factory=list)
     contexts: set[str] = field(default_factory=set)
@@ -137,6 +137,18 @@ class Highlight:
             pass
 
         webbrowser.get(browser_path).open(self.url)
+
+    def to_dict(self) -> dict:
+        return {
+            "stream_id": self.stream_id,
+            "time": self.time,
+            "duration": self.duration,
+            "intensity": self.intensity,
+            "fdelta": self.fdelta,
+            "messages": self.messages,
+            "keywords": self.keywords,
+            "contexts": self.contexts,
+        }
 
     @property
     def time_in_hms(self):

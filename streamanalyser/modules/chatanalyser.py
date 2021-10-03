@@ -37,7 +37,7 @@ class ChatAnalyser:
         window (int, optional):  Time interval to calculate moving averages. Defaults to 30.
 
         threshold_constant(int, optional): The value that divides average highlight duration.
-            Defaults to 3.
+            Set higher to get shorter highlights. Defaults to 3.
 
         keyword_limit(int, optional): Keyword amount to retrieve. Defaults to 4.
 
@@ -78,7 +78,7 @@ class ChatAnalyser:
         self.frequency = {}
         self.intensity_list = []
         self.fre_mov_avg = {}
-        self.smooth_avg = []
+        self.exp_mov_avg = []
         self.highlight_annotation = []
         self.highlights = []
 
@@ -197,8 +197,8 @@ class ChatAnalyser:
         return list(np.convolve(list(dict.values()), np.ones(w) / w, mode="same"))
 
     def smoothen_mov_avg(self) -> list[np.ndarray]:
-        self.smooth_avg = self._smoothen(self.fre_mov_avg)
-        return self.smooth_avg
+        self.exp_mov_avg = self._smoothen(self.fre_mov_avg)
+        return self.exp_mov_avg
 
     def create_highlight_annotation(self) -> list[int]:
         """Creates highlight annotation from moving average.
@@ -206,12 +206,12 @@ class ChatAnalyser:
 
         self.logger.info("Creating highlight annotation")
         self.highlight_annotation = []
-        for i in range(len(self.smooth_avg)):
-            if i == len(self.smooth_avg) - 1:
+        for i in range(len(self.exp_mov_avg)):
+            if i == len(self.exp_mov_avg) - 1:
                 break
-            if self.smooth_avg[i] < self.smooth_avg[i + 1]:
+            if self.exp_mov_avg[i] < self.exp_mov_avg[i + 1]:
                 self.highlight_annotation.append(1)
-            elif self.smooth_avg[i] > self.smooth_avg[i + 1]:
+            elif self.exp_mov_avg[i] > self.exp_mov_avg[i + 1]:
                 self.highlight_annotation.append(-1)
             else:
                 self.highlight_annotation.append(0)
@@ -249,7 +249,7 @@ class ChatAnalyser:
         Args:
             highlight_annotation (list[int]): Highlight annotation returned from
                 create_highlight_annotation method.
-            smooth_avg (list): Smoothened values of moving average of message frequency.
+            exp_mov_avg (list): Smoothened values of moving average of message frequency.
             min_duration (int): Minimum highlight duration to detect.
         Returns:
             list[Highlight]: List of highlight times
@@ -269,7 +269,7 @@ class ChatAnalyser:
                 )
             if not start_time and self.highlight_annotation[current_time] == 1:
                 start_time = current_time
-                initial_frequency = self.smooth_avg[current_time]
+                initial_frequency = self.exp_mov_avg[current_time]
 
             if start_time and self.highlight_annotation[current_time] != 1:
                 duration = current_time - start_time
@@ -279,7 +279,7 @@ class ChatAnalyser:
                     )
                     start_time = 0
                     continue
-                delta = self.smooth_avg[current_time] - initial_frequency
+                delta = self.exp_mov_avg[current_time] - initial_frequency
                 if delta < 0:
                     self.logger.debug(
                         f"Highlight @{start_time} was not added, delta was {delta}"
@@ -507,7 +507,7 @@ class ChatAnalyser:
         fig.suptitle(title, fontproperties=fprop, fontsize=16)
 
         xAxis = list(self.frequency)
-        yAxis = self.smooth_avg
+        yAxis = self.exp_mov_avg
         lines = [
             ((x0, y0), (x1, y1))
             for x0, y0, x1, y1 in zip(xAxis[:-1], yAxis[:-1], xAxis[1:], yAxis[1:])
