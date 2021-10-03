@@ -11,7 +11,7 @@ from colorama.ansi import Back, Style
 try:
     from wordcloud import WordCloud
 except ModuleNotFoundError as e:
-    print("Error:", e)
+    pass
 
 from modules import (
     loggersetup,
@@ -113,6 +113,10 @@ class StreamAnalyser:
         intensity_colors (list[str], optional): See `init_intensity` function in
             `chat_analyser` module for information. Defaults to [].
 
+        keep_analysis_data (bool, optional): Keeps analysis data such as message
+            frequency, moving average and annotations in RAM until the program terminates.
+            Set to False to conserve RAM if the data won't be needed. Defaults to True.
+
     """
 
     def __init__(
@@ -137,6 +141,7 @@ class StreamAnalyser:
         intensity_levels=[],
         intensity_constants=[],
         intensity_colors=[],
+        keep_analysis_data=True
     ):
 
         self.sid = sid
@@ -155,6 +160,7 @@ class StreamAnalyser:
         self.intensity_levels = intensity_levels
         self.intensity_constants = intensity_constants
         self.intensity_colors = intensity_colors
+        self.keep_analysis_data = keep_analysis_data
 
         self._raw_messages = {}
         self.messages = []
@@ -169,7 +175,7 @@ class StreamAnalyser:
         self.filehandler = filehandler.streamanalyser_filehandler
         self.collector = datacollector.DataCollector(sid, msglimit, verbose)
         self.refiner = datarefiner.DataRefiner(self.verbose)
-        self.canalyser = None
+        self.canalyser = None  # It's recommended to empty this variable by hand to conserve RAM after using the analysis data. See `keep_analysis_data` option for more.
 
         if disable_logs:
             self._disable_logs()
@@ -261,7 +267,7 @@ class StreamAnalyser:
 
     def analyse_data(self):
         """Analyses refined data and detects highligths"""
-        canalyser = chatanalyser.ChatAnalyser(
+        self.canalyser = chatanalyser.ChatAnalyser(
             refined_messages=self.messages,
             stream_id=self.sid,
             context_path=self.context_path,
@@ -273,16 +279,19 @@ class StreamAnalyser:
             window=self.window,
         )
         if self.disable_logs:
-            canalyser.logger.disabled = True
+            self.canalyser.logger.disabled = True
 
-        canalyser.analyse(
+        self.canalyser.analyse(
             graph_title=self.metadata["title"],
             levels=self.intensity_levels,
             constants=self.intensity_constants,
             colors=self.intensity_colors,
         )
-        self.highlights = canalyser.highlights
-        self.fig = canalyser.fig
+        self.highlights = self.canalyser.highlights
+        self.fig = self.canalyser.fig
+
+        if not self.keep_analysis_data:
+            self.canalyser = None
 
     def analyse(self):
         if not self.is_cached:

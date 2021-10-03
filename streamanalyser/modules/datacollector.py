@@ -1,7 +1,7 @@
 import urllib
 import json
 
-from chat_downloader import ChatDownloader
+from chat_downloader import ChatDownloader, errors
 
 from .loggersetup import create_logger
 from .utils import percentage
@@ -51,6 +51,7 @@ class DataCollector:
         yt_url = "https://www.youtube.com/watch?v=" + self.id
         corrupted_data_amount = 0
         try:
+            #TODO check if already live
             for counter, raw_message in enumerate(
                 ChatDownloader().get_chat(yt_url, start_time=0), start=1
             ):
