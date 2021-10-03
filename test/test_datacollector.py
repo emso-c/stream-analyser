@@ -40,7 +40,7 @@ class TestDataCollector(unittest.TestCase):
     def setUp(self):
         warnings.simplefilter("ignore", category=ResourceWarning)
         self.example_url = "TURbeWK2wwg"
-        self.collector = DataCollector(self.example_url, msglimit=1)
+        self.collector = DataCollector(self.example_url, msglimit=1, log_path=None)
         self.collector.logger.disabled = True
 
     def tearDown(self):

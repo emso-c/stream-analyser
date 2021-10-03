@@ -548,6 +548,3 @@ class FileHandler:
             self.logger.info(f"Opened {target_path} in file explorer")
         except FileNotFoundError:
             self.logger.error(f"Could not find {target_path}")
-
-
-streamanalyser_filehandler = FileHandler(storage_path="C:\\Stream Analyser")

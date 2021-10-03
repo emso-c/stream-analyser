@@ -6,12 +6,12 @@ from .structures import Message, Author
 class DataRefiner:
     """Refines raw data into a usable form"""
 
-    def __init__(self, verbose=False):
+    def __init__(self, log_path=None, verbose=False):
         self.verbose = verbose
 
         self.messages = []
         self.authors = []
-        self.logger = loggersetup.create_logger(__file__)
+        self.logger = loggersetup.create_logger(__file__, log_path)
 
     def refine_raw_messages(self, raw_messages, msglimit=None) -> list[Message]:
         """Refines raw messages and shapes them into Message dataclass"""

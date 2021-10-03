@@ -128,6 +128,7 @@ class StreamAnalyser:
         disable_logs=False,
         keep_logs=False,
         log_duration=15,
+        storage_path="C:\\Stream Analyser",
         reset=False,
         not_cache=False,
         keep_cache=False,
@@ -171,10 +172,10 @@ class StreamAnalyser:
         self.context_path = chatanalyser.CONTEXT_PATH
         self.metadata = {}
 
-        self.logger = loggersetup.create_logger(__file__, sid=sid)
-        self.filehandler = filehandler.streamanalyser_filehandler
-        self.collector = datacollector.DataCollector(sid, msglimit, verbose)
-        self.refiner = datarefiner.DataRefiner(self.verbose)
+        self.filehandler = filehandler.FileHandler(storage_path=storage_path)
+        self.logger = loggersetup.create_logger(__file__, self.filehandler.log_path, sid=sid)
+        self.collector = datacollector.DataCollector(sid, log_path=self.filehandler.log_path, msglimit=msglimit, verbose=verbose)
+        self.refiner = datarefiner.DataRefiner(log_path=self.filehandler.log_path, verbose=verbose)
         self.canalyser = None  # It's recommended to empty this variable by hand to conserve RAM after using the analysis data. See `keep_analysis_data` option for more.
 
         if disable_logs:
@@ -268,6 +269,7 @@ class StreamAnalyser:
     def analyse_data(self):
         """Analyses refined data and detects highligths"""
         self.canalyser = chatanalyser.ChatAnalyser(
+            log_path=self.filehandler.log_path,
             refined_messages=self.messages,
             stream_id=self.sid,
             context_path=self.context_path,
@@ -661,7 +663,7 @@ class StreamAnalyser:
         """A method to return filtered highlights.
 
         Args:
-            top (int, optional): Top n highlights to print, sorted by intensity.
+            top (int, optional): Top n highlights to fetch, sorted by fdelta attribute.
                 Defaults to None, which returns all.
 
             output_mode (str, optional): Mode to print output of the highlights on

@@ -10,12 +10,12 @@ from .utils import percentage
 class DataCollector:
     """A class that fetches required data to analyse the stream."""
 
-    def __init__(self, id, msglimit=None, verbose=False) -> None:
+    def __init__(self, id, log_path, msglimit=None, verbose=False) -> None:
         self.id = id
         self.msglimit = msglimit
         self.verbose = verbose
 
-        self.logger = create_logger(__file__)
+        self.logger = create_logger(__file__, log_path)
         self.iscomplete = False
 
     def collect_metadata(self) -> dict:

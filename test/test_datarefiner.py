@@ -70,7 +70,7 @@ class test(unittest.TestCase):
 
     def setUp(self):
         warnings.simplefilter("ignore", category=ResourceWarning)
-        self.refiner = DataRefiner()
+        self.refiner = DataRefiner(log_path=None)
         self.refiner.logger.disabled = True
 
     def tearDown(self):

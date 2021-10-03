@@ -30,6 +30,8 @@ class ChatAnalyser:
         refined_messages (list[Message]): List of messages of the stream refined by
             the DataRefiner class.
 
+        log_path(str): Path to log folder.
+
         stream_id (str, optional): Stream id of the chat. Defaults to 'undefined'.
 
         min_duration (int): Minimum highlight duration (in seconds) to detect. Defaults to 5
@@ -51,6 +53,7 @@ class ChatAnalyser:
     def __init__(
         self,
         refined_messages,
+        log_path,
         stream_id="undefined",
         min_duration=5,
         window=30,
@@ -69,7 +72,7 @@ class ChatAnalyser:
         self.keyword_filters = keyword_filters
         self.context_path = context_path
         self.verbose = verbose
-        self.logger = create_logger(__file__)
+        self.logger = create_logger(__file__, log_path)
 
         if not self.window > 1:
             self.logger.error("Interval must be bigger than one")

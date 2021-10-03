@@ -35,7 +35,7 @@ def generate_random_chat(size, seed, density=0):
 class TestChatAnalyser(unittest.TestCase):
     def setUp(self):
         warnings.simplefilter("ignore", category=ResourceWarning)
-        self.canalyser = ChatAnalyser(generate_random_chat(20, 101, 3))
+        self.canalyser = ChatAnalyser(generate_random_chat(20, 101, 3), log_path=None)
 
         self.canalyser.logger.disabled = True
 
@@ -139,7 +139,7 @@ class TestChatAnalyser(unittest.TestCase):
         self.assertEqual(result, expected)
 
         with self.assertRaises(ValueError):
-            ChatAnalyser([], window=1)
+            ChatAnalyser([], log_path=None, window=1)
 
     def test_create_highlight_annotation(self):
         self.canalyser.get_frequency()
@@ -190,7 +190,7 @@ class TestChatAnalyser(unittest.TestCase):
         self.assertEqual(result, expected)
 
     def test_detect_highlight_times(self):
-        self.canalyser = ChatAnalyser(generate_random_chat(100, 101, 4), window=5)
+        self.canalyser = ChatAnalyser(generate_random_chat(100, 101, 4), log_path=None, window=5)
         self.canalyser.get_frequency()
         self.canalyser.calculate_moving_average()
         self.canalyser.smoothen_mov_avg()
@@ -212,7 +212,7 @@ class TestChatAnalyser(unittest.TestCase):
         self.assertEqual(result, expected)
 
     def test_correct_highlights(self):
-        self.canalyser = ChatAnalyser(generate_random_chat(100, 101, 10), window=5)
+        self.canalyser = ChatAnalyser(generate_random_chat(100, 101, 10), log_path=None, window=5)
         self.canalyser.get_frequency()
         self.canalyser.calculate_moving_average()
         self.canalyser.smoothen_mov_avg()
@@ -241,7 +241,7 @@ class TestChatAnalyser(unittest.TestCase):
         self.assertEqual(result, expected)
 
     def test_set_highlight_intensities(self):
-        self.canalyser = ChatAnalyser(generate_random_chat(100, 101, 10), window=5)
+        self.canalyser = ChatAnalyser(generate_random_chat(100, 101, 10), log_path=None, window=5)
         self.canalyser.get_frequency()
         self.canalyser.calculate_moving_average()
         self.canalyser.smoothen_mov_avg()
@@ -267,7 +267,7 @@ class TestChatAnalyser(unittest.TestCase):
         self.assertEqual(result, expected)
 
     def test_get_highlight_messages(self):
-        self.canalyser = ChatAnalyser(generate_random_chat(100, 101, 10), window=5)
+        self.canalyser = ChatAnalyser(generate_random_chat(100, 101, 10), log_path=None, window=5)
         self.canalyser.get_frequency()
         self.canalyser.calculate_moving_average()
         self.canalyser.smoothen_mov_avg()
@@ -291,7 +291,7 @@ class TestChatAnalyser(unittest.TestCase):
         self.assertEqual(result, expected)
 
     def test_get_highlight_keywords(self):
-        self.canalyser = ChatAnalyser(generate_random_chat(100, 101, 10), window=5)
+        self.canalyser = ChatAnalyser(generate_random_chat(100, 101, 10), log_path=None, window=5)
         self.canalyser.get_frequency()
         self.canalyser.calculate_moving_average()
         self.canalyser.smoothen_mov_avg()
@@ -317,6 +317,7 @@ class TestChatAnalyser(unittest.TestCase):
     def test_guess_context(self):
         self.canalyser = ChatAnalyser(
             generate_random_chat(100, 101, 10),
+            log_path=None,
             window=5,
             context_path=".\\streamanalyser\\data\\context.json",
         )
@@ -379,6 +380,7 @@ class TestChatAnalyser(unittest.TestCase):
     def test_get_highlights(self):
         self.canalyser = ChatAnalyser(
             generate_random_chat(100, 101, 10),
+            log_path=None,
             window=5,
             context_path=".\\streamanalyser\\data\\context.json",
         )
@@ -436,6 +438,7 @@ class TestChatAnalyser(unittest.TestCase):
     def test_analyse(self):
         self.canalyser = ChatAnalyser(
             generate_random_chat(100, 101, 10),
+            log_path=None,
             window=5,
             context_path=".\\streamanalyser\\data\\context.json",
         )

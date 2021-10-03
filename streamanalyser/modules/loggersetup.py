@@ -2,12 +2,10 @@ import logging
 import os
 from datetime import datetime
 
-from .filehandler import streamanalyser_filehandler as sf
-
-
 def create_logger(
     name,
-    fname=None,
+    folder_path,
+    file_name=None,
     sid=None,
     format=None,
     mode="a",
@@ -25,19 +23,26 @@ def create_logger(
         else:
             format = f"%(asctime)s:%(module)s[%(lineno)d]:%(levelname)s:%(message)s"
 
-    if not os.path.exists(sf.log_path):
-        os.makedirs(sf.log_path)
+    if not file_name:
+        file_name = get_logname()
 
-    if not fname:
-        fname = get_logname()
-
-    logging.basicConfig(
-        level=def_level,
-        format=format,
-        filename=os.path.join(sf.log_path, fname),
-        encoding="utf-8",
-        filemode=mode,
-    )
+    if folder_path:
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+        logging.basicConfig(
+            level=def_level,
+            filename=os.path.join(folder_path, file_name),
+            format=format,
+            encoding="utf-8",
+            filemode=mode,
+        )
+    else:
+        # not create a log file
+        logging.basicConfig(
+            level=def_level,
+            format=format,
+            encoding="utf-8",
+        )
     console = logging.StreamHandler()
     console.setLevel(def_level)
     console.setFormatter(logging.Formatter(format))
