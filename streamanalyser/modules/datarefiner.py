@@ -1,6 +1,6 @@
 from . import utils
 from . import loggersetup
-from .structures import Message, Author
+from .structures import Membership, Message, Author, Money, Superchat, SuperchatColor
 
 
 class DataRefiner:
@@ -30,14 +30,7 @@ class DataRefiner:
                         end="\r",
                     )
                 messages.append(
-                    Message(
-                        id=raw_message["message_id"],
-                        text=raw_message["message"],
-                        time=round(raw_message["time_in_seconds"]),
-                        author=Author(
-                            raw_message["author"]["id"], raw_message["author"]["name"]
-                        ),
-                    )
+                    self._convert_message(raw_message)
                 )
         except Exception as e:
             self.logger.error(f"{e.__class__.__name__}:{e}")
@@ -48,6 +41,52 @@ class DataRefiner:
                 print(f"Refining messages... done")
             self.messages = messages
             return messages
+
+    def _convert_message(self, raw_message):
+        """Converts raw message to data classes"""
+        if raw_message.get("message_type") == "text_message":
+            return Message(
+                id=raw_message["message_id"],
+                text=raw_message["message"],
+                time=round(raw_message["time_in_seconds"]),
+                author=Author(
+                    id=raw_message["author"]["id"],
+                    name=raw_message["author"]["name"]
+                ),
+            )
+        elif raw_message.get("message_type") == "paid_message":
+            return Superchat(
+                id=raw_message["message_id"],
+                text=raw_message["message"],
+                time=round(raw_message["time_in_seconds"]),
+                author=Author(
+                    id=raw_message["author"]["id"],
+                    name=raw_message["author"]["name"]
+                ),
+                money=Money(
+                    amount=raw_message["money"]["amount"],
+                    currency=raw_message["money"]["currency"],
+                    currency_symbol=raw_message["money"]["currency_symbol"],
+                    text=raw_message["money"]["text"],
+                    color=SuperchatColor(
+                        background=raw_message["colors"]["body_background_colour"],
+                        header=raw_message["colors"]["header_background_colour"]
+                    )
+                ),
+            )
+        elif raw_message.get("message_type") == "membership_item":
+            return Membership(
+                id=raw_message["message_id"],
+                text=raw_message["message"],
+                membership_text=raw_message["membership_text"],
+                time=round(raw_message["time_in_seconds"]),
+                author=Author(
+                    id=raw_message["author"]["id"],
+                    name=raw_message["author"]["name"]
+                ),
+            )
+        raise ValueError("Invalid message type")
+
 
     def get_authors(self) -> list[Author]:
         """Returns unique list of message authors"""

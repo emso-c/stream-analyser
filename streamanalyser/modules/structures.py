@@ -19,18 +19,42 @@ class Author:
     def __hash__(self):
         return hash(self.id)
 
+@dataclass
+class SuperchatColor:
+    background: str
+    header: str
+
+    def __repr__(self):
+        return f"{self.header}/{self.background}"
+    
 
 @dataclass
-class Message:
-    id: str
+class Money:
+    amount: str
+    currency: str
+    currency_symbol: str
     text: str
+    color: SuperchatColor
+
+    def __repr__(self):
+        return f"{self.text} ({self.currency})"
+
+@dataclass
+class ChatItem:
+    id: str
     time: int
     author: Author
+    text: str
 
     @property
     def time_in_hms(self):
         return datetime.timedelta(seconds=int(self.time))
+    
+    def __hash__(self):
+        return hash(self.id)
 
+@dataclass
+class Message(ChatItem):
     @property
     def colorless_str(self):
         return f"[{self.time_in_hms}] {self.author.name}: {self.text}"
@@ -38,8 +62,28 @@ class Message:
     def __repr__(self):
         return f"[{self.time_in_hms}] {Fore.YELLOW+self.author.name+Style.RESET_ALL}: {self.text}"
 
-    def __hash__(self):
-        return hash(self.id)
+@dataclass
+class Superchat(ChatItem):
+    money: Money
+    colors = SuperchatColor
+
+    @property
+    def colorless_str(self):
+        return f"[{self.time_in_hms}] {self.author.name}: {self.text} ({self.money.text})"
+
+    def __repr__(self):
+        return f"[{self.time_in_hms}] {Fore.RED+self.author.name+Style.RESET_ALL}: {self.text} ({self.money.text})"
+
+@dataclass
+class Membership(ChatItem):
+    membership_text: str
+
+    @property
+    def colorless_str(self):
+        return f"[{self.time_in_hms}] {self.author.name} has joined membership. {str(self.membership_text)}"
+
+    def __repr__(self):
+        return f"[{self.time_in_hms}] {Fore.GREEN+self.author.name+Style.RESET_ALL} has joined membership. {str(self.membership_text)}"
 
 
 @dataclass

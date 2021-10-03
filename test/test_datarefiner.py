@@ -13,6 +13,7 @@ class test(unittest.TestCase):
             sample_raw_messages.append(
                 {
                     "message_id": i,
+                    "message_type": "text_message",
                     "message": "msg" + str(i),
                     "time_in_seconds": i,
                     "author": {"id": i, "name": "name" + str(i)},
@@ -31,7 +32,6 @@ class test(unittest.TestCase):
                     ),
                 )
             )
-
         # w/out limit
         result_messages = self.refiner.refine_raw_messages(
             sample_raw_messages, msglimit=None
@@ -58,6 +58,7 @@ class test(unittest.TestCase):
             sample_raw_messages.append(
                 {
                     "message_id": i,
+                    "message_type": "text_message",
                     "message": "msg" + str(i),
                     "time_in_seconds": i,
                     "author": {"id": i, "name": "name" + str(i)},

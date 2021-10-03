@@ -1,3 +1,4 @@
+from os import stat
 import urllib
 import json
 
@@ -61,25 +62,15 @@ class DataCollector:
                         end="\r",
                     )
                 try:
-                    # only fetch important fields
-                    raw_messages.append(
-                        {
-                            "message_id": raw_message["message_id"],
-                            "message": raw_message["message"],
-                            "time_in_seconds": raw_message["time_in_seconds"],
-                            "author": {
-                                "name": raw_message["author"]["name"],
-                                "id": raw_message["author"]["id"],
-                            },
-                        }
-                    )
-                except KeyError:
+                    raw_messages.append(self._reformat_message(raw_message))
+                except KeyError as e:
                     self.logger.warning(f"Corrupt message data skipped: {raw_message}")
                     corrupted_data_amount += 1
                     continue
                 if self.msglimit and counter == self.msglimit:
                     break
         except Exception as e:
+            print(e)
             self.logger.critical(
                 f"Could not fetch messages: {e.__class__.__name__}:{e}"
             )
@@ -93,7 +84,46 @@ class DataCollector:
         self.logger.info(
             f"{len(raw_messages)-corrupted_data_amount} messages fetched ({corrupted_data_amount} corrupted)"
         )
+
         return raw_messages
+
+    def test(self):
+        return {"id":"testid"}
+
+    def _reformat_message(self, message) -> dict:
+        """Reformats messages returned from ChatDownloader."""
+        reformatted_message = {
+            "message_id": message["message_id"],
+            "message_type": message["message_type"],
+            "message": message["message"],
+            "time_in_seconds": message["time_in_seconds"],
+            "author": {
+                "name": message["author"]["name"],
+                "id": message["author"]["id"],
+                "images": message["author"]["images"]
+            }
+        }
+        if "emotes" in message.keys():
+            reformatted_message["emotes"] = [{"id": emote["id"], "name": emote["name"]} for emote in message["emotes"]]
+        if "badges" in message.keys():
+            reformatted_message["badges"] = message["badges"]
+
+        # Important: To get memberships and superchats, follow https://github.com/xenova/chat-downloader/pull/126
+        if message.get("message_type") == "paid_message":
+            reformatted_message["money"] = {
+                "amount": message["money"]["amount"],
+                "currency": message["money"]["currency"],
+                "currency_symbol": message["money"]["currency_symbol"],
+                "text": message["money"]["text"],
+            }
+            reformatted_message["colors"] = {
+                "body_background_colour": message["body_background_colour"],
+                "header_background_colour": message["header_background_colour"],
+            }
+        elif message.get("message_type") == "membership_item":
+            reformatted_message["membership_text"] = str(message["header_secondary_text"]),
+        return reformatted_message
+            
 
     def fetch_missing_messages(
         self, start_time, current_amount, target_amount=None
@@ -130,17 +160,7 @@ class DataCollector:
                     end="\r",
                 )
             try:
-                raw_messages.append(
-                    {
-                        "message_id": raw_message["message_id"],
-                        "message": raw_message["message"],
-                        "time_in_seconds": raw_message["time_in_seconds"],
-                        "author": {
-                            "name": raw_message["author"]["name"],
-                            "id": raw_message["author"]["id"],
-                        },
-                    }
-                )
+                raw_messages.append(self._reformat_message(raw_message))
             except KeyError:
                 self.logger.warning(f"Corrupt message data skipped: {raw_message}")
                 corrupted_data_amount += 1
