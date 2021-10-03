@@ -1,6 +1,4 @@
 import streamanalyser as sa
-from colorama import Fore
-
 
 # Set a custom storage path
 if __name__ == "__main__":

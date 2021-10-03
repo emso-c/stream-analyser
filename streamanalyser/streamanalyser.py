@@ -284,13 +284,11 @@ class StreamAnalyser:
             self.canalyser.logger.disabled = True
 
         self.canalyser.analyse(
-            graph_title=self.metadata["title"],
             levels=self.intensity_levels,
             constants=self.intensity_constants,
             colors=self.intensity_colors,
         )
         self.highlights = self.canalyser.highlights
-        self.fig = self.canalyser.fig
 
         if not self.keep_analysis_data:
             self.canalyser = None
@@ -779,6 +777,8 @@ class StreamAnalyser:
         self.filehandler.open_cache_folder(self.sid)
 
     def show_graph(self):
+        self.canalyser.draw_graph(self.metadata["title"])
+        self.fig = self.canalyser.fig
         self.fig.show()
 
 

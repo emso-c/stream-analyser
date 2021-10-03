@@ -535,7 +535,7 @@ class ChatAnalyser:
         self.fig = plt
         return plt
 
-    def analyse(self, graph_title=None, levels=None, constants=None, colors=None):
+    def analyse(self, levels=None, constants=None, colors=None):
         self.get_frequency()
         self.calculate_moving_average()
         self.smoothen_mov_avg()
@@ -547,4 +547,3 @@ class ChatAnalyser:
         self.get_highlight_messages()
         self.get_highlight_keywords()
         self.guess_context()
-        self.draw_graph(graph_title)
