@@ -294,7 +294,7 @@ Finally it draws graph of the analysed data.
     Data can be accessed directly using the class attributes
 
     ```python
-    print(type(analyser.messages))  # list[Message]
+    print(type(analyser.messages))  # list[Message,Superchat,Membership]
     print(type(analyser.authors))  # list[Author]
     print(type(analyser.highlights))  # list[Higlight]
     print(type(analyser.fig))  # plt

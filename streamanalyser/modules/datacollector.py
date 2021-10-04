@@ -87,9 +87,6 @@ class DataCollector:
 
         return raw_messages
 
-    def test(self):
-        return {"id":"testid"}
-
     def _reformat_message(self, message) -> dict:
         """Reformats messages returned from ChatDownloader."""
         reformatted_message = {
@@ -108,7 +105,7 @@ class DataCollector:
         if "badges" in message.keys():
             reformatted_message["badges"] = message["badges"]
 
-        # Important: To get memberships and superchats, follow https://github.com/xenova/chat-downloader/pull/126
+        # Important: To get memberships and superchats, follow https://github.com/xenova/chat-downloader/pull/126/commits/14637d3f5a75fc97f480aa4f3732dde0134221ee
         if message.get("message_type") == "paid_message":
             reformatted_message["money"] = {
                 "amount": message["money"]["amount"],

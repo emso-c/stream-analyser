@@ -88,7 +88,9 @@ def parseargs():
     )
     parser.add_argument(
         "-fm",
-        "--find-message",
+        "--find-messages",
+        nargs="?",
+        const="",
         type=str,
         help="find messages containing the given phrase",
     )
@@ -194,16 +196,24 @@ def main():
 
     with analyser:
         analyser.analyse()
+        print()
 
-        if args.find_message:
+        if args.find_messages=="":
+            for msg in analyser.messages:
+                print(msg)
+        elif args.find_messages:
             for msg in analyser.find_messages(
-                args.find_message, args.exact, not args.strict_case
+                args.find_messages, args.exact, not args.strict_case
             ):
                 print(msg)
 
         if args.find_user_messages:
-            for msg in analyser.find_user_messages(args.user_id, args.username):
-                print(msg)
+            messages=analyser.find_user_messages(id=args.user_id, username=args.username)
+            if not messages:
+                print("User not found")
+            else:
+                for msg in messages:
+                    print(msg)
 
         if args.highlight_output:
             top_highlights = analyser.get_highlights(

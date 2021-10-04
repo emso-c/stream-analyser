@@ -13,7 +13,7 @@ class DataRefiner:
         self.authors = []
         self.logger = loggersetup.create_logger(__file__, log_path)
 
-    def refine_raw_messages(self, raw_messages, msglimit=None) -> list[Message]:
+    def refine_raw_messages(self, raw_messages, msglimit=None) -> list[Message,Superchat,Membership]:
         """Refines raw messages and shapes them into Message dataclass"""
 
         self.logger.info("Refining messages")

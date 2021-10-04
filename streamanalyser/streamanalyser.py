@@ -435,7 +435,7 @@ class StreamAnalyser:
 
     def find_messages(
         self, search_phrase, exact=False, ignore_case=True
-    ) -> list[structures.Message]:
+    ) -> list[structures.Message, structures.Superchat, structures.Membership]:
         """Finds messages containing a specific phrase or exactly the same phrase.
 
         Args:
@@ -444,7 +444,7 @@ class StreamAnalyser:
             ignore_case (bool, optional): Ignore letter cases. Defaults to True.
 
         Returns:
-            list[Message]: List of messages that contains the given phrase.
+            list[Message,Superchat,Membership]: List of messages that contains the given phrase.
         """
 
         messages_to_return = []
@@ -467,7 +467,7 @@ class StreamAnalyser:
                 messages_to_return.append(original_message)
         return messages_to_return
 
-    def find_user_messages(self, username=None, id=None) -> list[structures.Message]:
+    def find_user_messages(self, username=None, id=None) -> list[structures.Message, structures.Superchat, structures.Membership]:
         """Finds messages by either username or user id.
 
         Args:
@@ -481,7 +481,7 @@ class StreamAnalyser:
             ValueError: Should provide either username or id.
 
         Returns:
-            list[Message]: Messages the user typed.
+            list[Message,Membership,Superchat]: Messages the user typed.
         """
 
         self.logger.info("Finding user messages")
