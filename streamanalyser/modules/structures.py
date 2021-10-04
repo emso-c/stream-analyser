@@ -7,14 +7,42 @@ from colorama.ansi import AnsiFore
 
 init()
 
+@dataclass
+class Icon:
+    id: str  # title
+    url: str
+    width: int = 0
+    height: int = 0
+
+    def __repr__(self):
+        if self.width and self.height:
+            return f"{self.id} ({self.width}x{self.height}): {self.url}"
+        return f"{self.id}: {self.url}"
+
+@dataclass
+class Emote:
+    id: str
+    name: str
+    is_custom_emoji: bool
+    images: list[Icon] = field(default_factory=list)
+
+    def __repr__(self):
+        return f"{self.id}: {self.name} ({len(self.images)} images)"
 
 @dataclass
 class Author:
     id: str
     name: str
+    is_member: bool = False
+    membership_info: str = ""
+    images: list[Icon] = field(default_factory=list)
+
+    def colorless_str(self):
+        return f"{self.name}: {self.id}"
 
     def __repr__(self):
-        return f"{self.name}: {self.id}"
+        color = Fore.GREEN if self.is_member else Fore.YELLOW
+        return f"{color+self.name+Style.RESET_ALL}: {self.id}"
 
     def __hash__(self):
         return hash(self.id)
@@ -26,7 +54,7 @@ class SuperchatColor:
 
     def __repr__(self):
         return f"{self.header}/{self.background}"
-    
+
 
 @dataclass
 class Money:
@@ -55,6 +83,8 @@ class ChatItem:
 
 @dataclass
 class Message(ChatItem):
+    emotes: list[Emote] = field(default_factory=list)
+
     @property
     def colorless_str(self):
         return f"[{self.time_in_hms}] {self.author.name}: {self.text}"
@@ -66,6 +96,7 @@ class Message(ChatItem):
 class Superchat(ChatItem):
     money: Money
     colors = SuperchatColor
+    emotes: list[Emote] = field(default_factory=list)
 
     @property
     def colorless_str(self):
@@ -76,14 +107,15 @@ class Superchat(ChatItem):
 
 @dataclass
 class Membership(ChatItem):
-    membership_text: str
+    welcome_text: str
+    emotes: list[Emote] = field(default_factory=list)
 
     @property
     def colorless_str(self):
-        return f"[{self.time_in_hms}] {self.author.name} has joined membership. {str(self.membership_text)}"
+        return f"[{self.time_in_hms}] {self.author.name} has joined membership. {str(self.welcome_text)}"
 
     def __repr__(self):
-        return f"[{self.time_in_hms}] {Fore.GREEN+self.author.name+Style.RESET_ALL} has joined membership. {str(self.membership_text)}"
+        return f"[{self.time_in_hms}] {Fore.GREEN+self.author.name+Style.RESET_ALL} has joined membership. {str(self.welcome_text)}"
 
 
 @dataclass

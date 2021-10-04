@@ -1,6 +1,6 @@
 from . import utils
 from . import loggersetup
-from .structures import Membership, Message, Author, Money, Superchat, SuperchatColor
+from .structures import Emote, Icon, Membership, Message, Author, Money, Superchat, SuperchatColor
 
 
 class DataRefiner:
@@ -44,25 +44,68 @@ class DataRefiner:
 
     def _convert_message(self, raw_message):
         """Converts raw message to data classes"""
+
+        text = raw_message["message"]
+        if not text:
+            text = ""
+
+        emotes=[]
+        if "emotes" in raw_message.keys():
+            emotes=[Emote(
+                id=emote["id"],
+                name=emote["name"],
+                is_custom_emoji=emote["is_custom_emoji"],
+                images=[Icon(
+                    id=img["id"] if emote["is_custom_emoji"] else "None",
+                    url=img["url"],
+                    height=img["height"] if "height" in img.keys() else 0,
+                    width=img["width"] if "width" in img.keys() else 0,
+                ) for img in emote["images"]],
+            ) for emote in raw_message["emotes"]]
+
+        is_member=False
+        membership_info=""
+        if "badges" in raw_message["author"].keys():
+            for badge in raw_message["author"]["badges"]:
+                if "member" in badge["title"].lower():
+                    is_member=True
+                    membership_info=badge["title"]
+        
+        membership_info=""
+        if "badges" in raw_message["author"].keys():
+            for badge in raw_message["author"]["badges"]:
+                if "member" in badge["title"].lower():
+                    is_member=True
+                    membership_info=badge["title"]
+
+        author=Author(
+            id=raw_message["author"]["id"],
+            name=raw_message["author"]["name"],
+            is_member=is_member,
+            membership_info=membership_info,
+            images=[Icon(
+                id=img["id"],
+                url=img["url"],
+                height=img["height"] if "height" in img.keys() else 0,
+                width=img["width"] if "width" in img.keys() else 0,
+            ) for img in raw_message["author"]["images"]],
+            
+        )
+
         if raw_message.get("message_type") == "text_message":
             return Message(
                 id=raw_message["message_id"],
-                text=raw_message["message"],
+                text=text,
                 time=round(raw_message["time_in_seconds"]),
-                author=Author(
-                    id=raw_message["author"]["id"],
-                    name=raw_message["author"]["name"]
-                ),
+                author=author,
+                emotes=emotes
             )
         elif raw_message.get("message_type") == "paid_message":
             return Superchat(
                 id=raw_message["message_id"],
-                text=raw_message["message"],
+                text=text,
                 time=round(raw_message["time_in_seconds"]),
-                author=Author(
-                    id=raw_message["author"]["id"],
-                    name=raw_message["author"]["name"]
-                ),
+                author=author,
                 money=Money(
                     amount=raw_message["money"]["amount"],
                     currency=raw_message["money"]["currency"],
@@ -73,17 +116,16 @@ class DataRefiner:
                         header=raw_message["colors"]["header_background_colour"]
                     )
                 ),
+                emotes=emotes
             )
         elif raw_message.get("message_type") == "membership_item":
             return Membership(
                 id=raw_message["message_id"],
-                text=raw_message["message"],
-                membership_text=raw_message["membership_text"],
+                text=text,
+                welcome_text=raw_message["welcome_text"],
                 time=round(raw_message["time_in_seconds"]),
-                author=Author(
-                    id=raw_message["author"]["id"],
-                    name=raw_message["author"]["name"]
-                ),
+                author=author,
+                emotes=emotes
             )
         raise ValueError("Invalid message type")
 

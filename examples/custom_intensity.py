@@ -7,6 +7,8 @@ if __name__ == "__main__":
     analyser_obj = sa.StreamAnalyser(
         "ShB4Wen_HBg",
         verbose=True,
+        not_cache=True,
+        disable_logs=True,
         msglimit=5000,
         intensity_levels=["LOW", "MEDIUM", "HIGH"],
         intensity_constants=[0, 1, 2],

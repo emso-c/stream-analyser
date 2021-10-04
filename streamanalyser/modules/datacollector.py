@@ -97,13 +97,18 @@ class DataCollector:
             "author": {
                 "name": message["author"]["name"],
                 "id": message["author"]["id"],
-                "images": message["author"]["images"]
+                "images": message["author"]["images"],
             }
         }
         if "emotes" in message.keys():
-            reformatted_message["emotes"] = [{"id": emote["id"], "name": emote["name"]} for emote in message["emotes"]]
-        if "badges" in message.keys():
-            reformatted_message["badges"] = message["badges"]
+            reformatted_message["emotes"] = [{
+                "id": emote["id"],
+                "name": emote["name"],
+                "images": emote["images"],
+                "is_custom_emoji": emote["is_custom_emoji"]
+            } for emote in message["emotes"]]
+        if "badges" in message.get("author").keys():
+            reformatted_message["author"]["badges"] = message["author"]["badges"]
 
         # Important: To get memberships and superchats, follow https://github.com/xenova/chat-downloader/pull/126/commits/14637d3f5a75fc97f480aa4f3732dde0134221ee
         if message.get("message_type") == "paid_message":
@@ -118,7 +123,7 @@ class DataCollector:
                 "header_background_colour": message["header_background_colour"],
             }
         elif message.get("message_type") == "membership_item":
-            reformatted_message["membership_text"] = str(message["header_secondary_text"]),
+            reformatted_message["welcome_text"] = str(message["header_secondary_text"]),
         return reformatted_message
             
 
