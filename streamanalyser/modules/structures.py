@@ -38,10 +38,14 @@ class Author:
     images: list[Icon] = field(default_factory=list)
 
     def colorless_str(self):
+        if self.is_member:
+            return f"{self.name}: {self.id} [{self.membership_info}]"
         return f"{self.name}: {self.id}"
 
     def __repr__(self):
         color = Fore.GREEN if self.is_member else Fore.YELLOW
+        if self.is_member:
+            return f"{color+self.name+Style.RESET_ALL}: {self.id} [{self.membership_info}]"
         return f"{color+self.name+Style.RESET_ALL}: {self.id}"
 
     def __hash__(self):
@@ -62,7 +66,6 @@ class Money:
     currency: str
     currency_symbol: str
     text: str
-    color: SuperchatColor
 
     def __repr__(self):
         return f"{self.text} ({self.currency})"
@@ -95,7 +98,7 @@ class Message(ChatItem):
 @dataclass
 class Superchat(ChatItem):
     money: Money
-    colors = SuperchatColor
+    colors: SuperchatColor
     emotes: list[Emote] = field(default_factory=list)
 
     @property
@@ -117,6 +120,16 @@ class Membership(ChatItem):
     def __repr__(self):
         return f"[{self.time_in_hms}] {Fore.GREEN+self.author.name+Style.RESET_ALL} has joined membership. {str(self.welcome_text)}"
 
+@dataclass
+class Sticker(Superchat):
+    sticker_images: list[Icon] = field(default_factory=list)
+
+    @property
+    def colorless_str(self):
+        return f"[{self.time_in_hms}] {self.author.name} sent a Sticker ({self.money.text})"
+
+    def __repr__(self):
+        return f"[{self.time_in_hms}] {Fore.RED+self.author.name+Style.RESET_ALL} sent a Sticker ({self.money.text})"
 
 @dataclass
 class Intensity:

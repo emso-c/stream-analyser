@@ -1,6 +1,6 @@
 from . import utils
 from . import loggersetup
-from .structures import Emote, Icon, Membership, Message, Author, Money, Superchat, SuperchatColor
+from .structures import Emote, Icon, Membership, Message, Author, Money, Sticker, Superchat, SuperchatColor
 
 
 class DataRefiner:
@@ -18,29 +18,31 @@ class DataRefiner:
 
         self.logger.info("Refining messages")
         messages = []
+        skipped_message_amount = 0
         if self.verbose:
             print(f"Refining messagess...0%", end="\r")
-        try:
-            for count, raw_message in enumerate(raw_messages):
-                if msglimit and count == msglimit:
-                    break
-                if self.verbose:
-                    print(
-                        f"Refining messages...{utils.percentage(count, msglimit if msglimit else len(raw_messages))}%",
-                        end="\r",
-                    )
-                messages.append(
-                    self._convert_message(raw_message)
-                )
-        except Exception as e:
-            self.logger.error(f"{e.__class__.__name__}:{e}")
-            raise Exception(f"{e.__class__.__name__}:{e}")
-        finally:
-            self.logger.debug(f"{len(messages)} messages has been refined")
+        for count, raw_message in enumerate(raw_messages):
+            if msglimit and count == msglimit:
+                break
             if self.verbose:
-                print(f"Refining messages... done")
-            self.messages = messages
-            return messages
+                print(
+                    f"Refining messages...{utils.percentage(count, msglimit if msglimit else len(raw_messages))}%",
+                    end="\r",
+                )
+            try:
+                messages.append(self._convert_message(raw_message))
+            except ValueError as e:
+                self.logger.warning(f"{e.__class__.__name__}: {e}")
+                self.logger.debug(f"Corrupt message was {raw_message}")
+                skipped_message_amount += 1
+            except Exception as e:
+                self.logger.error(f"{e.__class__.__name__}:{e}")
+                skipped_message_amount += 1
+        self.logger.debug(f"{len(messages)} messages has been refined ({skipped_message_amount} skipped)")
+        if self.verbose:
+            print(f"Refining messages... done")
+        self.messages = messages
+        return messages
 
     def _convert_message(self, raw_message):
         """Converts raw message to data classes"""
@@ -48,7 +50,6 @@ class DataRefiner:
         text = raw_message["message"]
         if not text:
             text = ""
-
         emotes=[]
         if "emotes" in raw_message.keys():
             emotes=[Emote(
@@ -70,13 +71,6 @@ class DataRefiner:
                 if "member" in badge["title"].lower():
                     is_member=True
                     membership_info=badge["title"]
-        
-        membership_info=""
-        if "badges" in raw_message["author"].keys():
-            for badge in raw_message["author"]["badges"]:
-                if "member" in badge["title"].lower():
-                    is_member=True
-                    membership_info=badge["title"]
 
         author=Author(
             id=raw_message["author"]["id"],
@@ -89,7 +83,6 @@ class DataRefiner:
                 height=img["height"] if "height" in img.keys() else 0,
                 width=img["width"] if "width" in img.keys() else 0,
             ) for img in raw_message["author"]["images"]],
-            
         )
 
         if raw_message.get("message_type") == "text_message":
@@ -111,10 +104,10 @@ class DataRefiner:
                     currency=raw_message["money"]["currency"],
                     currency_symbol=raw_message["money"]["currency_symbol"],
                     text=raw_message["money"]["text"],
-                    color=SuperchatColor(
-                        background=raw_message["colors"]["body_background_colour"],
-                        header=raw_message["colors"]["header_background_colour"]
-                    )
+                ),
+                colors=SuperchatColor(
+                    background=raw_message["colors"]["body_background_colour"],
+                    header=raw_message["colors"]["header_background_colour"]
                 ),
                 emotes=emotes
             )
@@ -127,7 +120,26 @@ class DataRefiner:
                 author=author,
                 emotes=emotes
             )
-        raise ValueError("Invalid message type")
+        elif raw_message.get("message_type") == "paid_sticker":
+            return Sticker(
+                id=raw_message["message_id"],
+                text=text,
+                time=round(raw_message["time_in_seconds"]),
+                author=author,
+                money=Money(
+                    amount=raw_message["money"]["amount"],
+                    currency=raw_message["money"]["currency"],
+                    currency_symbol=raw_message["money"]["currency_symbol"],
+                    text=raw_message["money"]["text"],
+                ),
+                colors=SuperchatColor(
+                    background=raw_message["colors"]["body_background_colour"],
+                    header=raw_message["colors"]["header_background_colour"]
+                ),
+                emotes=emotes,
+                sticker_images=raw_message["sticker_images"],
+            )
+        raise ValueError(f"Invalid message type: {raw_message.get('message_type')}")
 
 
     def get_authors(self) -> list[Author]:
@@ -138,17 +150,17 @@ class DataRefiner:
             return []
 
         self.logger.info("Getting authors")
-        authors = set()
+        authors = list()
         for count, message in enumerate(self.messages):
             if self.verbose:
                 print(
                     f"Getting authors...{utils.percentage(count, len(self.messages))}%",
                     end="\r",
                 )
-            authors.add(message.author)
+            authors.append(message.author)
 
         if self.verbose:
             print(f"Getting authors... done")
-        self.authors = list(authors)
+        self.authors = list(dict.fromkeys(authors))
         self.logger.debug(f"{len(self.authors)} authors has been found")
         return self.authors

@@ -124,6 +124,18 @@ class DataCollector:
             }
         elif message.get("message_type") == "membership_item":
             reformatted_message["welcome_text"] = str(message["header_secondary_text"]),
+        elif message.get("message_type") == "paid_sticker":
+            reformatted_message["money"] = {
+                "amount": message["money"]["amount"],
+                "currency": message["money"]["currency"],
+                "currency_symbol": message["money"]["currency_symbol"],
+                "text": message["money"]["text"],
+            }
+            reformatted_message["colors"] = {
+                "body_background_colour": message["background_colour"],
+                "header_background_colour": None,
+            }
+            reformatted_message["sticker_images"] = message["sticker_images"]
         return reformatted_message
             
 
