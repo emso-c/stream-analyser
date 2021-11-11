@@ -66,7 +66,16 @@ class DataRefiner:
 
         is_member=False
         membership_info=""
+        membership_icons=[]
         if "badges" in raw_message["author"].keys():
+            if "icons" in raw_message["author"]["badges"][0].keys():
+                membership_icons = [
+                        Icon(
+                            id=img["id"],
+                            url=img["url"],
+                            height=img["height"] if "height" in img.keys() else 0,
+                            width=img["width"] if "width" in img.keys() else 0,
+                        ) for img in raw_message["author"]["badges"][0]["icons"]]
             for badge in raw_message["author"]["badges"]:
                 if "member" in badge["title"].lower():
                     is_member=True
@@ -77,14 +86,18 @@ class DataRefiner:
             name=raw_message["author"]["name"],
             is_member=is_member,
             membership_info=membership_info,
-            images=[Icon(
-                id=img["id"],
-                url=img["url"],
-                height=img["height"] if "height" in img.keys() else 0,
-                width=img["width"] if "width" in img.keys() else 0,
-            ) for img in raw_message["author"]["images"]],
+            images={
+                "profile":[
+                    Icon(
+                        id=img["id"],
+                        url=img["url"],
+                        height=img["height"] if "height" in img.keys() else 0,
+                        width=img["width"] if "width" in img.keys() else 0,
+                    ) for img in raw_message["author"]["images"]
+                ],
+                "membership": membership_icons
+            }
         )
-
         if raw_message.get("message_type") == "text_message":
             return Message(
                 id=raw_message["message_id"],

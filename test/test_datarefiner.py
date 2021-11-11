@@ -50,7 +50,7 @@ class TestDataRefiner(unittest.TestCase):
                         "images": [{
                             "id": str(i),
                             "url": "url" + str(i), 
-                        }]
+                        }],
                     },
                 }
             )
@@ -58,10 +58,10 @@ class TestDataRefiner(unittest.TestCase):
             author = Author(
                 id=str(i),
                 name="name"+str(i),
-                images=[Icon(
-                    id=str(i),
-                    url="url"+str(i)
-                )]
+                images={
+                    "profile": [Icon(id=str(i), url="url"+str(i))],
+                    "membership": []
+                },
             )
             self.expected_authors.append(author)
             self.expected_messages.append(
