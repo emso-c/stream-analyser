@@ -4,8 +4,28 @@ import webbrowser
 import platform
 from colorama import init, Fore, Style
 from colorama.ansi import AnsiFore
+from enum import IntEnum
 
 init()
+
+class ImageResolution(IntEnum):
+    MEDIUM = 0
+    HIGH = 1
+    STANDARD = 2
+    MAXIMUM = 3
+
+
+class Browser:
+    CHROME = "chrome"
+    EDGE = "edge"
+    FIREFOX = "firefox"
+    OPERA = "opera"
+
+class OSName:
+    WINDOWS = "Windows"
+    LINUX = "Linux"
+    MAC = "Darwin"
+    
 
 @dataclass
 class Icon:
@@ -183,17 +203,11 @@ class Highlight:
     def url(self):
         return f"https://youtu.be/{self.stream_id}?t={self.time}"
 
-    def open_in_browser(self, browser="chrome", browser_path=None):
+    def open_in_browser(self, browser:Browser=Browser.CHROME, browser_path=None):
         """Open highlight in browser
 
         Args:
             browser (str): Browser name to get default path.
-                Current choices are:
-                - chrome
-                - edge
-                - firefox
-                - opera
-                Defaults to 'chrome'.
 
             browser_path (str, optional): Path to executable
                 browser file. Overrides browser argument.
@@ -205,22 +219,22 @@ class Highlight:
             return
 
         # TODO modify default path for other OS's
-        if platform.system == "Windows":
-            if browser == "chrome":
+        if platform.system == OSName.WINDOWS:
+            if browser == Browser.CHROME:
                 browser_path = (
                     r"C:/Program Files/Google/Chrome/Application/chrome.exe %s"
                 )
-            elif browser == "edge":
+            elif browser == Browser.EDGE:
                 browser_path = (
                     r"C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe %s"
                 )
-            elif browser == "firefox":
+            elif browser == Browser.FIREFOX:
                 browser_path = r"C:/Program Files/Mozilla Firefox/FireFox.exe %s"
-            elif browser == "opera":
+            elif browser == Browser.OPERA:
                 browser_path = r"C:/Program Files/Opera/Launcher.exe %s"
-        elif platform.system == "Linux":
+        elif platform.system == OSName.LINUX:
             pass
-        elif platform.system == "Darwin":
+        elif platform.system == OSName.MAC:
             pass
         else:
             pass

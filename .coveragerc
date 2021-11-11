@@ -4,6 +4,6 @@ omit =
     test\*
     examples\*
     *\__init__.py
-    streamanalyser\streamanalyserCLI.py
+    streamanalyser\modules\cli.py
     setup.py
     cover.py

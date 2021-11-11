@@ -2,6 +2,8 @@ from os import stat
 import urllib
 import json
 
+from modules.structures import ImageResolution
+
 from chat_downloader import ChatDownloader, errors
 
 from .loggersetup import create_logger
@@ -194,15 +196,11 @@ class DataCollector:
 
         return raw_messages
 
-    def get_thumbnail_url(self, res_lvl=2) -> str:
+    def get_thumbnail_url(self, res_lvl:ImageResolution=ImageResolution.STANDARD) -> str:
         """Gets URL of the thumbnail image.
 
         Args:
-            res_lv (int, optional): Resolution level of the thumbnail. Defaults to 2.
-                0 -> Medium res.
-                1 -> High res.
-                2 -> Standard res.
-                3 -> Max res.
+            res_lv (ImageResolution, optional): Resolution level of the thumbnail. Defaults to `ImageResolution.STANDARD`.
 
         Returns:
             str: URL of the thumbnail image.
