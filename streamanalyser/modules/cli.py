@@ -173,6 +173,9 @@ def parseargs():
     parser.add_argument(
         "-wcs", "--wordcloud-scale", default=3, type=int, help="scale of the wordcloud"
     )
+    user_info.add_argument(
+        "--yt-api-key", default="", type=str, help="youtube api key"
+    )
     return parser.parse_args()
 
 
@@ -184,6 +187,7 @@ def main():
         msglimit=args.limit,
         verbose=not args.silent,
         thumb_res_lvl=args.thumb_res_lvl,
+        yt_api_key=args.yt_api_key,
         disable_logs=args.disable_logs,
         log_duration=args.log_duration,
         reset=args.reset,

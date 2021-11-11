@@ -218,10 +218,6 @@ class FileHandler:
 
             delete_root_folder (bool, optional): Delete the folder itself too.
                 Otherwise only deletes contents in the folder. Defaults to True.
-
-            current (bool, optional): Deletes cache of the current
-                session if True. Overrides `cache_deletion_algorithm`.
-                Defaults to False.
         """
 
         self.logger.info("Clearing cache")

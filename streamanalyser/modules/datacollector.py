@@ -1,10 +1,13 @@
 from os import stat
-import urllib
+from typing import Tuple
+from urllib import request, parse
 import json
 
 from modules.structures import ImageResolution
+from yaml.events import DocumentStartEvent
 
 from chat_downloader import ChatDownloader, errors
+import isodate
 
 from .loggersetup import create_logger
 from .utils import percentage
@@ -13,13 +16,15 @@ from .utils import percentage
 class DataCollector:
     """A class that fetches required data to analyse the stream."""
 
-    def __init__(self, id, log_path, msglimit=None, verbose=False) -> None:
+    def __init__(self, id, log_path, msglimit=None, verbose=False, yt_api_key=None) -> None:
         self.id = id
         self.msglimit = msglimit
         self.verbose = verbose
+        self.yt_api_key = yt_api_key
 
         self.logger = create_logger(__file__, log_path)
         self.iscomplete = False
+        self.metadata = {}
 
     def collect_metadata(self) -> dict:
         """Collects metadata of the YouTube stream"""
@@ -28,23 +33,62 @@ class DataCollector:
         if self.verbose:
             print(f"Collecting metadata...", end="\r")
 
+        data = self._get_oembed_respone()
+        data['duration'] = self._get_video_duration()
+
+        self.metadata = data
+        if self.verbose:
+            print(f"Collecting metadata... done")
+        return data
+
+    def _get_video_duration(self) -> int:
+        if not self.yt_api_key:
+            self.logger.warning("Couldn't get video duration as api key was not provided.")
+            return 0
+        return self._parse_duration(
+            json.load(
+                request.urlopen(
+                    f"https://www.googleapis.com/youtube/v3/videos?id={self.id}&key={self.yt_api_key}&part=contentDetails"
+                )
+            )["items"][0]["contentDetails"]["duration"]
+        )   
+
+    def _parse_duration(self, yt_duration_response) -> int:
+        return int(isodate.parse_duration(yt_duration_response).total_seconds())
+
+    def _get_oembed_respone(self) -> dict:
         params = {
             "format": "json",
             "url": "https://www.youtube.com/watch?v=%s" % self.id,
         }
         url = "https://www.youtube.com/oembed"
-        query_string = urllib.parse.urlencode(params)
+        query_string = parse.urlencode(params)
         url = url + "?" + query_string
         try:
-            with urllib.request.urlopen(url) as response:
+            with request.urlopen(url) as response:
                 response_text = response.read()
                 data = json.loads(response_text.decode())
         except Exception as e:
             self.logger.error(e)
             raise e
-        if self.verbose:
-            print(f"Collecting metadata... done")
         return data
+
+    def _enforce_time_consistency(self, messages) -> Tuple[list, int]:
+        """Quick fix for a bug where ChatDownloader module sometimes
+        returns messages that are written LONG AFTER (~5 hours) the
+        stream ends by removing the last message.
+        """
+        inconsistent_data_amount = 0
+        if "duration" in self.metadata.keys():
+            if not self.metadata["duration"]:
+                self.logger.warning("Can't check time consistency as duration is not determined yet")
+                return messages, 0
+            while messages[-1]["time_in_seconds"] > self.metadata["duration"]:
+                self.logger.warning(f"Deleted message as its time was exceeding the video length: {messages[-1]['time_in_seconds']} ({self.metadata['duration']})")
+                inconsistent_data_amount+=1
+                del messages[-1]
+        return messages, inconsistent_data_amount
+
 
     def fetch_raw_messages(self) -> list[dict]:
         """Fetches live chat messages"""
@@ -79,12 +123,13 @@ class DataCollector:
             raise e
 
         self.iscomplete = not bool(self.msglimit)
+        raw_messages, inconsistent_data_amount = self._enforce_time_consistency(raw_messages)
 
         if self.verbose:
             print(f"Fetching raw messages... done")
 
         self.logger.info(
-            f"{len(raw_messages)-corrupted_data_amount} messages fetched ({corrupted_data_amount} corrupted)"
+            f"{len(raw_messages)-corrupted_data_amount} messages fetched ({corrupted_data_amount} corrupted, {inconsistent_data_amount} inconsistent)"
         )
 
         return raw_messages
@@ -140,10 +185,7 @@ class DataCollector:
             reformatted_message["sticker_images"] = message["sticker_images"]
         return reformatted_message
             
-
-    def fetch_missing_messages(
-        self, start_time, current_amount, target_amount=None
-    ) -> list[dict]:
+    def fetch_missing_messages(self, start_time, current_amount, target_amount=None) -> list[dict]:
         """Returns missing messages.
 
         Args:

@@ -40,9 +40,14 @@ class StreamAnalyser:
 
         verbose (bool, optional): Print output to console. Defaults to False.
 
-        res_lvl (int, optional): Resolution level of the thumbnail.
+        thumb_res_lvl (int, optional): Resolution level of the thumbnail.
             Resolution levels are sorted by quality with 0 being lowest
             and 3 being highest. Defaults to 2.
+
+        yt_api_key (str, optional): YouTube API key to provide full functionality.
+            The class would still work 99% even if the api key is not provided, So
+            it is not necessary, but still recommended for edge cases.
+            Defaults to None.
 
         disable_logs (bool, optional): Disable logging for debugging purposes.
             Log files' location can be found in `filehandler` module.
@@ -114,8 +119,9 @@ class StreamAnalyser:
             `chat_analyser` module for information. Defaults to [].
 
         keep_analysis_data (bool, optional): Keeps analysis data such as message
-            frequency, moving average and annotations in RAM until the program terminates.
-            Set to False to conserve RAM if the data won't be needed. Defaults to True.
+            frequency, moving average and annotations until the object terminates.
+            Set to False to conserve more memory during runtime if the data won't be
+            needed. Defaults to True.
 
     """
 
@@ -125,6 +131,7 @@ class StreamAnalyser:
         msglimit=None,
         verbose=False,
         thumb_res_lvl=2,
+        yt_api_key=None,
         disable_logs=False,
         keep_logs=False,
         log_duration=15,
@@ -149,6 +156,7 @@ class StreamAnalyser:
         self.msglimit = msglimit
         self.verbose = verbose
         self.thumb_res_lvl = thumb_res_lvl
+        self.yt_api_key = yt_api_key
         self.disable_logs = disable_logs
         self.not_cache = not_cache
         self.keep_cache = keep_cache
@@ -174,9 +182,9 @@ class StreamAnalyser:
 
         self.filehandler = filehandler.FileHandler(storage_path=storage_path)
         self.logger = loggersetup.create_logger(__file__, self.filehandler.log_path, sid=sid)
-        self.collector = datacollector.DataCollector(sid, log_path=self.filehandler.log_path, msglimit=msglimit, verbose=verbose)
+        self.collector = datacollector.DataCollector(sid, log_path=self.filehandler.log_path, msglimit=msglimit, verbose=verbose, yt_api_key=yt_api_key)
         self.refiner = datarefiner.DataRefiner(log_path=self.filehandler.log_path, verbose=verbose)
-        self.canalyser = None  # It's recommended to empty this variable by hand to conserve RAM after using the analysis data. See `keep_analysis_data` option for more.
+        self.canalyser = None  # It's recommended to empty this variable by hand to conserve memory after using the analysis data. See `keep_analysis_data` option for more.
 
         if disable_logs:
             self._disable_logs()
@@ -229,11 +237,11 @@ class StreamAnalyser:
     def collect_data(self):
         """Collects and caches stream data:
         - messages
-        - metadata (title, channel etc.)
+        - metadata (title, channel, duration etc.)
         """
         # collect data
-        raw_messages = self.collector.fetch_raw_messages()
         metadata = self.collector.collect_metadata()
+        raw_messages = self.collector.fetch_raw_messages()
 
         # cache data
         self._cache_metadata(metadata)
