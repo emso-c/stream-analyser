@@ -297,6 +297,10 @@ class FileHandler:
         self.logger.debug(f"{missing_files=}")
 
         if autofix:
+            for file in os.listdir(self.cache_path):
+                full_path = os.path.join(self.cache_path, file)
+                if os.stat(full_path).st_size == 0:
+                    self.delete_file(full_path)
             for file in unnecesary_files:
                 # it might be a json file that is not compressed
                 if file == self.message_fname:
