@@ -68,6 +68,23 @@ class DataCollector:
             with request.urlopen(url) as response:
                 response_text = response.read()
                 data = json.loads(response_text.decode())
+        except request.URLError as e:
+            self.logger.critical("Couldn't get oembed info. Returning empty metadata instead.")
+            return {
+                "title":"None",
+                "author_name":"None",
+                "author_url":"None",
+                "type":"None",
+                "height":-1,
+                "width":-1,
+                "version":"None",
+                "provider_name":"None",
+                "provider_url":"None",
+                "thumbnail_height":-1,
+                "thumbnail_width":-1,
+                "thumbnail_url":"None",
+                "html":"None"
+            }
         except Exception as e:
             self.logger.error(e)
             raise e
