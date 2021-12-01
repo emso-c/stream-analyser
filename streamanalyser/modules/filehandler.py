@@ -96,9 +96,11 @@ class FileHandler:
             os.remove(path)
             self.logger.debug(f"{path} removed")
         except FileNotFoundError:
-            self.logger.debug(f"{path} could not be found")
-        except Exception:
-            self.logger.error(f"Could not remove {path}")
+            self.logger.warning(f"{path} could not be found")
+        except PermissionError:
+            self.logger.error(f"Access is denied to {path}. Try running in administrator mode.")
+        except Exception as e:
+            self.logger.critical(f"Could not remove {path} - {e.__class__.__name__}:{e}")
 
     def create_dir_if_not_exists(self, path):
         if not os.path.exists(path):
