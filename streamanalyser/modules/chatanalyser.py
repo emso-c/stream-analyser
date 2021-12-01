@@ -309,6 +309,9 @@ class ChatAnalyser:
         if not self.highlights:
             return []
 
+        if len(self.highlights) != 1:
+            self.highlights.pop(0)
+
         avg_highlight_duration = sum([hl.duration for hl in self.highlights]) / len(
             self.highlights
         )

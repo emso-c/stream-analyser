@@ -201,12 +201,11 @@ class TestChatAnalyser(unittest.TestCase):
             "[{}] ({}->{}): {}".format(h.stream_id, h.time, h.duration, h.fdelta)
             for h in highlights
         ]
-
         expected = [
-            "[undefined] (1->20): 1.7000000000000006",
-            "[undefined] (38->10): 0.5050000000000003",
-            "[undefined] (54->5): 0.17000000000000082",
-            "[undefined] (60->8): 0.5350000000000001",
+            '[undefined] (1->20): 1.7000000000000006',
+            '[undefined] (38->10): 0.5050000000000003', 
+            '[undefined] (54->5): 0.17000000000000082',
+            '[undefined] (60->8): 0.5350000000000001'
         ]
 
         self.assertEqual(result, expected)
@@ -231,9 +230,9 @@ class TestChatAnalyser(unittest.TestCase):
         ]
 
         expected = [
-            "[undefined] (1->24): 6.148333333333332",
-            "[undefined] (38->12): 1.045",
-            "[undefined] (73->7): 0.5450000000000017",
+            '[undefined] (31->3): 0.30000000000000426',
+            '[undefined] (38->12): 1.045',
+            '[undefined] (73->7): 0.5450000000000017'
         ]
 
         self.assertEqual(len(self.canalyser.highlights), len(corrected_highlights))
@@ -257,11 +256,11 @@ class TestChatAnalyser(unittest.TestCase):
 
         hl_int = self.canalyser.set_highlight_intensities()
         result = [h.colorless_str for h in hl_int]
+
         expected = [
-            "[0:00:01] :  (No messages, very high intensity, 6.148 diff, 24s duration)",
-            "[0:00:31] :  (No messages, low intensity, 0.300 diff, 5s duration)",
-            "[0:00:38] :  (No messages, medium intensity, 1.045 diff, 12s duration)",
-            "[0:01:13] :  (No messages, low intensity, 0.545 diff, 7s duration)",
+            '[0:00:31] :  (No messages, medium intensity, 0.300 diff, 5s duration)',
+            '[0:00:38] :  (No messages, high intensity, 1.045 diff, 12s duration)',
+            '[0:01:13] :  (No messages, medium intensity, 0.545 diff, 7s duration)'
         ]
 
         self.assertEqual(result, expected)
@@ -282,10 +281,9 @@ class TestChatAnalyser(unittest.TestCase):
         result = [hl.colorless_str for hl in highlights]
 
         expected = [
-            "[0:00:01] :  (170 messages, ultra high intensity, 6.148 diff, 24s duration)",
-            "[0:00:31] :  (58 messages, medium intensity, 0.300 diff, 5s duration)",
-            "[0:00:38] :  (114 messages, medium intensity, 1.045 diff, 12s duration)",
-            "[0:01:13] :  (75 messages, medium intensity, 0.545 diff, 7s duration)",
+            '[0:00:31] :  (58 messages, medium intensity, 0.300 diff, 5s duration)',
+            '[0:00:38] :  (114 messages, very high intensity, 1.045 diff, 12s duration)',
+            '[0:01:13] :  (75 messages, high intensity, 0.545 diff, 7s duration)'
         ]
 
         self.assertEqual(result, expected)
@@ -306,12 +304,11 @@ class TestChatAnalyser(unittest.TestCase):
 
         result = [hl.keywords for hl in highlights]
         expected = [
-            ["msg6", "msg13", "msg4", "msg19"],
-            ["msg32", "msg34", "msg35", "msg33"],
-            ["msg40", "msg42", "msg49", "msg45"],
-            ["msg77", "msg79", "msg76", "msg74"],
+            ['msg32', 'msg34', 'msg35', 'msg33'],
+            ['msg40', 'msg42', 'msg49', 'msg45'],
+            ['msg77', 'msg79', 'msg76', 'msg74']
         ]
-
+        
         self.assertEqual(result, expected)
 
     def test_guess_context(self):
@@ -369,7 +366,6 @@ class TestChatAnalyser(unittest.TestCase):
         result = [hl.contexts for hl in highlights]
 
         expected = [
-            {"reaction1"},
             {"reaction1", "reaction3"},
             {"reaction2"},
             {"reaction3"},
@@ -418,17 +414,15 @@ class TestChatAnalyser(unittest.TestCase):
         result = [hl.colorless_str for hl in highlights]
 
         expected = [
-            "[0:00:01] reaction1: msg6, msg13, msg4, msg19 (170 messages, ultra high intensity, 6.148 diff, 24s duration)",
-            "[0:00:31] reaction3/reaction1: msg32, msg34, msg35, msg33 (58 messages, medium intensity, 0.300 diff, 5s duration)",
-            "[0:00:38] reaction2: msg40, msg42, msg49, msg45 (114 messages, medium intensity, 1.045 diff, 12s duration)",
-            "[0:01:13] reaction3: msg77, msg79, msg76, msg74 (75 messages, medium intensity, 0.545 diff, 7s duration)",
+            '[0:00:31] reaction3/reaction1: msg32, msg34, msg35, msg33 (58 messages, medium intensity, 0.300 diff, 5s duration)',
+            '[0:00:38] reaction2: msg40, msg42, msg49, msg45 (114 messages, very high intensity, 1.045 diff, 12s duration)',
+            '[0:01:13] reaction3: msg77, msg79, msg76, msg74 (75 messages, high intensity, 0.545 diff, 7s duration)'
         ]
         # @list_elem_2 reaction1 and reaction3 changes order since there is no order in dictionaries.
         expected2 = [
-            "[0:00:01] reaction1: msg6, msg13, msg4, msg19 (170 messages, ultra high intensity, 6.148 diff, 24s duration)",
-            "[0:00:31] reaction1/reaction3: msg32, msg34, msg35, msg33 (58 messages, medium intensity, 0.300 diff, 5s duration)",
-            "[0:00:38] reaction2: msg40, msg42, msg49, msg45 (114 messages, medium intensity, 1.045 diff, 12s duration)",
-            "[0:01:13] reaction3: msg77, msg79, msg76, msg74 (75 messages, medium intensity, 0.545 diff, 7s duration)",
+            '[0:00:31] reaction1/reaction3: msg32, msg34, msg35, msg33 (58 messages, medium intensity, 0.300 diff, 5s duration)',
+            '[0:00:38] reaction2: msg40, msg42, msg49, msg45 (114 messages, very high intensity, 1.045 diff, 12s duration)',
+            '[0:01:13] reaction3: msg77, msg79, msg76, msg74 (75 messages, high intensity, 0.545 diff, 7s duration)'
         ]
         if result == expected:
             self.assertEqual(result, expected)
@@ -469,19 +463,17 @@ class TestChatAnalyser(unittest.TestCase):
 
         self.canalyser.analyse()
         result = [hl.colorless_str for hl in self.canalyser.highlights]
-
+        
         expected = [
-            "[0:00:01] reaction1: msg6, msg13, msg4, msg19 (170 messages, ultra high intensity, 6.148 diff, 24s duration)",
-            "[0:00:31] reaction3/reaction1: msg32, msg34, msg35, msg33 (58 messages, medium intensity, 0.300 diff, 5s duration)",
-            "[0:00:38] reaction2: msg40, msg42, msg49, msg45 (114 messages, medium intensity, 1.045 diff, 12s duration)",
-            "[0:01:13] reaction3: msg77, msg79, msg76, msg74 (75 messages, medium intensity, 0.545 diff, 7s duration)",
+            '[0:00:31] reaction1/reaction3: msg32, msg34, msg35, msg33 (58 messages, medium intensity, 0.300 diff, 5s duration)',
+            '[0:00:38] reaction2: msg40, msg42, msg49, msg45 (114 messages, very high intensity, 1.045 diff, 12s duration)',
+            '[0:01:13] reaction3: msg77, msg79, msg76, msg74 (75 messages, high intensity, 0.545 diff, 7s duration)'
         ]
         # @list_elem_2 reaction1 and reaction3 changes order since there is no order in dictionaries.
         expected2 = [
-            "[0:00:01] reaction1: msg6, msg13, msg4, msg19 (170 messages, ultra high intensity, 6.148 diff, 24s duration)",
-            "[0:00:31] reaction1/reaction3: msg32, msg34, msg35, msg33 (58 messages, medium intensity, 0.300 diff, 5s duration)",
-            "[0:00:38] reaction2: msg40, msg42, msg49, msg45 (114 messages, medium intensity, 1.045 diff, 12s duration)",
-            "[0:01:13] reaction3: msg77, msg79, msg76, msg74 (75 messages, medium intensity, 0.545 diff, 7s duration)",
+            '[0:00:31] reaction3/reaction1: msg32, msg34, msg35, msg33 (58 messages, medium intensity, 0.300 diff, 5s duration)',
+            '[0:00:38] reaction2: msg40, msg42, msg49, msg45 (114 messages, very high intensity, 1.045 diff, 12s duration)',
+            '[0:01:13] reaction3: msg77, msg79, msg76, msg74 (75 messages, high intensity, 0.545 diff, 7s duration)'
         ]
         if result == expected:
             self.assertEqual(result, expected)
