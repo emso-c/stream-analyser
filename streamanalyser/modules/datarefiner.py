@@ -14,10 +14,15 @@ class DataRefiner:
         self.logger = loggersetup.create_logger(__file__, log_path)
 
     def refine_raw_messages(self, raw_messages, msglimit=None) -> list[Message,Superchat,Membership]:
-        """Refines raw messages and shapes them into Message dataclass"""
+        """Refines raw messages and shapes them into Message dataclass.
+            
+            Also gets all unique authors. This behavior was separate as per single responsibility principle
+            but now they're merged to improve performance. 
+        """
 
         self.logger.info("Refining messages")
         messages = []
+        authors = []
         skipped_message_amount = 0
         if self.verbose:
             print(f"Refining messagess...0%", end="\r")
@@ -30,7 +35,9 @@ class DataRefiner:
                     end="\r",
                 )
             try:
-                messages.append(self._convert_message(raw_message))
+                convertedMessage = self._convert_message(raw_message)
+                messages.append(convertedMessage)
+                authors.append(convertedMessage.author)
             except ValueError as e:
                 self.logger.warning(f"{e.__class__.__name__}: {e}")
                 self.logger.debug(f"Corrupt message was {raw_message}")
@@ -39,9 +46,11 @@ class DataRefiner:
                 self.logger.error(f"{e.__class__.__name__}:{e}")
                 skipped_message_amount += 1
         self.logger.debug(f"{len(messages)} messages has been refined ({skipped_message_amount} skipped)")
+        self.logger.debug(f"{len(self.authors)} authors has been found")
         if self.verbose:
             print(f"Refining messages... done")
         self.messages = messages
+        self.authors = list(dict.fromkeys(authors))
         return messages
 
     def _convert_message(self, raw_message):
@@ -158,22 +167,8 @@ class DataRefiner:
     def get_authors(self) -> list[Author]:
         """Returns unique list of message authors"""
 
-        if not self.messages:
-            self.logger.warning("Please refine raw messages before getting authors")
+        if not self.authors:
+            self.logger.warning("Raw messages should be refined before getting authors")
             return []
 
-        self.logger.info("Getting authors")
-        authors = list()
-        for count, message in enumerate(self.messages):
-            if self.verbose:
-                print(
-                    f"Getting authors...{utils.percentage(count, len(self.messages))}%",
-                    end="\r",
-                )
-            authors.append(message.author)
-
-        if self.verbose:
-            print(f"Getting authors... done")
-        self.authors = list(dict.fromkeys(authors))
-        self.logger.debug(f"{len(self.authors)} authors has been found")
         return self.authors
