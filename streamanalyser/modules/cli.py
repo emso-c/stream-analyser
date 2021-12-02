@@ -198,20 +198,50 @@ def main():
         keyword_filters=args.keyword_filters,
     )
 
-    with analyser:
-        analyser.analyse()
-        print()
+    
 
+    with analyser:
+        fetched, read, analysed = False, False, False
+        def fetch_data():
+            nonlocal fetched
+            if fetched:
+                return
+            if not analyser.is_cached:
+                analyser.collect_data()
+            analyser.enforce_integrity()
+            fetched = True
+        def read_data():
+            fetch_data()
+            nonlocal read
+            if read:
+                return
+            analyser.read_data()
+            analyser.refine_data()
+            analyser.fetch_missing_messages()
+            read = True
+        def analyse_data():
+            read_data()
+            print()
+            nonlocal analysed
+            if analysed:
+                return
+            analyser.analyse_data()
+            analysed = True
+        
+        # handle arguments
         if args.find_messages=="":
+            read_data()
             for msg in analyser.messages:
                 print(msg)
         elif args.find_messages:
+            read_data()
             for msg in analyser.find_messages(
                 args.find_messages, args.exact, not args.strict_case
             ):
                 print(msg)
 
         if args.find_user_messages:
+            read_data()
             messages=analyser.find_user_messages(id=args.user_id, username=args.username)
             if not messages:
                 print("User not found")
@@ -220,6 +250,7 @@ def main():
                     print(msg)
 
         if args.highlight_output:
+            analyse_data()
             top_highlights = analyser.get_highlights(
                 top=args.top,
                 output_mode=args.highlight_output,
@@ -229,6 +260,7 @@ def main():
             )
 
         if args.open_in_chrome and top_highlights:
+            analyse_data()
             for highlight in top_highlights:
                 highlight.open_in_browser()
 
@@ -236,13 +268,16 @@ def main():
             print(analyser.cached_ids())
 
         if args.export:
+            analyse_data()
             path = None if args.export == "default" else args.export
             analyser.export_data(args.export_folder_name, path, args.open_export_folder)
 
         if args.graph:
+            analyse_data()
             analyser.show_graph()
 
         if args.wordcloud:
+            analyse_data()
             analyser.generate_wordcloud(scale=args.wordcloud_scale).to_image().show()
 
         if not args.no_sound:
