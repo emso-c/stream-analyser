@@ -6,7 +6,7 @@ def create_logger(
     name,
     folder_path,
     file_name=None,
-    sid=None,
+    sid='Undefined',
     format=None,
     mode="a",
     def_level=logging.ERROR,
@@ -14,17 +14,9 @@ def create_logger(
 ):
     for handler in logging.root.handlers[:]:
         logging.root.removeHandler(handler)
-
-    if not format:
-        if sid:
-            format = (
-                f"%(asctime)s:%(module)s[%(lineno)d]:%(levelname)s:[{sid}]:%(message)s"
-            )
-        else:
-            format = f"%(asctime)s:%(module)s[%(lineno)d]:%(levelname)s:%(message)s"
-
-    if not file_name:
-        file_name = get_logname()
+    
+    format = format or f"%(asctime)s:%(module)s[%(lineno)d]:%(levelname)s:{f'[{sid}]:' if sid else ''}%(message)s"
+    file_name = file_name or get_logname()
 
     if folder_path:
         if not os.path.exists(folder_path):
