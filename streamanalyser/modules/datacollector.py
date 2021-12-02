@@ -20,16 +20,24 @@ class DataCollector:
 
     def __init__(self, id, log_path, msglimit=None, verbose=False, yt_api_key=None) -> None:
         self.id = id
+        self.logger = create_logger(__file__, log_path, sid=id)
         if self._is_live_or_upcoming:
             raise StreamIsLiveOrUpcomingError("Stream needs to be archived first to get its messages")
+        self._check_chat_replay()
 
         self.msglimit = msglimit
         self.verbose = verbose
         self.yt_api_key = yt_api_key
 
-        self.logger = create_logger(__file__, log_path)
         self.iscomplete = False
         self.metadata = {}
+
+    def _check_chat_replay(self):
+        try:
+            ChatDownloader().get_chat("https://www.youtube.com/watch?v=" + self.id, max_messages=1)
+        except errors.NoChatReplay:
+            self.logger.error(f"Chat replay is not available: https://www.youtube.com/watch?v={self.id}")
+            raise errors.NoChatReplay("Chat replay is not available")
 
     def collect_metadata(self) -> dict:
         """Collects metadata of the YouTube stream"""
