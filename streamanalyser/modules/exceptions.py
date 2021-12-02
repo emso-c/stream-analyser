@@ -14,3 +14,8 @@ class ConstantsNotUniqueError(Exception):
     """Raises when a series of numbers are not unique"""
 
     pass
+
+class StreamIsLiveOrUpcomingError(Exception):
+    """Raises when a live stream is live or upcoming"""
+
+    pass

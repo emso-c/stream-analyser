@@ -12,6 +12,7 @@ import isodate
 
 from .loggersetup import create_logger
 from .utils import percentage
+from .exceptions import StreamIsLiveOrUpcomingError
 
 
 class DataCollector:
@@ -19,6 +20,9 @@ class DataCollector:
 
     def __init__(self, id, log_path, msglimit=None, verbose=False, yt_api_key=None) -> None:
         self.id = id
+        if self._is_live_or_upcoming:
+            raise StreamIsLiveOrUpcomingError("Stream needs to be archived first to get its messages")
+
         self.msglimit = msglimit
         self.verbose = verbose
         self.yt_api_key = yt_api_key
@@ -111,6 +115,10 @@ class DataCollector:
                 del messages[-1]
         return messages, inconsistent_data_amount
 
+    @property
+    def _is_live_or_upcoming(self) -> bool:
+        """Returns if the stream is live or upcoming""" # lol
+        return YouTubeChatDownloader().get_video_data(self.id).get("status") != 'past'
 
     def fetch_raw_messages(self) -> list[dict]:
         """Fetches live chat messages"""
