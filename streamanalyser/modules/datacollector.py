@@ -7,6 +7,7 @@ from modules.structures import ImageResolution
 from yaml.events import DocumentStartEvent
 
 from chat_downloader import ChatDownloader, errors
+from chat_downloader.sites.youtube import YouTubeChatDownloader 
 import isodate
 
 from .loggersetup import create_logger
@@ -43,8 +44,11 @@ class DataCollector:
 
     def _get_video_duration(self) -> int:
         if not self.yt_api_key:
-            self.logger.warning("Couldn't get video duration as api key was not provided.")
-            return 0
+            try:
+                return int(YouTubeChatDownloader().get_video_data(self.id).get("duration"))
+            except Exception as e:
+                self.logger.error(f"Couldn't get video duration, returning -1 instead. ({e.__class__.__name__}: {e})")
+                return -1
         return self._parse_duration(
             json.load(
                 request.urlopen(
@@ -53,7 +57,8 @@ class DataCollector:
             )["items"][0]["contentDetails"]["duration"]
         )   
 
-    def _parse_duration(self, yt_duration_response) -> int:
+    @staticmethod
+    def _parse_duration(yt_duration_response) -> int:
         return int(isodate.parse_duration(yt_duration_response).total_seconds())
 
     def _get_oembed_respone(self) -> dict:
@@ -115,9 +120,8 @@ class DataCollector:
         yt_url = "https://www.youtube.com/watch?v=" + self.id
         corrupted_data_amount = 0
         try:
-            #TODO check if already live
             for counter, raw_message in enumerate(
-                ChatDownloader().get_chat(yt_url, start_time=0), start=1
+                ChatDownloader().get_chat(yt_url, start_time=0, message_groups=['messages', 'superchat']), start=1
             ):
                 if self.verbose:
                     print(
