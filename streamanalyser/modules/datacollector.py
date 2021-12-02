@@ -151,7 +151,8 @@ class DataCollector:
 
         return raw_messages
 
-    def _reformat_message(self, message) -> dict:
+    @staticmethod
+    def _reformat_message(message) -> dict:
         """Reformats messages returned from ChatDownloader."""
         reformatted_message = {
             "message_id": message["message_id"],
