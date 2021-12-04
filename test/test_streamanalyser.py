@@ -1,3 +1,4 @@
+import json
 import shutil
 import unittest
 import warnings
@@ -171,9 +172,32 @@ class TestStreamAnalyser(unittest.TestCase):
             )
 
     def test_analyse(self):
-        with sa.StreamAnalyser("um196SMIoR8", 100, disable_logs=True) as analyser:
+        with sa.StreamAnalyser("um196SMIoR8", 100, disable_logs=True, keyword_limit=5) as analyser:
+            src_path = os.path.join(
+                os.path.dirname(os.path.realpath(__file__)),  "custom_context.json"
+            )
+            with open(src_path, "w", encoding="utf-8") as file:
+                file.write(json.dumps([
+                    {
+                        "reaction_to": "greeting",
+                        "triggers": [
+                            {
+                                "phrase": "konyappi",
+                                "is_exact": True
+                            },
+                            {
+                                "phrase": "こんやっぴ",
+                                "is_exact": False
+                            },
+                        ]
+                    }], indent=4
+                ))
+
+            analyser.context_source.add(src_path)
             analyser.analyse()
             self.assertEqual(analyser.highlights[0].contexts, {"greeting"})
+
+            os.remove(src_path)
 
     def test_check_integrity(self):
         with sa.StreamAnalyser("um196SMIoR8", 1, disable_logs=True) as analyser:

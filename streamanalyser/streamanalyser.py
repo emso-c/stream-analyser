@@ -49,7 +49,7 @@ class StreamAnalyser:
             it is not necessary, but still recommended for edge cases.
             Defaults to None.
 
-        disable_logs (bool, optional): Disable logging for debugging purposes.
+        disable_logs (bool, optional): Disable logging.
             Log files' location can be found in `filehandler` module.
             Defaults to False.
 
@@ -177,8 +177,11 @@ class StreamAnalyser:
         self.highlights = []
         self.wordcloud = None
         self.fig = None
-        self.context_path = chatanalyser.CONTEXT_PATH
         self.metadata = {}
+        self.context_source = structures.ContextSourceManager()
+        # # TODO add option to get default
+        # # now it lets users to make contexts from scratch
+        # chatanalyser.DEFAULT_CONTEXT_SOURCE_PATH 
 
         self.filehandler = filehandler.FileHandler(storage_path=storage_path)
         self.logger = loggersetup.create_logger(__file__, self.filehandler.log_path, sid=sid)
@@ -280,7 +283,7 @@ class StreamAnalyser:
             log_path=self.filehandler.log_path,
             refined_messages=self.messages,
             stream_id=self.sid,
-            context_path=self.context_path,
+            default_context_path=None,
             verbose=self.verbose,
             keyword_filters=self.keyword_filters,
             keyword_limit=self.keyword_limit,
@@ -290,11 +293,14 @@ class StreamAnalyser:
         )
         if self.disable_logs:
             self.canalyser.logger.disabled = True
+        self.canalyser.source = self.context_source
+        self.context_source = self.canalyser.source
 
         self.canalyser.analyse(
             levels=self.intensity_levels,
             constants=self.intensity_constants,
             colors=self.intensity_colors,
+            autofix_context_collision=True
         )
         self.highlights = self.canalyser.highlights
 

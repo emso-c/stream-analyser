@@ -1,22 +1,32 @@
 import os
 import json
 from collections import Counter
+from typing import Optional
 from colorama import Fore
 import numpy as np
 from matplotlib import collections, pyplot as plt, font_manager as fm, rcParams
 
 from .loggersetup import create_logger
 from . import utils
-from .structures import Intensity, Highlight
+from .structures import (
+    Intensity,
+    Highlight,
+    ContextSourceManager,
+    Context,
+    Trigger
+)
 from .exceptions import (
     DifferentListSizeError,
     ConstantsNotAscendingError,
     ConstantsNotUniqueError,
+    DuplicateContextException,
+    UnexpectedException,
+    ContextsAllCorruptException,
+    PathAlreadyExistsException
 )
 
-
-CONTEXT_PATH = os.path.join(
-    os.path.dirname(os.path.realpath(__file__)), "..", "data", "context.json"
+DEFAULT_CONTEXT_SOURCE_PATH = os.path.join(
+    os.path.dirname(os.path.realpath(__file__)), "..", "data", "default_contexts.json"
 )
 DEFAULT_FONT_PATH = os.path.join(
     os.path.dirname(os.path.realpath(__file__)), "..", "fonts", "NotoSansCJKjp-Bold.ttf"
@@ -30,7 +40,7 @@ class ChatAnalyser:
         refined_messages (list[Message]): List of messages of the stream refined by
             the DataRefiner class.
 
-        log_path(str): Path to log folder.
+        log_path(str): Path to log folder. Set to None to log without writing to a file.
 
         stream_id (str, optional): Stream id of the chat. Defaults to 'undefined'.
 
@@ -45,7 +55,8 @@ class ChatAnalyser:
 
         keyword_filters(list, optional): Keywords to filter. Defaults to [].
 
-        context_path(str, optional): Path to context file. Defaults to CONTEXT_PATH.
+        default_context_path(str, optional): Path to the default context file. Defaults to
+            DEFAULT_CONTEXT_SOURCE_PATH. Set to None to disable.
 
         verbose (bool, optional): Make the output verbose. Defaults to False.
     """
@@ -60,7 +71,7 @@ class ChatAnalyser:
         threshold_constant=3,
         keyword_limit=4,
         keyword_filters=[],
-        context_path=CONTEXT_PATH,
+        default_context_path=DEFAULT_CONTEXT_SOURCE_PATH,
         verbose=False,
     ):
         self.messages = refined_messages
@@ -70,7 +81,7 @@ class ChatAnalyser:
         self.threshold_constant = threshold_constant
         self.keyword_limit = keyword_limit
         self.keyword_filters = keyword_filters
-        self.context_path = context_path
+        self.default_context_path = default_context_path
         self.verbose = verbose
         self.logger = create_logger(__file__, log_path)
 
@@ -85,12 +96,108 @@ class ChatAnalyser:
         self.highlight_annotation = []
         self.highlights = []
 
-        try:
-            with open(self.context_path, "r", encoding="utf-8") as file:
-                self.contexts = json.load(file)
-        except FileNotFoundError:
-            self.logger.error("Path to context file could not be found")
-            self.contexts = []
+        self.contexts = list[Context]
+        self.source = ContextSourceManager() # important
+        if self.default_context_path:
+            self.source.add(self.default_context_path)
+
+    def read_contexts_from_sources(self) -> None:
+        """Reads contexts from all sources and merges them into a list"""
+
+        self.logger.info("Reading contexts")
+
+        self.contexts = []
+        for path in self.source.paths:
+            with open(path, 'r', encoding='utf-8') as file:
+                data = list(json.load(file))
+                self.logger.debug(f"Read {len(data)} data from {path}")
+                self.contexts.extend(data)
+
+    def _check_contexts(self, autofix:bool=False) -> None:
+        """Checks context compitability. Tries to autofix collisions if possible."""
+
+        self.logger.info("Checking contexts")
+        self.logger.debug(f"{autofix=}")
+        
+        # TODO check triggers too (right now it only checks reactions)
+        seen_tuples = set()
+        new_contexts = []
+        for context in self.contexts:
+
+            # Handle key error
+            try:
+                context["reaction_to"]
+            except KeyError:
+                if autofix:
+                    continue # skip data
+                else:
+                    err_msg = f"Key 'reaction_to' not found in: {context}"
+                    self.logger.error(err_msg)
+                    raise KeyError(err_msg)
+
+            # Handle duplicate data error
+            reaction_tuple = tuple({'reaction_to', context.get('reaction_to')})
+            if reaction_tuple not in seen_tuples:
+                seen_tuples.add(reaction_tuple)
+                new_contexts.append(context)
+            else: 
+                if autofix:
+                    self.logger.warning(f"Merging duplicate context: {context['reaction_to']}")
+                    i = next((i for i, nc in enumerate(new_contexts) if nc['reaction_to'] == context['reaction_to']), None)
+                    if i == None:
+                        self.logger.critical(f"Unexpected error: i={i}")
+                        self.logger.critical(f"{new_contexts=}")
+                        self.logger.critical(f"{context=}")
+                        raise UnexpectedException("You should not be seeing this.")
+                    new_contexts[i].get('triggers').extend(context.get('triggers'))
+                else:
+                    err_msg = f"Duplicate context, reaction to '{context.get('reaction_to')}' already exists"
+                    self.logger.error(err_msg)
+                    raise DuplicateContextException(
+                        err_msg,
+                        encounters=[] # TODO point at the source file/files
+                    )
+        self.contexts = new_contexts
+
+    def parse_contexts(self, autofix:bool=False) -> list[Context]:
+        """Parses the contexts from dictionary to dataclass format"""
+
+        self.logger.info("Parsing contexts")
+
+        parsed_contexts = []
+        for context in self.contexts:
+            try:
+                parsed_contexts.append(
+                    Context(
+                        reaction_to=context['reaction_to'],
+                        triggers=[
+                            Trigger(
+                                phrase=trigger['phrase'],
+                                is_exact=trigger['is_exact']
+                            ) for trigger in context['triggers']
+                ]))
+            except Exception as e:
+                if autofix:
+                    self.logger.warning(f"Skipping corrupt context data: {context}")
+                    self.logger.warning(f"{e.__class__.__name__}: {e}")
+                else:
+                    self.logger.critical(f"Error parsing context: {context}")
+                    self.logger.critical(f"{e.__class__.__name__}: {e}")
+                    raise e
+
+        if autofix and len(parsed_contexts) == 0 and len(self.contexts) != 0:
+            self.logger.critical("Could not autofix, all contexts are corrupted")
+            raise ContextsAllCorruptException(
+                "Could not parse contexts, turn off autofix or check the log files to see the errors"
+            )
+        return parsed_contexts
+
+    def get_contexts(self, autofix:bool=False) -> list[Context]:
+        """Wrapper function to get the contexts"""
+        self.read_contexts_from_sources()
+        self._check_contexts(autofix=autofix)
+        self.contexts = self.parse_contexts(autofix=autofix)
+        return self.contexts
 
     def get_frequency(self) -> dict:
         """Creates frequency table of messages"""
@@ -410,16 +517,14 @@ class ChatAnalyser:
             words = []
             if highlight.messages:
                 for message in highlight.messages:
-                    # self.logger.debug(f"Splitting: {message.text}")
                     for word in list(set(message.text.split(" "))):
-                        if utils.normalize(word):
-                            # self.logger.debug(f"\t\t{word} normalised: {utils.normalize(word)}")
-                            words.append(utils.normalize(word))
+                        normalized = utils.normalize(word)
+                        if normalized:
+                            words.append(normalized)
 
             for filter in self.keyword_filters:
                 try:
                     while True:
-                        # self.logger.debug(f"removed {filter} from keywords")
                         words.remove(filter)
                 except:
                     pass
@@ -448,7 +553,7 @@ class ChatAnalyser:
             print("Getting highlight keywords... done")
         return self.highlights
 
-    def guess_context(self) -> list[Highlight]:
+    def guess_context(self) -> list[str]:
         """Guesses context by looking up the keywords for each highlight."""
 
         self.logger.info("Guessing context")
@@ -463,21 +568,21 @@ class ChatAnalyser:
                 )
             for keyword in highlight.keywords:
                 for context in self.contexts:
-                    for trigger in context["triggers"]:
-                        if (trigger["is_exact"] and trigger["phrase"] == keyword) or (
-                            not trigger["is_exact"] and trigger["phrase"] in keyword
-                        ):
-                            highlight.contexts.add(context["reaction_to"])
+                    for trigger in context.triggers:
+                        if  (trigger.is_exact and trigger.phrase == keyword) or \
+                            (not trigger.is_exact and trigger.phrase in keyword):
+                                highlight.contexts.add(context.reaction_to)
             if not highlight.contexts:
                 highlight.contexts = set(["None"])
             self.logger.debug(
-                f"Guessed contexts @{highlight.time}: {highlight.contexts} from keywords {highlight.keywords}"
+                f"Guessed contexts @{highlight.time}: {highlight.contexts} from keywords"
             )
+
         if self.verbose:
             print(f"Guessing contexts... done")
         return self.highlights
 
-    def get_highlights(self) -> list[Highlight]:
+    def get_highlights(self, autofix_context_collision:bool=False) -> list[Highlight]:
         """Returns a filled highlight list."""
 
         self.detect_highlight_times()
@@ -486,6 +591,7 @@ class ChatAnalyser:
         self.set_highlight_intensities()
         self.get_highlight_messages()
         self.get_highlight_keywords()
+        self.get_contexts(autofix=autofix_context_collision)
         self.guess_context()
         return self.highlights
 
@@ -538,7 +644,7 @@ class ChatAnalyser:
         self.fig = plt
         return plt
 
-    def analyse(self, levels=None, constants=None, colors=None):
+    def analyse(self, levels=None, constants=None, colors=None, autofix_context_collision:bool=False):
         self.get_frequency()
         self.calculate_moving_average()
         self.smoothen_mov_avg()
@@ -549,4 +655,5 @@ class ChatAnalyser:
         self.set_highlight_intensities()
         self.get_highlight_messages()
         self.get_highlight_keywords()
+        self.get_contexts(autofix=autofix_context_collision)
         self.guess_context()

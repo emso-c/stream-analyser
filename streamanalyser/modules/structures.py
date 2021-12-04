@@ -1,10 +1,13 @@
 from dataclasses import dataclass, field
 import datetime
+from typing import Optional
 import webbrowser
 import platform
 from colorama import init, Fore, Style
 from colorama.ansi import AnsiFore
 from enum import IntEnum
+#from .chatanalyser import DEFAULT_CONTEXT_SOURCE_PATH  # circular import
+from .exceptions import PathAlreadyExistsException
 
 init()
 
@@ -13,7 +16,6 @@ class ImageResolution(IntEnum):
     HIGH = 1
     STANDARD = 2
     MAXIMUM = 3
-
 
 class Browser:
     CHROME = "chrome"
@@ -256,3 +258,55 @@ class Highlight:
     @property
     def time_in_hms(self):
         return datetime.timedelta(seconds=int(self.time))
+
+
+@dataclass
+class ContextSourceManager():
+    """Dataclass to manage source paths for context files
+    """
+    #paths: list = field(default_factory=lambda:[DEFAULT_CONTEXT_SOURCE_PATH])
+    paths: list = field(default_factory=list)
+
+    def add(self, full_path:str):
+        if not full_path:
+            raise ValueError("Should provide a full path")
+        if full_path not in self.paths:
+            self.paths.append(full_path)
+            # TODO check if valid path
+            return
+        raise PathAlreadyExistsException(f"Warning: '{full_path}' already exists in paths")
+    def remove(self, byPath:Optional[str]=None, byIndex:Optional[int]=None):
+        if byPath is not None and byIndex is not None:
+            raise ValueError("Can't use both byPath and byIndex parameters")
+        if byPath is not None:
+            self.paths.remove(byPath)
+        elif byIndex is not None:
+            del self.paths[byIndex]
+        else:
+            raise ValueError("Should provide one of the parameters")
+    def update(self, old_path:str, new_path:str):
+        self.remove(byPath=old_path)
+        self.add(new_path)
+    def reset(self):
+        self.paths = []
+
+
+@dataclass
+class Trigger():
+    phrase: str
+    is_exact: bool
+
+    def __repr__(self):
+        return f"{self.phrase} ({'exact' if self.is_exact else 'inexact'})"
+
+
+@dataclass
+class Context():
+    reaction_to: str
+    triggers: list[Trigger] = field(default_factory=list)
+
+    def __hash__(self):
+        return hash(self.reaction_to)
+
+    def __repr__(self):
+        return f"{self.reaction_to}: {', '.join([str(trigger) for trigger in self.triggers])}"
