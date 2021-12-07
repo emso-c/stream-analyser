@@ -2,9 +2,11 @@ import os
 import json
 from collections import Counter
 from typing import Optional
+import string
+
 from colorama import Fore
-import numpy as np
 from matplotlib import collections, pyplot as plt, font_manager as fm, rcParams
+import numpy as np
 
 from .loggersetup import create_logger
 from . import utils
@@ -24,10 +26,8 @@ from .exceptions import (
     ContextsAllCorruptException,
     PathAlreadyExistsException
 )
+from .keyphrase_finder import KeyphraseFinder
 
-DEFAULT_CONTEXT_SOURCE_PATH = os.path.join(
-    os.path.dirname(os.path.realpath(__file__)), "..", "data", "default_contexts.json"
-)
 DEFAULT_FONT_PATH = os.path.join(
     os.path.dirname(os.path.realpath(__file__)), "..", "fonts", "NotoSansCJKjp-Bold.ttf"
 )
@@ -65,13 +65,13 @@ class ChatAnalyser:
         self,
         refined_messages,
         log_path,
+        default_context_path,
         stream_id="undefined",
         min_duration=5,
         window=30,
         threshold_constant=3,
         keyword_limit=4,
         keyword_filters=[],
-        default_context_path=DEFAULT_CONTEXT_SOURCE_PATH,
         verbose=False,
     ):
         self.messages = refined_messages
@@ -499,9 +499,13 @@ class ChatAnalyser:
         return self.highlights
 
     def get_highlight_keywords(self) -> list[Highlight]:
-        """Adds most frequently used words to the highlight list."""
+        """
+        Adds most frequently used words to the highlight list."""
+        print()
+        print("Warning: `get_highlight_keywords` is deprecated, use `get_highlight_keyphrases` instead")
+        print()
 
-        self.logger.info("Getting keywords")
+        self.logger.info("Getting keywords (old function)")
 
         if not self.highlights:
             return []
@@ -553,6 +557,60 @@ class ChatAnalyser:
             print("Getting highlight keywords... done")
         return self.highlights
 
+    def get_highlight_keyphrases(self) -> list[Highlight]:
+        """Adds most frequently used phrases to the highlight list."""
+
+        self.logger.info("Getting keyphrases")
+
+        if not self.highlights:
+            return []
+
+        finder = KeyphraseFinder(
+            chat = [],
+            fix_phrases = [
+                ("let 's", "let's"),
+                ("ca n't", "can't"),
+                ("do n't", "don't"),
+                ("he 's", "he's"),
+                ("they 're", "they're"),
+                ("it 's", "it's"),
+                ("it ’ s", "it’s")
+            ],
+            punctuation_list = list(string.punctuation) + ["！","？"],
+        )
+
+        for i, highlight in enumerate(self.highlights):
+            if self.verbose:
+                print(
+                    f"Getting highlight keyphrases... {utils.percentage(i, len(self.highlights))}%",
+                    end="\r",
+                )
+
+            if not highlight.messages:
+                return self.highlights
+
+            finder.chat = highlight.messages
+            ### TODO
+            # pass arguments
+            # implement keyphrase class
+            highlight.keywords = [r[0] for r in [tup for tup in finder.ngram_keyphrase_analysis(
+                max_keyphrase_amount=self.keyword_limit
+            )]]
+            
+            if not highlight.keywords:
+                self.logger.debug(
+                    f"No keyword found @{highlight.time}, removing highlight"
+                )
+                self.highlights.remove(highlight)
+            else:
+                self.logger.debug(
+                    f"Keywords found @{highlight.time}: {highlight.keywords}"
+                )
+
+        if self.verbose:
+            print("Getting highlight keyphrases... done")
+        return self.highlights
+
     def guess_context(self) -> list[str]:
         """Guesses context by looking up the keywords for each highlight."""
 
@@ -590,7 +648,7 @@ class ChatAnalyser:
         self.init_intensity()
         self.set_highlight_intensities()
         self.get_highlight_messages()
-        self.get_highlight_keywords()
+        self.get_highlight_keyphrases()
         self.get_contexts(autofix=autofix_context_collision)
         self.guess_context()
         return self.highlights
@@ -654,6 +712,6 @@ class ChatAnalyser:
         self.init_intensity(levels, constants, colors)
         self.set_highlight_intensities()
         self.get_highlight_messages()
-        self.get_highlight_keywords()
+        self.get_highlight_keyphrases()
         self.get_contexts(autofix=autofix_context_collision)
         self.guess_context()

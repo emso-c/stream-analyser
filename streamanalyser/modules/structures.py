@@ -266,6 +266,8 @@ class ContextSourceManager():
     """
     #paths: list = field(default_factory=lambda:[DEFAULT_CONTEXT_SOURCE_PATH])
     paths: list = field(default_factory=list)
+    def __repr__(self):
+        return "[%s]" % ", ".join(self.paths)
 
     def add(self, full_path:str):
         if not full_path:

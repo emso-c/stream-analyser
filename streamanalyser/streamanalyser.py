@@ -25,6 +25,7 @@ from modules import (
 )
 
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
+DEFAULT_CONTEXT_SOURCE_PATH = os.path.join(DIR_PATH, "data", "default_contexts.json")
 DEFAULT_FONT_PATH = os.path.join(DIR_PATH, "fonts", "NotoSansCJKjp-Bold.ttf")
 with open(rf"{DIR_PATH}/data/keyword_filters.txt", "r", encoding="utf-8") as f:
     DEFAULT_KEYWORD_FILTERS = [kw.strip("\n") for kw in f.readlines()]
@@ -123,6 +124,8 @@ class StreamAnalyser:
             Set to False to conserve more memory during runtime if the data won't be
             needed. Defaults to True.
 
+        default_context_path (str, optional): Default path to context json file.
+            Defaults to DEFAULT_CONTEXT_SOURCE_PATH.
     """
 
     def __init__(
@@ -149,7 +152,8 @@ class StreamAnalyser:
         intensity_levels=[],
         intensity_constants=[],
         intensity_colors=[],
-        keep_analysis_data=True
+        keep_analysis_data=True,
+        default_context_path=DEFAULT_CONTEXT_SOURCE_PATH
     ):
 
         self.sid = sid
@@ -170,6 +174,7 @@ class StreamAnalyser:
         self.intensity_constants = intensity_constants
         self.intensity_colors = intensity_colors
         self.keep_analysis_data = keep_analysis_data
+        self.default_context_path = default_context_path
 
         self._raw_messages = {}
         self.messages = []
@@ -178,10 +183,7 @@ class StreamAnalyser:
         self.wordcloud = None
         self.fig = None
         self.metadata = {}
-        self.context_source = structures.ContextSourceManager()
-        # # TODO add option to get default
-        # # now it lets users to make contexts from scratch
-        # chatanalyser.DEFAULT_CONTEXT_SOURCE_PATH 
+        self.context_source = structures.ContextSourceManager([])
 
         self.filehandler = filehandler.FileHandler(storage_path=storage_path)
         self.logger = loggersetup.create_logger(__file__, self.filehandler.log_path, sid=sid)
@@ -282,8 +284,8 @@ class StreamAnalyser:
         self.canalyser = chatanalyser.ChatAnalyser(
             log_path=self.filehandler.log_path,
             refined_messages=self.messages,
+            default_context_path=self.default_context_path,
             stream_id=self.sid,
-            default_context_path=None,
             verbose=self.verbose,
             keyword_filters=self.keyword_filters,
             keyword_limit=self.keyword_limit,
@@ -293,8 +295,7 @@ class StreamAnalyser:
         )
         if self.disable_logs:
             self.canalyser.logger.disabled = True
-        self.canalyser.source = self.context_source
-        self.context_source = self.canalyser.source
+        self.canalyser.source.paths.extend(self.context_source.paths)
 
         self.canalyser.analyse(
             levels=self.intensity_levels,

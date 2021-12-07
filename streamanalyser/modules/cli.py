@@ -198,8 +198,6 @@ def main():
         keyword_filters=args.keyword_filters,
     )
 
-    
-
     with analyser:
         fetched, read, analysed = False, False, False
         def fetch_data():
