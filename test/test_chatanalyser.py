@@ -63,6 +63,7 @@ sample_contexts = [
                     {"phrase": "msg6", "is_exact": False},
                     {"phrase": "msg34", "is_exact": False},
                     {"phrase": "msg2", "is_exact": False},
+                    {"phrase": "msg32", "is_exact": False},
                 ],
             },
             {
@@ -70,6 +71,7 @@ sample_contexts = [
                 "triggers": [
                     {"phrase": "msg42msg40", "is_exact": True},
                     {"phrase": "msg49", "is_exact": True},
+                    {"phrase": "msg40", "is_exact": True},
                 ],
             },
             {
@@ -77,6 +79,7 @@ sample_contexts = [
                 "triggers": [
                     {"phrase": "msg74", "is_exact": False},
                     {"phrase": "msg35", "is_exact": False},
+                    {"phrase": "msg77", "is_exact": False},
                 ],
             },
         ]
@@ -220,7 +223,7 @@ class TestChatAnalyser(unittest.TestCase):
         self.assertEqual(result, expected)
 
         with self.assertRaises(ValueError):
-            ChatAnalyser([], log_path=None, window=1)
+            ChatAnalyser([], log_path=None, window=1, default_context_path=None)
 
     def test_create_highlight_annotation(self):
         self.canalyser.get_frequency()
@@ -271,7 +274,7 @@ class TestChatAnalyser(unittest.TestCase):
         self.assertEqual(result, expected)
 
     def test_detect_highlight_times(self):
-        self.canalyser = ChatAnalyser(generate_random_chat(100, 101, 4), log_path=None, window=5)
+        self.canalyser = ChatAnalyser(generate_random_chat(100, 101, 4), log_path=None, window=5, default_context_path=None)
         self.canalyser.get_frequency()
         self.canalyser.calculate_moving_average()
         self.canalyser.smoothen_mov_avg()
@@ -292,7 +295,7 @@ class TestChatAnalyser(unittest.TestCase):
         self.assertEqual(result, expected)
 
     def test_correct_highlights(self):
-        self.canalyser = ChatAnalyser(generate_random_chat(100, 101, 10), log_path=None, window=5)
+        self.canalyser = ChatAnalyser(generate_random_chat(100, 101, 10), log_path=None, window=5, default_context_path=None)
         self.canalyser.get_frequency()
         self.canalyser.calculate_moving_average()
         self.canalyser.smoothen_mov_avg()
@@ -321,7 +324,7 @@ class TestChatAnalyser(unittest.TestCase):
         self.assertEqual(result, expected)
 
     def test_set_highlight_intensities(self):
-        self.canalyser = ChatAnalyser(generate_random_chat(100, 101, 10), log_path=None, window=5)
+        self.canalyser = ChatAnalyser(generate_random_chat(100, 101, 10), log_path=None, window=5, default_context_path=None)
         self.canalyser.get_frequency()
         self.canalyser.calculate_moving_average()
         self.canalyser.smoothen_mov_avg()
@@ -347,7 +350,7 @@ class TestChatAnalyser(unittest.TestCase):
         self.assertEqual(result, expected)
 
     def test_get_highlight_messages(self):
-        self.canalyser = ChatAnalyser(generate_random_chat(100, 101, 10), log_path=None, window=5)
+        self.canalyser = ChatAnalyser(generate_random_chat(100, 101, 10), log_path=None, window=5, default_context_path=None)
         self.canalyser.get_frequency()
         self.canalyser.calculate_moving_average()
         self.canalyser.smoothen_mov_avg()
@@ -370,7 +373,7 @@ class TestChatAnalyser(unittest.TestCase):
         self.assertEqual(result, expected)
 
     def test_get_highlight_keywords(self):
-        self.canalyser = ChatAnalyser(generate_random_chat(100, 101, 10), log_path=None, window=5)
+        self.canalyser = ChatAnalyser(generate_random_chat(100, 101, 10), log_path=None, window=5, default_context_path=None)
         self.canalyser.get_frequency()
         self.canalyser.calculate_moving_average()
         self.canalyser.smoothen_mov_avg()
@@ -417,19 +420,23 @@ class TestChatAnalyser(unittest.TestCase):
             ["msg40", "msg42", "msg49", "msg45"],
             ["msg77", "msg79", "msg76", "msg74"],
         ]
-
         self.canalyser.get_contexts()
         highlights = self.canalyser.guess_context()
-
         result = [hl.contexts for hl in highlights]
-
         expected = [
+            {"reaction3", "reaction1"},
+            {"reaction2"},
+            {"reaction3"},
+        ]
+        expected2 = [
             {"reaction1", "reaction3"},
             {"reaction2"},
             {"reaction3"},
         ]
-
-        self.assertEqual(result, expected)
+        try:
+            self.assertEqual(result, expected)
+        except:
+            self.assertEqual(result, expected2)
 
     def test_get_highlights(self):
         self.canalyser = ChatAnalyser(
@@ -443,23 +450,16 @@ class TestChatAnalyser(unittest.TestCase):
         self.canalyser.calculate_moving_average()
         self.canalyser.smoothen_mov_avg()
         self.canalyser.create_highlight_annotation()
-
+        self.canalyser.get_contexts()
         highlights = self.canalyser.get_highlights()
         result = [hl.colorless_str for hl in highlights]
 
         expected = [
-            '[0:00:31] reaction3/reaction1: msg32, msg34, msg35, msg33 (58 messages, medium intensity, 0.300 diff, 5s duration)',
-            '[0:00:38] reaction2: msg40, msg42, msg49, msg45 (114 messages, very high intensity, 1.045 diff, 12s duration)',
-            '[0:01:13] reaction3: msg77, msg79, msg76, msg74 (75 messages, high intensity, 0.545 diff, 7s duration)'
+            '[0:00:31] reaction1: msg32 (58 messages, medium intensity, 0.300 diff, 5s duration)',
+            '[0:00:38] reaction2: msg40 (114 messages, very high intensity, 1.045 diff, 12s duration)',
+            '[0:01:13] reaction3: msg77 (75 messages, high intensity, 0.545 diff, 7s duration)'
         ]
-        # @list_elem_2 reaction1 and reaction3 changes order since there is no order in dictionaries.
-        expected2 = [
-            '[0:00:31] reaction1/reaction3: msg32, msg34, msg35, msg33 (58 messages, medium intensity, 0.300 diff, 5s duration)',
-            '[0:00:38] reaction2: msg40, msg42, msg49, msg45 (114 messages, very high intensity, 1.045 diff, 12s duration)',
-            '[0:01:13] reaction3: msg77, msg79, msg76, msg74 (75 messages, high intensity, 0.545 diff, 7s duration)'
-        ]
-        if result != expected:
-            self.assertEqual(result, expected2)
+        self.assertEqual(result, expected)
 
     def test_analyse(self):
         self.canalyser = ChatAnalyser(
@@ -471,20 +471,12 @@ class TestChatAnalyser(unittest.TestCase):
         
         self.canalyser.analyse()
         result = [hl.colorless_str for hl in self.canalyser.highlights]
-        
         expected = [
-            '[0:00:31] reaction1/reaction3: msg32, msg34, msg35, msg33 (58 messages, medium intensity, 0.300 diff, 5s duration)',
-            '[0:00:38] reaction2: msg40, msg42, msg49, msg45 (114 messages, very high intensity, 1.045 diff, 12s duration)',
-            '[0:01:13] reaction3: msg77, msg79, msg76, msg74 (75 messages, high intensity, 0.545 diff, 7s duration)'
+            "[0:00:31] reaction1: msg32 (58 messages, medium intensity, 0.300 diff, 5s duration)",
+            "[0:00:38] reaction2: msg40 (114 messages, very high intensity, 1.045 diff, 12s duration)",
+            "[0:01:13] reaction3: msg77 (75 messages, high intensity, 0.545 diff, 7s duration)",
         ]
-        # @list_elem_2 reaction1 and reaction3 changes order since there is no order in dictionaries.
-        expected2 = [
-            '[0:00:31] reaction3/reaction1: msg32, msg34, msg35, msg33 (58 messages, medium intensity, 0.300 diff, 5s duration)',
-            '[0:00:38] reaction2: msg40, msg42, msg49, msg45 (114 messages, very high intensity, 1.045 diff, 12s duration)',
-            '[0:01:13] reaction3: msg77, msg79, msg76, msg74 (75 messages, high intensity, 0.545 diff, 7s duration)'
-        ]
-        if result != expected:
-            self.assertEqual(result, expected2)
+        self.assertEqual(result, expected)
 
     def test_context_source_structure(self):
         self.canalyser = ChatAnalyser(
@@ -603,9 +595,10 @@ class TestChatAnalyser(unittest.TestCase):
         # should merge duplicate contexts on `autofix = True`
         # instead of throwing error
         self.canalyser._check_contexts(autofix=True)
+        
         self.assertEqual(
             self.canalyser.contexts,
-            [{'reaction_to': 'reaction1', 'triggers': [{'phrase': 'msg6', 'is_exact': False}, {'phrase': 'msg34', 'is_exact': False}, {'phrase': 'msg2', 'is_exact': False}, {'phrase': 'msg6', 'is_exact': False}, {'phrase': 'msg34', 'is_exact': False}, {'phrase': 'msg2', 'is_exact': False}]}, {'reaction_to': 'reaction2', 'triggers': [{'phrase': 'msg42msg40', 'is_exact': True}, {'phrase': 'msg49', 'is_exact': True}, {'phrase': 'msg42msg40', 'is_exact': True}, {'phrase': 'msg49', 'is_exact': True}]}, {'reaction_to': 'reaction3', 'triggers': [{'phrase': 'msg74', 'is_exact': False}, {'phrase': 'msg35', 'is_exact': False}, {'phrase': 'msg74', 'is_exact': False}, {'phrase': 'msg35', 'is_exact': False}]}]
+            [{'reaction_to': 'reaction1', 'triggers': [{'phrase': 'msg6', 'is_exact': False}, {'phrase': 'msg34', 'is_exact': False}, {'phrase': 'msg2', 'is_exact': False}, {'phrase': 'msg32', 'is_exact': False}, {'phrase': 'msg6', 'is_exact': False}, {'phrase': 'msg34', 'is_exact': False}, {'phrase': 'msg2', 'is_exact': False}, {'phrase': 'msg32', 'is_exact': False}]}, {'reaction_to': 'reaction2', 'triggers': [{'phrase': 'msg42msg40', 'is_exact': True}, {'phrase': 'msg49', 'is_exact': True}, {'phrase': 'msg40', 'is_exact': True}, {'phrase': 'msg42msg40', 'is_exact': True}, {'phrase': 'msg49', 'is_exact': True}, {'phrase': 'msg40', 'is_exact': True}]}, {'reaction_to': 'reaction3', 'triggers': [{'phrase': 'msg74', 'is_exact': False}, {'phrase': 'msg35', 'is_exact': False}, {'phrase': 'msg77', 'is_exact': False}, {'phrase': 'msg74', 'is_exact': False}, {'phrase': 'msg35', 'is_exact': False}, {'phrase': 'msg77', 'is_exact': False}]}]
         )
 
     def test_parse_contexts(self):
