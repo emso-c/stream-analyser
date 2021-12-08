@@ -26,6 +26,7 @@ class KeyphraseFinder:
             chat,
             monogram_stop_words_path = MONOGRAM_STOP_WORDS_PATH,
             monogram_stop_punctuations_path = MONOGRAM_STOP_PUNCTUATIONS_PATH,
+            stop_words_path = None,  # your custom stop words to exclude in collocations
             fix_phrases = [],
             punctuation_list=list(string.punctuation),
         ):
@@ -36,19 +37,25 @@ class KeyphraseFinder:
         self.chat = chat
         self.fix_phrases = fix_phrases
         self.punctuation_list = punctuation_list
+        self.stop_words_path = stop_words_path
 
+        self.stop_words = None
 
         # TODO logger
 
         try:
-        # always left an empty whitespace at the end of the txt file
+            # always left an empty whitespace at the end of the txt file
+            # get text data line by line
             with open(monogram_stop_words_path, 'r', encoding="utf-8") as file:
                 self.monogram_stop_punctuations = [r[:-1] for r in file.readlines()]
             with open(monogram_stop_punctuations_path, 'r', encoding="utf-8") as file:
                 self.monogram_stop_words = [r[:-1] for r in file.readlines()]
-        except FileNotFoundError:
+            if stop_words_path:
+                with open(stop_words_path, 'r', encoding="utf-8") as file:
+                    self.stop_words = [r[:-1] for r in file.readlines()]
+        except FileNotFoundError as e:
             # log
-            raise FileNotFoundError
+            raise e
 
         self.monogram_stop_words_all = self.monogram_stop_words + self.monogram_stop_punctuations
 
@@ -193,6 +200,9 @@ class KeyphraseFinder:
                     continue
                 if ngram_size == 1 and message in self.monogram_stop_words:
                     continue
+                if ngram_size > 1 and self.stop_words:
+                    if any(1 if stop_word in message else 0 for stop_word in self.stop_words):
+                        continue
                 if all(1 if ch in self.punctuation_list else 0 for ch in message): # punctuation tokens should
                                                                                    # be considered seperately
                     if any([1 for tup in seen_tuples if message == tup[0]]): # already seen
@@ -215,4 +225,4 @@ class KeyphraseFinder:
 
                 if len(seen_tuples) == max_keyphrase_amount or ngram_size == min_ngram_size:
                     return sorted(seen_tuples, key=lambda x: x[3], reverse=True)
-        return [] #sorted(seen_tuples, key=lambda x: x[3], reverse=True)[max_keyphrase_amount:]
+        return []

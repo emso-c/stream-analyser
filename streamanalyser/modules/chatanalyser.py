@@ -59,6 +59,9 @@ class ChatAnalyser:
             DEFAULT_CONTEXT_SOURCE_PATH. Set to None to disable.
 
         verbose (bool, optional): Make the output verbose. Defaults to False.
+
+        stop_words_path (bool, optional): Default stop word file (.txt) path to exclude in
+            keyphrase collocations. Defaults to None.
     """
 
     def __init__(
@@ -73,6 +76,7 @@ class ChatAnalyser:
         keyword_limit=4,
         keyword_filters=[],
         verbose=False,
+        stop_words_path = None
     ):
         self.messages = refined_messages
         self.stream_id = stream_id
@@ -83,6 +87,7 @@ class ChatAnalyser:
         self.keyword_filters = keyword_filters
         self.default_context_path = default_context_path
         self.verbose = verbose
+        self.stop_words_path = stop_words_path
         self.logger = create_logger(__file__, log_path)
 
         if not self.window > 1:
@@ -577,6 +582,7 @@ class ChatAnalyser:
                 ("it ’ s", "it’s")
             ],
             punctuation_list = list(string.punctuation) + ["！","？"],
+            stop_words_path = self.stop_words_path
         )
 
         for i, highlight in enumerate(self.highlights):
@@ -593,18 +599,19 @@ class ChatAnalyser:
             ### TODO
             # pass arguments
             # implement keyphrase class
-            highlight.keywords = [r[0] for r in [tup for tup in finder.ngram_keyphrase_analysis(
+            keywords = [r[0] for r in [tup for tup in finder.ngram_keyphrase_analysis(
                 max_keyphrase_amount=self.keyword_limit
-            )]]
-            
-            if not highlight.keywords:
+            )]]            
+
+            if keywords:
+                highlight.keywords = keywords
                 self.logger.debug(
-                    f"No keyword found @{highlight.time}, removing highlight"
+                    f"Keyphrases found @{highlight.time}: {highlight.keywords}"
                 )
-                self.highlights.remove(highlight)
             else:
+                self.highlights.remove(highlight)
                 self.logger.debug(
-                    f"Keywords found @{highlight.time}: {highlight.keywords}"
+                    f"No keyphrase found @{highlight.time}, removing highlight"
                 )
 
         if self.verbose:

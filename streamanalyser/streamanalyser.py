@@ -126,6 +126,9 @@ class StreamAnalyser:
 
         default_context_path (str, optional): Default path to context json file.
             Defaults to DEFAULT_CONTEXT_SOURCE_PATH.
+
+        stop_words_path (bool, optional): Default stop word file (.txt) path to exclude in
+            keyphrase collocations. Defaults to None.
     """
 
     def __init__(
@@ -153,7 +156,8 @@ class StreamAnalyser:
         intensity_constants=[],
         intensity_colors=[],
         keep_analysis_data=True,
-        default_context_path=DEFAULT_CONTEXT_SOURCE_PATH
+        default_context_path=DEFAULT_CONTEXT_SOURCE_PATH,
+        stop_words_path = None
     ):
 
         self.sid = sid
@@ -175,6 +179,7 @@ class StreamAnalyser:
         self.intensity_colors = intensity_colors
         self.keep_analysis_data = keep_analysis_data
         self.default_context_path = default_context_path
+        self.stop_words_path = stop_words_path
 
         self._raw_messages = {}
         self.messages = []
@@ -292,6 +297,7 @@ class StreamAnalyser:
             min_duration=self.min_duration,
             threshold_constant=self.threshold_constant,
             window=self.window,
+            stop_words_path=self.stop_words_path
         )
         if self.disable_logs:
             self.canalyser.logger.disabled = True
