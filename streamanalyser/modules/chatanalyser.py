@@ -646,8 +646,8 @@ class ChatAnalyser:
             for keyword in highlight.keywords:
                 for context in self.contexts:
                     for trigger in context.triggers:
-                        if  (trigger.is_exact and trigger.phrase == keyword) or \
-                            (not trigger.is_exact and trigger.phrase in keyword):
+                        if  (trigger.is_exact and trigger.phrase == keyword.lower()) or \
+                            (not trigger.is_exact and trigger.phrase in keyword.lower()):
                                 highlight.contexts.add(context.reaction_to)
             if not highlight.contexts:
                 highlight.contexts = set(["None"])
