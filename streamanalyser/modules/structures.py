@@ -179,6 +179,7 @@ class Highlight:
     fdelta: float = 0.0  # is the frequency difference from start to finish
     messages: list[Message] = field(default_factory=list)
     keywords: list[str] = field(default_factory=list)
+    kw_emotes: list[Emote] = field(default_factory=list)
     contexts: set[str] = field(default_factory=set)
 
     def __repr__(self):
@@ -255,6 +256,7 @@ class Highlight:
             "fdelta": self.fdelta,
             "messages": self.messages,
             "keywords": self.keywords,
+            "kw_emotes": self.kw_emotes,
             "contexts": self.contexts,
         }
 

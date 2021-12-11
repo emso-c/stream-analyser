@@ -11,6 +11,7 @@ import numpy as np
 from .loggersetup import create_logger
 from . import utils
 from .structures import (
+    Emote,
     Intensity,
     Highlight,
     ContextSourceManager,
@@ -503,6 +504,15 @@ class ChatAnalyser:
             print("Getting highlight messages... done")
         return self.highlights
 
+    @staticmethod
+    def get_keyword_emotes(highlight:Highlight) -> set[Emote]:
+        emotes = set()
+        for msg in highlight.messages:
+            for emote in msg.emotes:
+                if emote:
+                    emotes.add(emote)
+        return emotes
+
     def get_highlight_keywords(self) -> list[Highlight]:
         """
         Adds most frequently used words to the highlight list."""
@@ -600,14 +610,16 @@ class ChatAnalyser:
             # pass arguments
             # implement keyphrase class
             keywords = [r[0] for r in [tup for tup in finder.ngram_keyphrase_analysis(
-                max_keyphrase_amount=self.keyword_limit
-            )]]            
+                max_keyphrase_amount=self.keyword_limit,
+                min_keyphrase_amount=self.keyword_limit # TODO temp
+            )]]
 
             if keywords:
                 highlight.keywords = keywords
                 self.logger.debug(
                     f"Keyphrases found @{highlight.time}: {highlight.keywords}"
                 )
+                highlight.kw_emotes = list(ChatAnalyser.get_keyword_emotes(highlight))
             else:
                 self.highlights.remove(highlight)
                 self.logger.debug(
