@@ -61,6 +61,9 @@ class KeyphraseFinder:
 
     @staticmethod
     def _regex_partition(string, regex):
+        if not re.search(regex, string):
+            string = string.lower()
+
         first = re.split(regex, string, 1)[0]
         try:
             last = re.split(regex, string, 1)[1]
@@ -79,7 +82,7 @@ class KeyphraseFinder:
 
     @staticmethod
     def _tokenize_yt_chat_message(string):
-        first, sub_string, last = KeyphraseFinder._regex_partition(string.lower(), ":.*:")
+        first, sub_string, last = KeyphraseFinder._regex_partition(string, ":.+:")
 
         if sub_string:
             tokens = KeyphraseFinder._tokenize_yt_chat_message(last)
@@ -117,7 +120,7 @@ class KeyphraseFinder:
             self._merge_punctuations()
             self._adjust_tokens()
             self.tokens.extend(
-                [token.lower() for token in list(yt_tokens)]+
+                [token for token in list(yt_tokens)]+
                 [PHRASE_END_DELIMITER]
             )
         return self.tokens
