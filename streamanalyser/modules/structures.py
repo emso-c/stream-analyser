@@ -48,6 +48,9 @@ class Emote:
     is_custom_emoji: bool
     images: list[Icon] = field(default_factory=list)
 
+    def __hash__(self):
+        return hash(self.id+self.name)
+
     def __repr__(self):
         return f"{self.id}: {self.name} ({len(self.images)} images)"
 
