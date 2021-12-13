@@ -266,10 +266,9 @@ class ChatAnalyser:
         self.logger.debug(f"{constants=}")
         self.logger.debug(f"{colors=}")
 
-        if not levels and not constants and not colors:
-            levels = ["medium", "high", "very high", "ultra high"]
-            constants = [0, 0.7, 1.4, 2.1]
-            colors = [Fore.YELLOW, Fore.BLUE, Fore.RED, Fore.MAGENTA]
+        levels = levels or ["medium", "high", "very high", "ultra high"]
+        constants = constants or [0, 0.7, 1.4, 2.1]
+        colors = colors or [Fore.YELLOW, Fore.BLUE, Fore.RED, Fore.MAGENTA]
 
         if len(levels) != len(constants) != len(colors):
             self.logger.error("All lists should be the same size")
@@ -611,7 +610,7 @@ class ChatAnalyser:
             # implement keyphrase class
             keywords = [r[0] for r in [tup for tup in finder.ngram_keyphrase_analysis(
                 max_keyphrase_amount=self.keyword_limit,
-                min_keyphrase_amount=self.keyword_limit # TODO temp
+                min_keyphrase_amount=1
             )]]
 
             if keywords:
