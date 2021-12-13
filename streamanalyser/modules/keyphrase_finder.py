@@ -206,8 +206,8 @@ class KeyphraseFinder:
                 if ngram_size > 1 and self.stop_words:
                     if any(1 if stop_word in message else 0 for stop_word in self.stop_words):
                         continue
-                if all(1 if ch in self.punctuation_list else 0 for ch in message): # punctuation tokens should
-                                                                                   # be considered seperately
+                # punctuation tokens should be considered seperately
+                if all(1 if ch in self.punctuation_list else 0 for ch in message):
                     if any([1 for tup in seen_tuples if message == tup[0]]): # already seen
                         continue
                 else:
