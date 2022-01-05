@@ -245,11 +245,10 @@ class TestStreamAnalyser(unittest.TestCase):
             analyser.collect_data()
 
             # intentionally delete cache files
-            analyser.clear_cache()
-            analyser.filehandler.create_cache_dir(analyser.sid)
+            analyser.clear_cache(delete_root_folder=False)
 
             # create unnecessary dummy file
-            with open(analyser.filehandler.sid_path + "\\dummy.txt", "w"):
+            with open(analyser.filehandler.sid_path + "\\dummy.txt", "w+") as f:
                 pass
 
             # call the function
