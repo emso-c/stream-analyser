@@ -102,6 +102,17 @@ class FileHandler:
         except Exception as e:
             self.logger.critical(f"Could not remove {path} - {e.__class__.__name__}:{e}")
 
+    def delete_dir(self, path):
+        try:
+            shutil.rmtree(path)
+            self.logger.debug(f"{path} removed")
+        except FileNotFoundError:
+            self.logger.warning(f"{path} could not be found")
+        except PermissionError:
+            self.logger.error(f"Access is denied to {path}. Try running in administrator mode.")
+        except Exception as e:
+            self.logger.critical(f"Could not remove {path} - {e.__class__.__name__}:{e}")
+
     def create_dir_if_not_exists(self, path):
         if not os.path.exists(path):
             try:
@@ -299,10 +310,13 @@ class FileHandler:
         self.logger.debug(f"{missing_files=}")
 
         if autofix:
-            for file in os.listdir(self.cache_path):
-                full_path = os.path.join(self.cache_path, file)
-                if os.stat(full_path).st_size == 0:
-                    self.delete_file(full_path)
+            for folder in os.listdir(self.cache_path):
+                full_path = os.path.join(self.cache_path, folder)
+                try:
+                    if os.stat(full_path).st_size == 0:
+                        self.delete_dir(full_path)
+                except AttributeError:
+                    continue
             for file in unnecesary_files:
                 # it might be a json file that is not compressed
                 if file == self.message_fname:
