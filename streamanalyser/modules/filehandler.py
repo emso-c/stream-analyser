@@ -94,7 +94,7 @@ class FileHandler:
     def delete_file(self, path):
         try:
             os.remove(path)
-            self.logger.debug(f"{path} removed")
+            self.logger.debug(f"{path} file removed")
         except FileNotFoundError:
             self.logger.warning(f"{path} could not be found")
         except PermissionError:
@@ -105,7 +105,7 @@ class FileHandler:
     def delete_dir(self, path):
         try:
             shutil.rmtree(path)
-            self.logger.debug(f"{path} removed")
+            self.logger.debug(f"{path} folder removed")
         except FileNotFoundError:
             self.logger.warning(f"{path} could not be found")
         except PermissionError:
@@ -132,7 +132,7 @@ class FileHandler:
         self.logger.info("Caching messages")
         fpath = os.path.join(self.sid_path, self.message_fname)
         try:
-            with open(fpath, "w", encoding="utf-8") as f:
+            with open(fpath, "w+", encoding="utf-8") as f:
                 f.write(json.dumps(message_dict, ensure_ascii=False, indent=4))
         except Exception as e:
             self.delete_file(fpath)
@@ -144,7 +144,7 @@ class FileHandler:
         self.logger.info("Caching metadata")
         fpath = os.path.join(self.sid_path, self.metadata_fname)
         try:
-            with open(fpath, "w", encoding="utf-8") as file:
+            with open(fpath, "w+", encoding="utf-8") as file:
                 yaml.dump(
                     metadata_dict, file, default_flow_style=False, allow_unicode=True
                 )
@@ -313,7 +313,9 @@ class FileHandler:
             for folder in os.listdir(self.cache_path):
                 full_path = os.path.join(self.cache_path, folder)
                 try:
-                    if os.stat(full_path).st_size == 0:
+                    for _, _, files in os.walk(full_path):
+                        pass
+                    if os.stat(full_path).st_size == 0 and len(files) == 0:
                         self.delete_dir(full_path)
                 except AttributeError:
                     continue
