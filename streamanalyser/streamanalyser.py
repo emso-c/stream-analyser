@@ -408,6 +408,8 @@ class StreamAnalyser:
             self.fetch_missing_messages()
         except KeyError:
             pass
+        except Exception as e:
+            self.logger.error(e.__class__.__name__ + e)
 
     def generate_wordcloud(self, font_path=None, scale=3, background="aliceblue"):
         """Returns a basic word cloud
