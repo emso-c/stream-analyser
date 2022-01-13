@@ -342,7 +342,7 @@ class StreamAnalyser:
         all over again.
         """
 
-        self.logger.info("Checking messages")
+        self.logger.info("Checking missing messages")
 
         if "is-complete" not in self.metadata.keys():
             self.logger.debug(
