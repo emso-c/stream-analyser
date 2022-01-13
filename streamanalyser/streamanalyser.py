@@ -317,9 +317,9 @@ class StreamAnalyser:
     def analyse(self):
         if not self.is_cached:
             self.collect_data()
-        self.enforce_integrity()
         self.read_data()
         self.refine_data()
+        self.enforce_integrity()
         self.fetch_missing_messages()
         self.analyse_data()
 
