@@ -588,7 +588,8 @@ class ChatAnalyser:
                 ("he 's", "he's"),
                 ("they 're", "they're"),
                 ("it 's", "it's"),
-                ("it ’ s", "it’s")
+                ("it ’ s", "it’s"),
+                ("i 'm", "i'm"),
             ],
             punctuation_list = list(string.punctuation) + ["！","？"],
             stop_words_path = self.stop_words_path
