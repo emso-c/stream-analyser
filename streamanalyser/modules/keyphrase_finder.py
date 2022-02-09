@@ -228,4 +228,4 @@ class KeyphraseFinder:
 
                 if len(seen_tuples) == max_keyphrase_amount or ngram_size == min_ngram_size:
                     return sorted(seen_tuples, key=lambda x: x[3], reverse=True)
-        return []
+        return sorted(seen_tuples, key=lambda x: x[3], reverse=True)
