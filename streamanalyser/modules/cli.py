@@ -56,7 +56,7 @@ def parseargs():
     parser.add_argument(
         "-w",
         "--window",
-        default=40,
+        default=30,
         type=int,
         help="window to calculate moving average of message frequency",
     )
