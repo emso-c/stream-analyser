@@ -610,7 +610,7 @@ class ChatAnalyser:
             # implement keyphrase class
             keywords = [r[0] for r in [tup for tup in finder.ngram_keyphrase_analysis(
                 max_keyphrase_amount=self.keyword_limit,
-                min_keyphrase_amount=1
+                min_keyphrase_amount=self.keyword_limit, # to achieve non-dynamic keyphrase amount 
             )]]
 
             if keywords:
