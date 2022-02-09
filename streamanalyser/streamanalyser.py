@@ -147,7 +147,7 @@ class StreamAnalyser:
         keep_cache=False,
         cache_deletion_algorithm="lru",
         cache_limit=50,
-        min_duration=5,
+        min_duration=15,
         window=30,
         threshold_constant=3,
         keyword_limit=4,
