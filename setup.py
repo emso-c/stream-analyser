@@ -12,7 +12,7 @@ setup(
     author="emso-c",
     author_email="emsoc192@gmail.com",
     description=("A tool that analyses live streams"),
-    keywords=["youtube", "live", "stream", "chat", "highlight", "analyser"],
+    keywords=["youtube", "live", "stream", "chat", "highlight", "analysis"],
     url="https://github.com/emso-c/stream-analyser",
     long_description=long_desc,
     long_description_content_type="text/markdown",
