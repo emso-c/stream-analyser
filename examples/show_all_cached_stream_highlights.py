@@ -1,6 +1,6 @@
 import streamanalyser as sa
 
-# Find highlights for streams that are cached
+# Find highlights of streams that are cached
 if __name__ == "__main__":
 
     # Limited to merely 1000 messages for this example as it'd take way longer to fetch all messages.
