@@ -1,6 +1,6 @@
 [
     {
-        "reaction_to": "funny",
+        "reaction_to": "Funny",
         "triggers": [
             {
                 "phrase": "lol",
@@ -17,7 +17,7 @@
         ]
     },
     {
-        "reaction_to": "scary",
+        "reaction_to": "Scary",
         "triggers": [
             {
                 "phrase": "scary",
@@ -30,7 +30,7 @@
         ]
     },
     {
-        "reaction_to": "shocked or suprised",
+        "reaction_to": "Shocked or surprised",
         "triggers": [
             {
                 "phrase": "!!!",
@@ -55,7 +55,7 @@
         ]
     },
     {
-        "reaction_to": "sad",
+        "reaction_to": "Sad",
         "triggers": [
             {
                 "phrase": "sad",
@@ -72,7 +72,7 @@
         ]
     },
     {
-        "reaction_to": "amazing",
+        "reaction_to": "Amazing",
         "triggers": [
             {
                 "phrase": "holy",
@@ -85,7 +85,7 @@
         ]
     },
     {
-        "reaction_to": "curious",
+        "reaction_to": "Curious",
         "triggers": [
             {
                 "phrase": "?",
@@ -94,7 +94,7 @@
         ]
     },
     {
-        "reaction_to": "pumped up",
+        "reaction_to": "Pumped up",
         "triggers": [
             {
                 "phrase": "lets go",
@@ -107,7 +107,7 @@
         ]
     },
     {
-        "reaction_to": "cute",
+        "reaction_to": "Cute",
         "triggers": [
             {
                 "phrase": "cute",
@@ -116,7 +116,7 @@
         ]
     },
     {
-        "reaction_to": "wholesome",
+        "reaction_to": "Wholesome",
         "triggers": [
             {
                 "phrase": "awww",
@@ -125,7 +125,7 @@
         ]
     },
     {
-        "reaction_to": "backchanneling",
+        "reaction_to": "Backchanneling",
         "triggers": [
             {
                 "phrase": "same",
@@ -134,7 +134,7 @@
         ]
     },
     {
-        "reaction_to": "greeting",
+        "reaction_to": "Greeting",
         "triggers": [
             {
                 "phrase": "hi",
@@ -147,7 +147,7 @@
         ]
     },
     {
-        "reaction_to": "stream end",
+        "reaction_to": "Stream end",
         "triggers": [
             {
                 "phrase": "bye",
@@ -156,7 +156,7 @@
         ]
     },
     {
-        "reaction_to": "good move",
+        "reaction_to": "Good move",
         "triggers": [
             {
                 "phrase": "nice",
@@ -169,16 +169,7 @@
         ]
     },
     {
-        "reaction_to": "close to lose something",
-        "triggers": [
-            {
-                "phrase": "close",
-                "is_exact": false
-            }
-        ]
-    },
-    {
-        "reaction_to": "close to achieve something",
+        "reaction_to": "Close to achieve something",
         "triggers": [
             {
                 "phrase": "almost",
@@ -187,7 +178,7 @@
         ]
     },
     {
-        "reaction_to": "understood",
+        "reaction_to": "Understood",
         "triggers": [
             {
                 "phrase": "ok",
@@ -196,7 +187,7 @@
         ]
     },
     {
-        "reaction_to": "coming back",
+        "reaction_to": "Coming back",
         "triggers": [
             {
                 "phrase": "おかえり",
@@ -209,7 +200,7 @@
         ]
     },
     {
-        "reaction_to": "congratulating",
+        "reaction_to": "Congratulating",
         "triggers": [
             {
                 "phrase": "congrat",
@@ -218,7 +209,7 @@
         ]
     },
     {
-        "reaction_to": "applause",
+        "reaction_to": "Applause",
         "triggers": [
             {
                 "phrase": "👏👏👏",
@@ -227,7 +218,7 @@
         ]
     },
     {
-        "reaction_to": "loud",
+        "reaction_to": "Loud",
         "triggers": [
             {
                 "phrase": "my ears",
