@@ -120,9 +120,10 @@ def parseargs():
         "--username", default=None, type=str, help="username of the user"
     )
     parser.add_argument(
+        "-ns",
         "--no-sound",
         action="store_true",
-        help="not make a sound when the program is completed",
+        help="do not make a sound when the program is completed",
     )
     parser.add_argument(
         "--open-in-chrome",
