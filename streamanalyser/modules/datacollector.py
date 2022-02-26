@@ -3,13 +3,13 @@ from typing import Tuple
 from urllib import request, parse
 import json
 
-from modules.structures import ImageResolution
 from yaml.events import DocumentStartEvent
 
 from chat_downloader import ChatDownloader, errors
 from chat_downloader.sites.youtube import YouTubeChatDownloader 
 import isodate
 
+from .structures import ImageResolution
 from .loggersetup import create_logger
 from .utils import percentage
 from .exceptions import StreamIsLiveOrUpcomingError

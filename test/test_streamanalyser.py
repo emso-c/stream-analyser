@@ -5,8 +5,11 @@ import warnings
 import os
 import importlib
 
-from modules.structures import Author, Message
+import sys
+if __package__ is None:
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from streamanalyser.modules.structures import Author, Message
 from streamanalyser import streamanalyser as sa
 
 
