@@ -33,7 +33,7 @@ setup(
     ]},
     packages=find_packages(),
     package_dir={"": "."},
-    python_requires=">=3.9",
+    python_requires=">=3.7",
     include_package_data=True,
     package_data={'streamanalyser': [
         'data/default_contexts.json',
