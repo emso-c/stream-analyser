@@ -35,5 +35,12 @@ setup(
     package_dir={"": "."},
     python_requires=">=3.9",
     include_package_data=True,
+    package_data={'streamanalyser': [
+        'data/default_contexts.json',
+        'data/keyword_filters.txt',
+        'data/monogram_stop_punctuations.txt',
+        'data/monogram_stop_words.txt',
+        'fonts/NotoSansCJKjp-Bold.ttf',
+    ]},
     install_requires=requirements,
 )
