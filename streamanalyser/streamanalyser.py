@@ -13,7 +13,7 @@ try:
 except ModuleNotFoundError as e:
     pass
 
-from modules import (
+from .modules import (
     loggersetup,
     filehandler,
     datacollector,
