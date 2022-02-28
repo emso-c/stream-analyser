@@ -1,7 +1,7 @@
 import unittest
 import warnings
 
-from streamanalyser.modules.datacollector import DataCollector
+from modules.datacollector import DataCollector
 
 
 # TODO Fix:

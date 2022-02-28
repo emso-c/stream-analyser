@@ -9,9 +9,8 @@ import sys
 if __package__ is None:
     sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from streamanalyser.modules.structures import Author, Message
-from streamanalyser import streamanalyser as sa
-
+from modules.structures import Author, Message
+from streamanalyser import streamanalyser as sa 
 
 class TestStreamAnalyser(unittest.TestCase):
     def setUp(self):

@@ -5,7 +5,7 @@ if __name__ == "__main__":
     cov = coverage.Coverage()
 
     cov.start()
-    suite = unittest.TestLoader().discover(r"./test", pattern="*")
+    suite = unittest.TestLoader().discover("streamanalyser/test", pattern="*")
     unittest.TextTestRunner().run(suite)
     cov.stop()
 

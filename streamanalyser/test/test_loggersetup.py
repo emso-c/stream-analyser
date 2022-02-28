@@ -2,7 +2,7 @@ import logging
 import os
 import unittest
 
-from streamanalyser.modules.loggersetup import create_logger
+from modules.loggersetup import create_logger
 
 
 

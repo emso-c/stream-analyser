@@ -4,15 +4,15 @@ import unittest
 import random
 import warnings
 
-from streamanalyser.modules.chatanalyser import ChatAnalyser, Fore
-from streamanalyser.modules.structures import (
+from modules.chatanalyser import ChatAnalyser, Fore
+from modules.structures import (
     Intensity,
     Message,
     Author,
     Context,
     Trigger
 )
-from streamanalyser.modules.exceptions import (
+from modules.exceptions import (
     DifferentListSizeError,
     ConstantsNotAscendingError,
     ConstantsNotUniqueError,

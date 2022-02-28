@@ -1,8 +1,8 @@
 import unittest
 import warnings
 
-from streamanalyser.modules.datarefiner import DataRefiner
-from streamanalyser.modules.structures import Icon, Message, Author
+from modules.datarefiner import DataRefiner
+from modules.structures import Icon, Message, Author
 
 
 class TestDataRefiner(unittest.TestCase):
