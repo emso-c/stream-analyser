@@ -8,10 +8,7 @@ from typing import Tuple
 from time import time
 from colorama.ansi import Back, Style
 
-try:
-    from wordcloud import WordCloud
-except ModuleNotFoundError as e:
-    pass
+from wordcloud import WordCloud
 
 from .modules import (
     loggersetup,

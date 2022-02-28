@@ -32,3 +32,4 @@ tomli==1.2.1
 tqdm==4.62.3
 urllib3==1.26.6
 websocket-client==1.2.1
+wordcloud==1.8.1
