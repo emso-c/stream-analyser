@@ -28,6 +28,9 @@ setup(
         "Topic :: Scientific/Engineering",
         "Topic :: Scientific/Engineering :: Information Analysis",
     ],
+    entry_points={'console_scripts':[
+        'streamanalyser = streamanalyser.modules.cli:main'
+    ]},
     packages=find_packages(),
     package_dir={"": "."},
     python_requires=">=3.9",
