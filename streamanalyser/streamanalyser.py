@@ -433,7 +433,9 @@ class StreamAnalyser:
                 self.filehandler.cache_metadata(self.collector.collect_metadata())
 
         try:
-            self.fetch_missing_messages()
+            # TODO fix logic
+            #self.fetch_missing_messages()
+            pass
         except KeyError:
             pass
         except Exception as e:
