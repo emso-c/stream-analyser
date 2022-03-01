@@ -12,7 +12,7 @@ from datetime import datetime
 from time import time
 
 FH_DIR_PATH = os.path.dirname(os.path.realpath(__file__))
-CONTEXT_PATH = os.path.join(FH_DIR_PATH, "..", "data", "context.json")
+CONTEXT_PATH = os.path.join(FH_DIR_PATH, "..", "data", "default_contexts.json")
 
 
 class FileHandler:
