@@ -1,0 +1,4 @@
+include streamanalyser/fonts/NotoSansCJKjp-Bold.ttf
+include streamanalyser/data/*
+exclude streamanalyser/data/nltk_data
+include requirements.txt
