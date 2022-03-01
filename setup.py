@@ -41,6 +41,7 @@ setup(
         'data/monogram_stop_punctuations.txt',
         'data/monogram_stop_words.txt',
         'fonts/NotoSansCJKjp-Bold.ttf',
+        'requirements.txt',
     ]},
     install_requires=requirements,
 )
