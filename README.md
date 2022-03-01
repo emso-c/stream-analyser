@@ -2,13 +2,12 @@
 
 ### Stream Analyser is a configurable data analysis tool that analyses live streams, detects and classifies highlights based on their intensity, finds keywords, and even guesses contexts.
 
-About context guessing, for now the target environment is *Vtuber streams on YouTube (particularly Hololive)* by default. Though it can be manually configured to satisfy your needs, which will be explained later.
+<br>
 
-Also can be expanded to other live stream platforms such as Twitch if there's enough support.
+Also can be expanded to other live stream platforms such as Twitch if there's enough demand or support.
 
-> :warning: Seems like wordcloud package can not be installed via pip on win10 right now. You need to manually install the [wheel file](https://pypi.org/project/wordcloud/#files). So I didn't include it in the requirements for now and it is not necessary if you're not gonna use the word cloud feature.
 
-**Currently in Alpha.**
+**Currently in Development.**
 
 ## Table of contents
 - [Installation](#Installation)
@@ -40,6 +39,7 @@ Also can be expanded to other live stream platforms such as Twitch if there's en
 - [Testing](#Testing)
 - [Possible issues](#Possible-issues)
 - [Future goals](#Future-goals)
+- [Support](#Support)
 - [License](#License)
 
 # Installation
@@ -52,10 +52,10 @@ pip install stream-analyser
 # Usage
 
 ```python
-import streamanalyser as sa
+from streamanalyser import StreamAnalyser
 
 if __name__ == '__main__':
-    with sa.StreamAnalyser("l8Hgi4jF7Zc") as analyser:
+    with StreamAnalyser("gV2HOEE5DfQ") as analyser:
         analyser.analyse()
         analyser.get_highlights(top=10, output_mode="detailed")
         analyser.get_highlights(top=10, output_mode="url")
@@ -64,29 +64,28 @@ if __name__ == '__main__':
 Console output:
 ```bash
 Highlights:
-[0:02:33] funny: にゃっはろ～, mikokusamikokusamikokusa, mikohatenamikohatenamikohatena, にゃっはろー (773 messages, ultra high intensity, 12.266 diff, 74s duration)
-[0:59:24] stream end/funny: mikokusamikokusamikokusa, おつみこ～, おつみこー, おつみこ〜 (799 messages, ultra high intensity, 10.683 diff, 40s duration)  
-[0:57:16] funny: mikokusamikokusamikokusa, mikonakimikomikonakimikomikonakimiko, 草, mikokusa (827 messages, ultra high intensity, 9.734 diff, 92s duration)
-[0:14:31] good move or play/funny: mikogoodmikogoodmikogood, boing, ないすぅ！, mikokusa (786 messages, ultra high intensity, 9.317 diff, 91s duration)   
-[0:18:18] funny: mikogoodmikogoodmikogood, mikokusamikokusamikokusa, mikokusa, 草 (548 messages, very high intensity, 8.396 diff, 44s duration)
-[0:11:09] funny: mikokusamikokusamikokusa, 草, mikonakimikomikonakimikomikonakimiko, mikokusa (637 messages, very high intensity, 7.536 diff, 69s duration)
-[0:44:21] funny: mikokusamikokusamikokusa, 草, mikokusa, boing (440 messages, very high intensity, 7.512 diff, 47s duration)
-[0:08:34] funny: mikokusamikokusamikokusa, mikokusa, 草, mikonakimikomikonakimikomikonakimiko (824 messages, very high intensity, 7.300 diff, 98s duration)
-[0:55:01] good move or play: mikogoodmikogoodmikogood, ないすぅ！, mikogood, mikopenmikopmikopenmikopmikopenmikop (432 messages, very high intensity, 7.226 diff, 57s duration)
-[0:25:22] funny: mikofapmikofapmikofap, mikokusamikokusamikokusa, mikonakimikomikonakimikomikonakimiko, mikofap (562 messages, very high intensity, 7.168 
-diff, 44s duration)
+[1:08:33] funny: 草 (806 messages, ultra high intensity, 2.182 diff, 94s duration)
+[0:11:47] funny: 草, yes my, いえちゅ まい だぁぁぁく (360 messages, ultra high intensity, 2.084 diff, 42s duration)
+[0:28:56] funny: 草, en ]:, my horns (322 messages, ultra high intensity, 2.044 diff, 42s duration)
+[0:23:54] None: ymd ymd ymd ymd, bgm is, yes my, love your voice (287 messages, very high intensity, 1.723 diff, 38s duration)
+[0:32:20] funny: 草, the crow is, yes my dark (352 messages, very high intensity, 1.721 diff, 46s duration)
+[0:14:31] cute: かわいい (297 messages, very high intensity, 1.436 diff, 36s duration)
+[0:40:15] None: yes my dark, yagoo my daddy, yes my baby, ill be back (620 messages, very high intensity, 1.427 diff, 82s duration)
+[0:19:47] cute: yes my, ymd, cute yamada (251 messages, very high intensity, 1.376 diff, 31s duration)
+[0:25:10] funny: 草, play apex (378 messages, very high intensity, 1.363 diff, 50s duration)
+[0:13:12] None: カラス, yes my dog (372 messages, very high intensity, 1.320 diff, 46s duration)
 
 Links:
-0:02:33 -> https://youtu.be/l8Hgi4jF7Zc?t=153
-0:59:24 -> https://youtu.be/l8Hgi4jF7Zc?t=3564
-0:57:16 -> https://youtu.be/l8Hgi4jF7Zc?t=3436
-0:14:31 -> https://youtu.be/l8Hgi4jF7Zc?t=871
-0:18:18 -> https://youtu.be/l8Hgi4jF7Zc?t=1098
-0:11:09 -> https://youtu.be/l8Hgi4jF7Zc?t=669
-0:44:21 -> https://youtu.be/l8Hgi4jF7Zc?t=2661
-0:08:34 -> https://youtu.be/l8Hgi4jF7Zc?t=514
-0:55:01 -> https://youtu.be/l8Hgi4jF7Zc?t=3301
-0:25:22 -> https://youtu.be/l8Hgi4jF7Zc?t=1522
+1:08:33 -> https://youtu.be/gV2HOEE5DfQ?t=4113
+0:11:47 -> https://youtu.be/gV2HOEE5DfQ?t=707
+0:28:56 -> https://youtu.be/gV2HOEE5DfQ?t=1736
+0:23:54 -> https://youtu.be/gV2HOEE5DfQ?t=1434
+0:32:20 -> https://youtu.be/gV2HOEE5DfQ?t=1940
+0:14:31 -> https://youtu.be/gV2HOEE5DfQ?t=871
+0:40:15 -> https://youtu.be/gV2HOEE5DfQ?t=2415
+0:19:47 -> https://youtu.be/gV2HOEE5DfQ?t=1187
+0:25:10 -> https://youtu.be/gV2HOEE5DfQ?t=1510
+0:13:12 -> https://youtu.be/gV2HOEE5DfQ?t=792
 ```
 
 **Important:** Please see [possible issues](#Possible-issues) if you can't see Japanese characters in console.
@@ -95,17 +94,17 @@ Links:
 You can also use a simple pre-built CLI 
 
 ```bash
-python -m streamanalyser --help
+> streamanalyser --help
 ```
 or
 ```python
-from streamanalyser import cli
+from streamanalyser.modules import cli
 
 if __name__ == '__main__':
     cli.main()
 ```
 
-See "./examples" for more ways to use the module.
+See "/path/to/package/examples" for more ways to use the module.
 
 # Key features
 
@@ -114,15 +113,17 @@ See "./examples" for more ways to use the module.
 - Fetch live chat of the stream
 - Detect highlights
 - Guess contexts
-- Show highlights
+- Show and filter highlights
   - Summary
   - Detailed
   - URL
   - Open in browser
-- Find messages
-- Find authors
+- Find and filter messages
+- Find and filter authors
 - Find messages made by an author
 - Visualize data
+  - Graph
+  - Word cloud
 - Export data
 
 # About detecting highlights
@@ -131,9 +132,7 @@ Stream analyser uses live chat reactions to detect highlights and it's accuracy 
 
 # About guessing contexts
 
-Contexts are hard-coded into the `context.json` file and it requires extensive analysis of the target environments demographics and behaviors to determine them.
-
-As stated in the description, the current contexts are based on Vtuber environment by default, but they can be modified according to your needs, which is explained in [custom contexts](#Custom-contexts) section.
+Default contexts are hard-coded into the `path/to/package/data/default_contexts.json` file and can be modified according to requirements, which is explained thoroughly in [custom contexts](#Custom-contexts) section.
 
 # About performance
 
@@ -160,13 +159,14 @@ Stream analyser is divided into sub-modules that handles various parts of the jo
 - `datacollector`: Collects required data.
 - `datarefiner`: Refines collected raw data to be analysed.
 - `chatanalyser`: Analyses the refined data.
+- `keyphrase_finder`: Finds keyphrases using NLP.
 - `filehandler`: Handles almost everything related to files. Including reading, writing, updating and deleting cached files, logs and exports.
-- `structures`: Stores important data models.
+- `structures`: Stores vital data models.
 - `utils`: Includes various functions that does small jobs.
 
 ## Initializing the object
 
-The only required parameter is the id of the stream url. The instance can be initalized as a context manager with the `with` keyword if wanted too:
+The only required parameter is the id of the stream url. The instance can be initalized as a context manager with the `with` keyword, which is **recommended**:
 ```python
 analyser_object = StreamAnalyser("l8Hgi4jF7Zc")
 ```
@@ -176,7 +176,7 @@ with StreamAnalyser("l8Hgi4jF7Zc") as sa:
     ...
 ```
 
-The other options provide ways to configure methods of analysing, caching, logging and outputting. Full docs can be found in the module. Some of the important ones are:
+The other parameters provide ways to configure methods of analysing, caching, logging and outputting. Full docs can be found in the module. Some of the important ones are:
 - `storage_path`: Path to store project related files such as logs and caches.
 - `cache_limit`: Max file amount to cache.
 - `cache_deletion_algorithm`: In which order the cached files will be deleted.
@@ -189,9 +189,9 @@ Basically the only function needed to analyse a stream. It's a helper function t
 def analyse(self):
     if not self.is_cached:
         self.collect_data()
-    self.enforce_integrity()
     self.read_data()
     self.refine_data()
+    self.enforce_integrity()
     self.fetch_missing_messages()
     self.analyse_data()
 ```
@@ -203,19 +203,28 @@ Before diving into the core modules (collector, refiner and analyser), the other
 
 # 2. File handling
 
-File handling is done with the `filehandler` module. It handles everything related to files from caching to interacting with them. These external files are stored in a designated path (Default path is `"C:\Stream Analyser"`)
+File handling is done with the `filehandler` module. It handles everything related to files from caching to interacting with them. These external files are stored in a designated path (Default path is `"C:\Stream Analyser"` as of now)
 
 Example storage folder structure is as follows:
 ```
 Stream Analyser
 ├───Cache
 │   ├───1FXhj4qFOf0
-│   ├───hbNdooO8n_M
-│   ├───jgp1h2yRbBU
+│   │   ├───messages.json.gz
+│   │   └───metadata.yaml
+│   └───hbNdooO8n_M
+│   │   ├───messages.json.gz
+│   │   └───metadata.yaml
+│   └───jgp1h2yRbBU
+│       ├───messages.json.gz
+│       └───metadata.yaml
 ├───Exports
 │   ├───1627487676
-│   ├───custom_name
+│   └───custom_name
 └───Logs
+    ├───2022-02-W3.log
+    └───2022-02-W2.log
+
 ```
 
 - ## Caching
@@ -260,7 +269,7 @@ Log files use *YYYY-MM-WX.log* naming convention where WX is the Xth week of the
 
 Data collection is done with the `datacollector` module, which fetches messages of the stream using the `ChatDownloader` module and metadata using the `urllib` module. It also has methods to fetch missing messages and to get thumbnail image url.
 
-One important part to mention is how `msglimit` (message limit) and `iscomplete` works since knowing if all messages are present or not is a crucial information for the module. `msglimit` basically limits the message amount to fetch and it fetches every message if it's set to `None` and `iscomplete` stores if **all** messages are fetched or not judging by message limit. This will help us deciding if the stream is fully cached or not later on.
+One important part to mention is how `msglimit` (message limit) and `iscomplete` works since knowing if all messages are present or not is a crucial information for the module. `msglimit` basically limits the message amount to fetch and it fetches every message if it's set to `None`, and `iscomplete` stores if **all** messages are fetched or not judging by message limit. This will help us deciding if the stream is fully cached or not later on.
 
 The fetched data is in it's raw shape and needs to be refined to be actually used.
 
@@ -268,7 +277,7 @@ The fetched data is in it's raw shape and needs to be refined to be actually use
 
 Data refining is done with the `datarefiner` module. It's a bridge between collector and analyser modules that shapes data from one form to another. 
 
-The raw data collected with `datacollector` is in the dictionary form and it's shaped into `Message` dataclass to make the data more consistent using `refine_raw_messages` function.
+The raw data collected with `datacollector` is in the dictionary form and it's shaped into `Message` dataclass to make the data more consistent and convenient using `refine_raw_messages` function.
 
 It also gets names of the authors and shapes them into `Author` dataclass too.
 
@@ -286,7 +295,7 @@ After finding highlight timestamps, other crucial information is analysed to get
 - context: Guessed context by the keywords.
 ##### (The explained algorithm will be further improved in the future.)
 
-Finally it draws graph of the analysed data.
+It can also draw graph and word cloud of the analysed data on demand.
 
 # 7. Output
 
@@ -304,7 +313,7 @@ Finally it draws graph of the analysed data.
     
     ```python
     with StreamAnalyser(stream_id) as analyser:
-      analyser.analyse()
+        analyser.analyse()
     ```
 
     Data can be accessed and manipulated using these functions:
@@ -313,7 +322,7 @@ Finally it draws graph of the analysed data.
 
       ```python
       analyser.get_highlights()
-      # No output on console. This usage is the same as `analyser.highlights` and returns a highlight list.
+      # No output on console. This usage is the same as `analyser.highlights` and returns a list of highlights.
 
       analyser.get_highlights(top=10)
       # Returns top 10 highlights sorted by intensity.
@@ -322,10 +331,10 @@ Finally it draws graph of the analysed data.
       # Prints the returned highlights on the console.
 
       analyser.get_highlights(include=["funny", "cute"], exclude=["scary"])
-      # Returns highlights that includes "funny" and "cute" contexts and excludes "scary" context. Exclude overrides include. Context names can be found and modified in `.data/contexts.json` file.
+      # Returns highlights that includes "funny" and "cute" contexts and excludes "scary" context. Exclude overrides include. Context names can be found and modified in `/data/default_contexts.json` file.
 
       analyser.get_highlights(intensity_filters=["Very high"])
-      # Returns highlights that does not have "Very high" intensity. Default intenisty names can be found in `chatanalyser.init_intenisty()` function and modified using arguments when initializing the object. 
+      # Returns highlights that does not have "Very high" intensity. Default intenisty names can be found in `chatanalyser.init_intenisty()` function and modified with parameters when initializing the object. 
       
       ```
 
@@ -345,7 +354,7 @@ Finally it draws graph of the analysed data.
       # phrases are normalized when finding phrases by default but this behavior can be avoided using `normalize` argument.
       phrase, occurance = analyser.most_used_phrase(normalize=False)
       print(phrase, occurance)
-      # lol 68 (notice that occurance count is decreased)
+      # lol 68 (notice that occurance count has decreased)
       ```
 
     - `find_messages`: Searches for messages. Can be filtered in various ways.
@@ -412,7 +421,33 @@ Finally it draws graph of the analysed data.
 
 # Custom contexts
 
-To create a custom context list, you can either use `add_context` and `remove_context` functions or rewrite the `context.json` according to your needs.
+Custom context files can be integrated using `ContextSourceManager`.
+
+```python
+# examples/custom_context.py
+
+analyser = sa.StreamAnalyser(
+    "ShB4Wen_HBg",
+    verbose=True,
+    not_cache=True,
+    disable_logs=True,
+    msglimit=1000,
+    default_context_path=None # set default context path to None to disable premade default contexts
+)
+with analyser:
+    # context source paths should be absolute paths
+    analyser.context_source.add(os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), "contexts_example.json"
+    ))
+
+    # context sources should be added before the analyse function
+    analyser.analyse()
+
+    analyser.get_highlights(output_mode="detailed")
+
+```
+
+While not recommended, you can also modify the default context list using `add_context` and `remove_context` functions or rewrite the `/path/to/package/data/default_contexts.json` file according to your needs.
 
 <hr>
 
@@ -438,7 +473,7 @@ with StreamAnalyser('Vl_N4AXspo') as analyser:
 ```
 or
 ```bash
-python -m streamanalyser [stream-id] --reset
+>streamanalyser [stream-id] --reset
 ```
 
 - Open appropriate metadata file and set `is-complete` option to `False`. Then run the program again with `msglimit=None`.
@@ -465,7 +500,7 @@ Likewise, use `chcp 65001` to go back. Or simply re-open the console.
 ## Testing
 
 ```python
-python -m unittest discover test
+python -m unittest discover streamanalyser/tests
 ```
 
 ```python
@@ -479,6 +514,9 @@ python test_coverage.py
 - Automatize context guessing.
 
 - End world hunger.
+
+## Support
+You can support me to maintain this open-source project by [donating](https://www.paypal.com/donate/?hosted_button_id=UZUYSWDAD9E8N), I'd really appreciate it if you consider it!
 
 ## License
 [GPL v3.0](https://choosealicense.com/licenses/gpl-3.0/)
