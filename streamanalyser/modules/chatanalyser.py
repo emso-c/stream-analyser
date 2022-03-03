@@ -630,6 +630,9 @@ class ChatAnalyser:
         if self.verbose:
             print("Getting highlight keyphrases... done")
         return self.highlights
+    
+    def _is_keyword_emote(self, keyword):
+        return keyword.startswith(':') and keyword.endswith(':')
 
     def guess_context(self) -> list[str]:
         """Guesses context by looking up the keywords for each highlight."""
@@ -647,8 +650,9 @@ class ChatAnalyser:
             for keyword in highlight.keywords:
                 for context in self.contexts:
                     for trigger in context.triggers:
-                        if  (trigger.is_exact and trigger.phrase == keyword.lower()) or \
-                            (not trigger.is_exact and trigger.phrase in keyword.lower()):
+                        kw = keyword if self._is_keyword_emote(keyword) else keyword.lower()
+                        if  (trigger.is_exact and trigger.phrase == kw) or \
+                            (not trigger.is_exact and trigger.phrase in kw):
                                 highlight.contexts.add(context.reaction_to)
             if not highlight.contexts:
                 highlight.contexts = set(["None"])
