@@ -28,6 +28,24 @@ class OSName:
     LINUX = "Linux"
     MAC = "Darwin"
     
+class DefaultStoragePath:
+    WINDOWS = "C:/Stream Analyser"
+    LINUX = "/usr/share/Stream Analyser"
+    MAC = "/Library/Application Support/Stream Analyser" # Not tested
+    
+    @staticmethod
+    def get_path():
+        sys = platform.system()
+        if sys == OSName.WINDOWS:
+            return DefaultStoragePath.WINDOWS
+        elif sys == OSName.LINUX:
+            return DefaultStoragePath.LINUX
+        elif sys == OSName.MAC:
+            return DefaultStoragePath.MAC
+        elif not sys:
+            raise ValueError("Could not determine OS name.")
+        else:
+            raise ValueError("Invalid OS name: %s" % platform.system)
 
 @dataclass
 class Icon:
@@ -225,7 +243,7 @@ class Highlight:
             return
 
         # TODO modify default path for other OS's
-        if platform.system == OSName.WINDOWS:
+        if platform.system() == OSName.WINDOWS:
             if browser == Browser.CHROME:
                 browser_path = (
                     r"C:/Program Files/Google/Chrome/Application/chrome.exe %s"
@@ -238,9 +256,9 @@ class Highlight:
                 browser_path = r"C:/Program Files/Mozilla Firefox/FireFox.exe %s"
             elif browser == Browser.OPERA:
                 browser_path = r"C:/Program Files/Opera/Launcher.exe %s"
-        elif platform.system == OSName.LINUX:
+        elif platform.system() == OSName.LINUX:
             pass
-        elif platform.system == OSName.MAC:
+        elif platform.system() == OSName.MAC:
             pass
         else:
             pass

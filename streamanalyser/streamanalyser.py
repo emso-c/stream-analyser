@@ -26,7 +26,7 @@ DEFAULT_CONTEXT_SOURCE_PATH = os.path.join(DIR_PATH, "data", "default_contexts.j
 DEFAULT_FONT_PATH = os.path.join(DIR_PATH, "fonts", "NotoSansCJKjp-Bold.ttf")
 with open(rf"{DIR_PATH}/data/keyword_filters.txt", "r", encoding="utf-8") as f:
     DEFAULT_KEYWORD_FILTERS = [kw.strip("\n") for kw in f.readlines()]
-
+DEFAULT_STORAGE_PATH = structures.DefaultStoragePath.get_path()
 
 class StreamAnalyser:
     """A class that analyses live streams.
@@ -60,7 +60,7 @@ class StreamAnalyser:
             Defaults to 15.
 
         storage_path (str, optional): Folder to store files related to this
-            module. Defaults to "C:\\Stream Analyser"
+            module. Defaults to DEFAULT_STORAGE_PATH.
 
         reset (bool, optional): Clear existing cache when initializing the object.
             Defaults to False
@@ -138,7 +138,7 @@ class StreamAnalyser:
         disable_logs=False,
         keep_logs=False,
         log_duration=15,
-        storage_path="C:\\Stream Analyser",
+        storage_path=DEFAULT_STORAGE_PATH,
         reset=False,
         not_cache=False,
         keep_cache=False,
