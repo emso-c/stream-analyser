@@ -317,7 +317,7 @@ class ChatAnalyser:
 
     def create_highlight_annotation(self) -> list[int]:
         """Creates highlight annotation from moving average.
-        Values are either -1, 0 or 1 where 1 means it's increasing."""
+        Values are either -1, 0 or 1 where 1 means the value increasing."""
 
         self.logger.info("Creating highlight annotation")
         self.highlight_annotation = []
@@ -361,11 +361,6 @@ class ChatAnalyser:
             smoothened moving average.  Also sets frequency delta, which is the change
             of frequency within highlight duration.
 
-        Args:
-            highlight_annotation (list[int]): Highlight annotation returned from
-                create_highlight_annotation method.
-            exp_mov_avg (list): Smoothened values of moving average of message frequency.
-            min_duration (int): Minimum highlight duration to detect.
         Returns:
             list[Highlight]: List of highlight times
         """
@@ -513,11 +508,9 @@ class ChatAnalyser:
         return emotes
 
     def get_highlight_keywords(self) -> list[Highlight]:
-        """
-        Adds most frequently used words to the highlight list."""
-        print()
-        print("Warning: `get_highlight_keywords` is deprecated, use `get_highlight_keyphrases` instead")
-        print()
+        """Adds most frequently used words to the highlight list"""
+
+        print("\nWarning: `get_highlight_keywords` is deprecated, use `get_highlight_keyphrases` instead\n")
 
         self.logger.info("Getting keywords (old function)")
 
