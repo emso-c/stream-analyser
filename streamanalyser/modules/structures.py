@@ -30,7 +30,7 @@ class OSName:
     
 class DefaultStoragePath:
     WINDOWS = "C:/Stream Analyser"
-    LINUX = "/usr/share/Stream Analyser"
+    LINUX = "/var/lib/Stream Analyser"
     MAC = "/Library/Application Support/Stream Analyser" # Not tested
     
     @staticmethod
