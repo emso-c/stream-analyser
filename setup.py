@@ -8,7 +8,7 @@ with open("requirements.txt") as f:
 
 setup(
     name="stream-analyser",
-    version="v0.3.5",
+    version="v0.3.6",
     author="emso-c",
     author_email="emsoc192@gmail.com",
     description=("A tool that analyses live streams"),
@@ -20,6 +20,7 @@ setup(
         "Development Status :: 4 - Beta",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Operating System :: Microsoft :: Windows :: Windows 10",
+        "Operating System :: POSIX :: Linux",
         "Environment :: Console",
         "Natural Language :: English",
         "Intended Audience :: Developers",
