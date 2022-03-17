@@ -123,7 +123,7 @@ class ChatAnalyser:
         """Checks context compitability. Tries to autofix collisions if possible."""
 
         self.logger.info("Checking contexts")
-        self.logger.debug(f"{autofix=}")
+        self.logger.debug(f"autofix={autofix}")
         
         # TODO check triggers too (right now it only checks reactions)
         seen_tuples = set()
@@ -152,8 +152,8 @@ class ChatAnalyser:
                     i = next((i for i, nc in enumerate(new_contexts) if nc['reaction_to'] == context['reaction_to']), None)
                     if i == None:
                         self.logger.critical(f"Unexpected error: i={i}")
-                        self.logger.critical(f"{new_contexts=}")
-                        self.logger.critical(f"{context=}")
+                        self.logger.critical(f"new_contexts={new_contexts}")
+                        self.logger.critical(f"context={context}")
                         raise UnexpectedException("You should not be seeing this.")
                     new_contexts[i].get('triggers').extend(context.get('triggers'))
                 else:
@@ -262,9 +262,9 @@ class ChatAnalyser:
         """
 
         self.logger.info("Initializing intensity")
-        self.logger.debug(f"{levels=}")
-        self.logger.debug(f"{constants=}")
-        self.logger.debug(f"{colors=}")
+        self.logger.debug(f"levels={levels}")
+        self.logger.debug(f"constants={constants}")
+        self.logger.debug(f"colors={colors}")
 
         levels = levels or ["medium", "high", "very high", "ultra high"]
         constants = constants or [0, 0.7, 1.4, 2.1]

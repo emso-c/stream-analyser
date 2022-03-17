@@ -234,8 +234,8 @@ class FileHandler:
         """
 
         self.logger.info("Clearing cache")
-        self.logger.debug(f"{cache_deletion_algorithm=}")
-        self.logger.debug(f"{delete_root_folder=}")
+        self.logger.debug(f"cache_deletion_algorithm={cache_deletion_algorithm}")
+        self.logger.debug(f"delete_root_folder={delete_root_folder}")
 
         if not cache_deletion_algorithm:
             if self.sid_path:
@@ -292,8 +292,8 @@ class FileHandler:
         """
 
         self.logger.info("Checking cache integrity")
-        self.logger.debug(f"{cache_path=}")
-        self.logger.debug(f"{autofix=}")
+        self.logger.debug(f"cache_path={cache_path}")
+        self.logger.debug(f"autofix={autofix}")
 
         if not cache_path:
             cache_path = self.sid_path
@@ -306,8 +306,8 @@ class FileHandler:
         unnecesary_files = list(set(files) - set(necessary_files))
         missing_files = list(set(necessary_files) - set(files))
 
-        self.logger.debug(f"{unnecesary_files=}")
-        self.logger.debug(f"{missing_files=}")
+        self.logger.debug(f"unnecesary_files={unnecesary_files}")
+        self.logger.debug(f"missing_files={missing_files}")
 
         if autofix:
             for folder in os.listdir(self.cache_path):
@@ -490,7 +490,7 @@ class FileHandler:
         """Returns False if all necessary files are absent"""
 
         self.logger.info("Checking if cached")
-        self.logger.debug(f"{sid=}")
+        self.logger.debug(f"sid={sid}")
 
         if sid:
             path = os.path.join(self.cache_path, sid)
@@ -526,8 +526,8 @@ class FileHandler:
                 example: `[{phrase:"lol", is_exact:False}]`
         """
         self.logger.info("Adding new context")
-        self.logger.debug(f"{reaction_to=}")
-        self.logger.debug(f"{phrases=}")
+        self.logger.debug(f"reaction_to={reaction_to}")
+        self.logger.debug(f"phrases={phrases}")
 
         new_context = {
             "reaction_to": reaction_to,
@@ -548,7 +548,7 @@ class FileHandler:
             reaction_to (str): Reaction to be deleted.
         """
         self.logger.info("Removing context")
-        self.logger.debug(f"{reaction_to=}")
+        self.logger.debug(f"reaction_to={reaction_to}")
 
         with open(CONTEXT_PATH, "r", encoding="utf-8") as file:
             contexts = list(json.load(file))

@@ -203,30 +203,30 @@ class StreamAnalyser:
         self.logger.info(("=" * 100) + "=" * 15)
         
         self.logger.info("Analyser initiated with following parameters:")
-        self.logger.debug(f"{msglimit=}")
-        self.logger.debug(f"{verbose=}")
-        self.logger.debug(f"{thumb_res_lvl=}")
-        self.logger.debug(f"{yt_api_key=}")
-        self.logger.debug(f"{disable_logs=}")
-        self.logger.debug(f"{keep_logs=}")
-        self.logger.debug(f"{log_duration=}")
-        self.logger.debug(f"{storage_path=}")
-        self.logger.debug(f"{reset=}")
-        self.logger.debug(f"{not_cache=}")
-        self.logger.debug(f"{keep_cache=}")
-        self.logger.debug(f"{cache_deletion_algorithm=}")
-        self.logger.debug(f"{cache_limit=}")
-        self.logger.debug(f"{min_duration=}")
-        self.logger.debug(f"{window=}")
-        self.logger.debug(f"{threshold_constant=}")
-        self.logger.debug(f"{keyword_limit=}")
-        self.logger.debug(f"{keyword_filters=}")
-        self.logger.debug(f"{intensity_levels=}")
-        self.logger.debug(f"{intensity_constants=}")
-        self.logger.debug(f"{intensity_colors=}")
-        self.logger.debug(f"{keep_analysis_data=}")
-        self.logger.debug(f"{default_context_path=}")
-        self.logger.debug(f"{stop_words_path=}")
+        self.logger.debug(f"msglimit={msglimit}")
+        self.logger.debug(f"verbose={verbose}")
+        self.logger.debug(f"thumb_res_lvl={thumb_res_lvl}")
+        self.logger.debug(f"yt_api_key={yt_api_key}")
+        self.logger.debug(f"disable_logs={disable_logs}")
+        self.logger.debug(f"keep_logs={keep_logs}")
+        self.logger.debug(f"log_duration={log_duration}")
+        self.logger.debug(f"storage_path={storage_path}")
+        self.logger.debug(f"reset={reset}")
+        self.logger.debug(f"not_cache={not_cache}")
+        self.logger.debug(f"keep_cache={keep_cache}")
+        self.logger.debug(f"cache_deletion_algorithm={cache_deletion_algorithm}")
+        self.logger.debug(f"cache_limit={cache_limit}")
+        self.logger.debug(f"min_duration={min_duration}")
+        self.logger.debug(f"window={window}")
+        self.logger.debug(f"threshold_constant={threshold_constant}")
+        self.logger.debug(f"keyword_limit={keyword_limit}")
+        self.logger.debug(f"keyword_filters={keyword_filters}")
+        self.logger.debug(f"intensity_levels={intensity_levels}")
+        self.logger.debug(f"intensity_constants={intensity_constants}")
+        self.logger.debug(f"intensity_colors={intensity_colors}")
+        self.logger.debug(f"keep_analysis_data={keep_analysis_data}")
+        self.logger.debug(f"default_context_path={default_context_path}")
+        self.logger.debug(f"stop_words_path={stop_words_path}")
 
 
         self.filehandler.create_cache_dir(self.sid)
@@ -449,9 +449,9 @@ class StreamAnalyser:
         """
 
         self.logger.info("Generating word cloud")
-        self.logger.debug(f"{font_path=}")
-        self.logger.debug(f"{scale=}")
-        self.logger.debug(f"{background=}")
+        self.logger.debug(f"font_path={font_path}")
+        self.logger.debug(f"scale={scale}")
+        self.logger.debug(f"background={background}")
 
         if self.verbose:
             print("Generating word cloud...", end="\r")
@@ -499,9 +499,9 @@ class StreamAnalyser:
 
         messages_to_return = []
         self.logger.info("Finding messages")
-        self.logger.debug(f"{search_phrase=}")
-        self.logger.debug(f"{exact=}")
-        self.logger.debug(f"{ignore_case=}")
+        self.logger.debug(f"search_phrase={search_phrase}")
+        self.logger.debug(f"exact={exact}")
+        self.logger.debug(f"ignore_case={ignore_case}")
 
         if ignore_case:
             search_phrase = search_phrase.lower()
@@ -535,8 +535,8 @@ class StreamAnalyser:
         """
 
         self.logger.info("Finding user messages")
-        self.logger.debug(f"{id=}")
-        self.logger.debug(f"{username=}")
+        self.logger.debug(f"id={id}")
+        self.logger.debug(f"username={username}")
 
         if not username and not id:
             self.logger.error("Should provide either username or id")
@@ -571,8 +571,8 @@ class StreamAnalyser:
         # return "草"    # would probably work lol
 
         self.logger.info("Finding most used word")
-        self.logger.debug(f"{exclude=}")
-        self.logger.debug(f"{normalize=}")
+        self.logger.debug(f"exclude={exclude}")
+        self.logger.debug(f"normalize={normalize}")
 
         if isinstance(exclude, str):
             exclude = list(exclude)
@@ -618,8 +618,8 @@ class StreamAnalyser:
         """
 
         self.logger.info("Exporting data")
-        self.logger.debug(f"{folder_name=}")
-        self.logger.debug(f"{path=}")
+        self.logger.debug(f"folder_name={folder_name}")
+        self.logger.debug(f"path={path}")
 
         if self.verbose:
             print("Exporting data...", end="\r")
@@ -737,11 +737,11 @@ class StreamAnalyser:
         """
 
         self.logger.info("Printing highlights")
-        self.logger.debug(f"{top=}")
-        self.logger.debug(f"{output_mode=}")
-        self.logger.debug(f"{include=}")
-        self.logger.debug(f"{exclude=}")
-        self.logger.debug(f"{intensity_filters=}")
+        self.logger.debug(f"top={top}")
+        self.logger.debug(f"output_mode={output_mode}")
+        self.logger.debug(f"include={include}")
+        self.logger.debug(f"exclude={exclude}")
+        self.logger.debug(f"intensity_filters={intensity_filters}")
 
         if isinstance(include, str):
             include = list(include)

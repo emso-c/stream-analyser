@@ -237,9 +237,9 @@ class DataCollector:
         """
 
         self.logger.info("Fetching missing messages")
-        self.logger.debug(f"{start_time=}")
-        self.logger.debug(f"{current_amount=}")
-        self.logger.debug(f"{target_amount=}")
+        self.logger.debug(f"start_time={start_time}")
+        self.logger.debug(f"current_amount={current_amount}")
+        self.logger.debug(f"target_amount={target_amount}")
 
         yt_url = "https://www.youtube.com/watch?v=" + self.id
         corrupted_data_amount = 0
@@ -287,7 +287,7 @@ class DataCollector:
 
         """
         self.logger.info("Getting thumbnail url")
-        self.logger.debug(f"{res_lvl=}")
+        self.logger.debug(f"res_lvl={res_lvl}")
 
         res_lvls = ["mqdefault", "hqdefault", "sddefault", "maxresdefault"]
 
