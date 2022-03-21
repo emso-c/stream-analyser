@@ -72,7 +72,6 @@ class FileHandler:
             level=def_level,
             format=format,
             filename=os.path.join(self.log_path, self._get_logname()),
-            encoding="utf-8",
         )
         console = logging.StreamHandler()
         console.setLevel(def_level)
@@ -330,7 +329,7 @@ class FileHandler:
 
         return missing_files, unnecesary_files
 
-    def get_filenames(self, path, show_extension=False) -> list[str]:
+    def get_filenames(self, path, show_extension=False):
         """Returns file names in a path"""
 
         self.logger.info(f"Finding file names in {path}")
@@ -345,7 +344,7 @@ class FileHandler:
         except Exception as e:
             self.logger.error(e)
 
-    def get_foldernames(self, path) -> list[str]:
+    def get_foldernames(self, path):
         """Returns folder names in a path"""
 
         self.logger.info(f"Finding folder names in {path}")
@@ -355,7 +354,7 @@ class FileHandler:
             self.logger.error(e)
             raise e
 
-    def _creation_time_in_days(self, path) -> int:
+    def _creation_time_in_days(self, path):
         """Returns difference between the creation time and
         the current time of the file in days"""
 
@@ -507,7 +506,7 @@ class FileHandler:
         self.logger.debug(f"is_cached: {(not len(missing_files) == 2)}")
         return not len(missing_files) == 2
 
-    def get_cached_ids(self) -> list[str]:
+    def get_cached_ids(self) -> list:
         """Returns list of cached ids"""
         return [f for f in self.get_foldernames(self.cache_path) if self.is_cached(f)]
 

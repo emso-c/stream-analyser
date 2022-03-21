@@ -165,7 +165,7 @@ class ChatAnalyser:
                     )
         self.contexts = new_contexts
 
-    def parse_contexts(self, autofix:bool=False) -> list[Context]:
+    def parse_contexts(self, autofix:bool=False) -> list:
         """Parses the contexts from dictionary to dataclass format"""
 
         self.logger.info("Parsing contexts")
@@ -198,7 +198,7 @@ class ChatAnalyser:
             )
         return parsed_contexts
 
-    def get_contexts(self, autofix:bool=False) -> list[Context]:
+    def get_contexts(self, autofix:bool=False) -> list:
         """Wrapper function to get the contexts"""
         self.read_contexts_from_sources()
         self._check_contexts(autofix=autofix)
@@ -242,7 +242,7 @@ class ChatAnalyser:
 
         return self.frequency
 
-    def init_intensity(self, levels=[], constants=[], colors=[]) -> list[Intensity]:
+    def init_intensity(self, levels=[], constants=[], colors=[]) -> list:
         """Returns list of intensity which will be used for
             measuring how tense was the highlight. Leave empty
             for default values.
@@ -308,14 +308,14 @@ class ChatAnalyser:
             print(f"Calculating moving average... done")
         return self.fre_mov_avg
 
-    def _smoothen(self, dict, w=40) -> list[np.ndarray]:
+    def _smoothen(self, dict, w=40) -> list:
         return list(np.convolve(list(dict.values()), np.ones(w) / w, mode="same"))
 
-    def smoothen_mov_avg(self) -> list[np.ndarray]:
+    def smoothen_mov_avg(self) -> list:
         self.exp_mov_avg = self._smoothen(self.fre_mov_avg)
         return self.exp_mov_avg
 
-    def create_highlight_annotation(self) -> list[int]:
+    def create_highlight_annotation(self) -> list:
         """Creates highlight annotation from moving average.
         Values are either -1, 0 or 1 where 1 means the value increasing."""
 
@@ -341,7 +341,7 @@ class ChatAnalyser:
 
         return self.highlight_annotation
 
-    def line_colors(self) -> list[str]:
+    def line_colors(self) -> list:
         """Sets plot colors according to highlight annotation"""
 
         self.logger.info("Setting line colors")
@@ -356,7 +356,7 @@ class ChatAnalyser:
                 colors.append("gray")
         return colors
 
-    def detect_highlight_times(self) -> list[Highlight]:
+    def detect_highlight_times(self) -> list:
         """Detects highlight times and durations according to highlight annotation and
             smoothened moving average.  Also sets frequency delta, which is the change
             of frequency within highlight duration.
@@ -407,7 +407,7 @@ class ChatAnalyser:
             print("Detecting highlight timestamps... done")
         return self.highlights
 
-    def correct_highlights(self) -> list[Highlight]:
+    def correct_highlights(self) -> list:
         """Corrects highlights by removing highlights that are too short or filtered"""
 
         # TODO consider fdelta too
@@ -438,7 +438,7 @@ class ChatAnalyser:
             print("Correcting highlights... done")
         return self.highlights
 
-    def set_highlight_intensities(self) -> list[Highlight]:
+    def set_highlight_intensities(self) -> list:
         """Sets highlight intensities based on frequency delta"""
 
         if not self.highlights:
@@ -462,7 +462,7 @@ class ChatAnalyser:
             print("Setting highlight intensities... done")
         return self.highlights
 
-    def get_highlight_messages(self) -> list[Highlight]:
+    def get_highlight_messages(self) -> list:
         """Gets messages typed during highlights"""
 
         self.logger.info("Getting highlight messages")
@@ -499,7 +499,7 @@ class ChatAnalyser:
         return self.highlights
 
     @staticmethod
-    def get_keyword_emotes(highlight:Highlight) -> set[Emote]:
+    def get_keyword_emotes(highlight:Highlight) -> set:
         emotes = set()
         for msg in highlight.messages:
             for emote in msg.emotes:
@@ -507,7 +507,7 @@ class ChatAnalyser:
                     emotes.add(emote)
         return emotes
 
-    def get_highlight_keywords(self) -> list[Highlight]:
+    def get_highlight_keywords(self) -> list:
         """Adds most frequently used words to the highlight list"""
 
         print("\nWarning: `get_highlight_keywords` is deprecated, use `get_highlight_keyphrases` instead\n")
@@ -564,7 +564,7 @@ class ChatAnalyser:
             print("Getting highlight keywords... done")
         return self.highlights
 
-    def get_highlight_keyphrases(self) -> list[Highlight]:
+    def get_highlight_keyphrases(self) -> list:
         """Adds most frequently used phrases to the highlight list."""
 
         self.logger.info("Getting keyphrases")
@@ -627,7 +627,7 @@ class ChatAnalyser:
     def _is_keyword_emote(self, keyword):
         return keyword.startswith(':') and keyword.endswith(':')
 
-    def guess_context(self) -> list[str]:
+    def guess_context(self) -> list:
         """Guesses context by looking up the keywords for each highlight."""
 
         self.logger.info("Guessing context")
@@ -657,7 +657,7 @@ class ChatAnalyser:
             print(f"Guessing contexts... done")
         return self.highlights
 
-    def get_highlights(self, autofix_context_collision:bool=False) -> list[Highlight]:
+    def get_highlights(self, autofix_context_collision:bool=False) -> list:
         """Returns a filled highlight list."""
 
         self.detect_highlight_times()

@@ -64,7 +64,7 @@ class Emote:
     id: str
     name: str
     is_custom_emoji: bool
-    images: list[Icon] = field(default_factory=list)
+    images: list
 
     def __hash__(self):
         return hash(self.id+self.name)
@@ -76,9 +76,9 @@ class Emote:
 class Author:
     id: str
     name: str
+    images: list
     is_member: bool = False
     membership_info: str = ""
-    images: list[Icon] = field(default_factory=list)
 
     def colorless_str(self):
         if self.is_member:
@@ -129,7 +129,7 @@ class ChatItem:
 
 @dataclass
 class Message(ChatItem):
-    emotes: list[Emote] = field(default_factory=list)
+    emotes: list
 
     @property
     def colorless_str(self):
@@ -142,7 +142,7 @@ class Message(ChatItem):
 class Superchat(ChatItem):
     money: Money
     colors: SuperchatColor
-    emotes: list[Emote] = field(default_factory=list)
+    emotes: list
 
     @property
     def colorless_str(self):
@@ -154,7 +154,7 @@ class Superchat(ChatItem):
 @dataclass
 class Membership(ChatItem):
     welcome_text: str
-    emotes: list[Emote] = field(default_factory=list)
+    emotes: list
 
     @property
     def colorless_str(self):
@@ -165,7 +165,7 @@ class Membership(ChatItem):
 
 @dataclass
 class Sticker(Superchat):
-    sticker_images: list[Icon] = field(default_factory=list)
+    sticker_images: list
 
     @property
     def colorless_str(self):
@@ -193,12 +193,12 @@ class Highlight:
     stream_id: str
     time: int
     duration: int
+    messages: list
+    keywords: list
+    kw_emotes: list
+    contexts: set
     intensity: Intensity = None
     fdelta: float = 0.0  # is the frequency difference from start to finish
-    messages: list[Message] = field(default_factory=list)
-    keywords: list[str] = field(default_factory=list)
-    kw_emotes: list[Emote] = field(default_factory=list)
-    contexts: set[str] = field(default_factory=set)
 
     def __repr__(self):
         return "[{0}] {1}: {2} ({3} messages, {4} intensity, {5:.3f} diff, {6}s duration)".format(
@@ -328,7 +328,7 @@ class Trigger():
 @dataclass
 class Context():
     reaction_to: str
-    triggers: list[Trigger] = field(default_factory=list)
+    triggers: list
 
     def __hash__(self):
         return hash(self.reaction_to)

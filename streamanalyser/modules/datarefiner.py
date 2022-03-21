@@ -13,7 +13,7 @@ class DataRefiner:
         self.authors = []
         self.logger = loggersetup.create_logger(__file__, log_path)
 
-    def refine_raw_messages(self, raw_messages, msglimit=None) -> list[Message,Superchat,Membership]:
+    def refine_raw_messages(self, raw_messages, msglimit=None) -> list:
         """Refines raw messages and shapes them into Message dataclass.
             
             Also gets all unique authors. This behavior was separate as per single responsibility principle
@@ -164,7 +164,7 @@ class DataRefiner:
         raise ValueError(f"Invalid message type: {raw_message.get('message_type')}")
 
 
-    def get_authors(self) -> list[Author]:
+    def get_authors(self) -> list:
         """Returns unique list of message authors"""
 
         if not self.authors:

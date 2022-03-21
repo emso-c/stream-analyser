@@ -25,7 +25,6 @@ def create_logger(
             level=def_level,
             filename=os.path.join(folder_path, file_name),
             format=format,
-            encoding="utf-8",
             filemode=mode,
         )
     else:
