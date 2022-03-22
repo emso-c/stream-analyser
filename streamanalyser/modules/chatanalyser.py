@@ -101,8 +101,8 @@ class ChatAnalyser:
         self.exp_mov_avg = []
         self.highlight_annotation = []
         self.highlights = []
+        self.contexts = []
 
-        self.contexts = list[Context]
         self.source = ContextSourceManager() # important
         if self.default_context_path:
             self.source.add(self.default_context_path)
