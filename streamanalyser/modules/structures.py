@@ -64,7 +64,7 @@ class Emote:
     id: str
     name: str
     is_custom_emoji: bool
-    images: list
+    images: list = field(default_factory=list)
 
     def __hash__(self):
         return hash(self.id+self.name)
@@ -76,7 +76,7 @@ class Emote:
 class Author:
     id: str
     name: str
-    images: list
+    images: list = field(default_factory=list)
     is_member: bool = False
     membership_info: str = ""
 
@@ -129,7 +129,7 @@ class ChatItem:
 
 @dataclass
 class Message(ChatItem):
-    emotes: list
+    emotes: list = field(default_factory=list)
 
     @property
     def colorless_str(self):
@@ -142,7 +142,7 @@ class Message(ChatItem):
 class Superchat(ChatItem):
     money: Money
     colors: SuperchatColor
-    emotes: list
+    emotes: list = field(default_factory=list)
 
     @property
     def colorless_str(self):
@@ -154,7 +154,7 @@ class Superchat(ChatItem):
 @dataclass
 class Membership(ChatItem):
     welcome_text: str
-    emotes: list
+    emotes: list = field(default_factory=list)
 
     @property
     def colorless_str(self):
@@ -165,7 +165,7 @@ class Membership(ChatItem):
 
 @dataclass
 class Sticker(Superchat):
-    sticker_images: list
+    sticker_images: list = field(default_factory=list)
 
     @property
     def colorless_str(self):
