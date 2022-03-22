@@ -23,16 +23,20 @@ def create_logger(
             os.makedirs(folder_path)
         logging.basicConfig(
             level=def_level,
-            filename=os.path.join(folder_path, file_name),
             format=format,
-            filemode=mode,
+            handlers=[
+                logging.FileHandler(
+                    filename=os.path.join(folder_path, file_name),
+                    encoding='utf-8',
+                    mode='a+'
+                )
+            ]
         )
     else:
         # not create a log file
         logging.basicConfig(
             level=def_level,
             format=format,
-            encoding="utf-8",
         )
     console = logging.StreamHandler()
     console.setLevel(def_level)
