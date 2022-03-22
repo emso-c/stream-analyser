@@ -485,7 +485,7 @@ class StreamAnalyser:
 
     def find_messages(
         self, search_phrase, exact=False, ignore_case=True
-    ) -> list[structures.Message, structures.Superchat, structures.Membership]:
+    ) -> list:
         """Finds messages containing a specific phrase or exactly the same phrase.
 
         Args:
@@ -517,7 +517,7 @@ class StreamAnalyser:
                 messages_to_return.append(original_message)
         return messages_to_return
 
-    def find_user_messages(self, username=None, id=None) -> list[structures.Message, structures.Superchat, structures.Membership]:
+    def find_user_messages(self, username=None, id=None) -> list:
         """Finds messages by either username or user id.
 
         Args:
@@ -707,7 +707,7 @@ class StreamAnalyser:
 
     def get_highlights(
         self, top=None, output_mode=None, include=[], exclude=[], intensity_filters=[]
-    ) -> list[structures.Highlight]:
+    ) -> list:
         """A method to return filtered highlights.
 
         Args:
@@ -820,7 +820,7 @@ class StreamAnalyser:
     def remove_context(self, reaction_to):
         self.filehandler.remove_context(reaction_to)
 
-    def cached_ids(self) -> list[str]:
+    def cached_ids(self) -> list:
         return self.filehandler.get_cached_ids()
 
     def open_cache_folder(self):

@@ -128,7 +128,7 @@ class DataCollector:
         """Returns if the stream is live or upcoming""" # lol
         return YouTubeChatDownloader().get_video_data(self.id).get("status") != 'past'
 
-    def fetch_raw_messages(self) -> list[dict]:
+    def fetch_raw_messages(self) -> list:
         """Fetches live chat messages"""
 
         self.logger.info("Fetching messages")
@@ -223,7 +223,7 @@ class DataCollector:
             reformatted_message["sticker_images"] = message["sticker_images"]
         return reformatted_message
             
-    def fetch_missing_messages(self, start_time, current_amount, target_amount=None) -> list[dict]:
+    def fetch_missing_messages(self, start_time, current_amount, target_amount=None) -> list:
         """Returns missing messages.
 
         Args:
