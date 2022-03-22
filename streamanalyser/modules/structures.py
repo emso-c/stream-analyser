@@ -193,10 +193,10 @@ class Highlight:
     stream_id: str
     time: int
     duration: int
-    messages: list
-    keywords: list
-    kw_emotes: list
-    contexts: set
+    messages: list = field(default_factory=list)
+    keywords: list = field(default_factory=list)
+    kw_emotes: list = field(default_factory=list)
+    contexts: set = field(default_factory=set)
     intensity: Intensity = None
     fdelta: float = 0.0  # is the frequency difference from start to finish
 
