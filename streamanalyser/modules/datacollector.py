@@ -1,5 +1,4 @@
 from os import stat
-from typing import Tuple
 from urllib import request, parse
 import json
 
@@ -107,7 +106,7 @@ class DataCollector:
             raise e
         return data
 
-    def _enforce_time_consistency(self, messages) -> Tuple[list, int]:
+    def _enforce_time_consistency(self, messages) -> tuple[list, int]:
         """Quick fix for a bug where ChatDownloader module sometimes
         returns messages that are written LONG AFTER (~5 hours) the
         stream ends by removing the last message.

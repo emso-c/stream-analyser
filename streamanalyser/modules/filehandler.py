@@ -1,7 +1,6 @@
 import os
 import json
 import shutil
-from typing import Tuple
 import yaml
 import gzip
 import logging
@@ -294,7 +293,7 @@ class FileHandler:
             "Invalid deletion algorithm: {}".format(cache_deletion_algorithm)
         )
 
-    def check_integrity(self, cache_path=None, autofix=False) -> Tuple[list, list]:
+    def check_integrity(self, cache_path=None, autofix=False) -> tuple[list, list]:
         """Checks integrity of the cached files.
         Note that it detects files by their names, not content.
 
@@ -309,7 +308,7 @@ class FileHandler:
                 Defaults to False.
 
         Returns:
-            Tuple[list, list]: Lists of unnecesary and missing files
+            tuple[list, list]: Lists of unnecesary and missing files
         """
 
         self.logger.info("Checking cache integrity")

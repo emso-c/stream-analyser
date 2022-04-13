@@ -4,7 +4,6 @@ import os
 import random
 import traceback
 from shutil import copyfile
-from typing import Tuple
 from time import time
 from colorama.ansi import Back, Style
 
@@ -348,7 +347,7 @@ class StreamAnalyser:
         self.fetch_missing_messages()
         self.analyse_data()
 
-    def _check_integrity(self, autofix=False) -> Tuple[list, list]:
+    def _check_integrity(self, autofix=False) -> tuple[list, list]:
         return self.filehandler.check_integrity(autofix=autofix)
 
     @property
@@ -554,7 +553,7 @@ class StreamAnalyser:
 
         return messages_to_return
 
-    def most_used_phrase(self, exclude=[], normalize=True) -> Tuple[str, int]:
+    def most_used_phrase(self, exclude=[], normalize=True) -> tuple[str, int]:
         """Returns most frequently used phrase
 
         Args:
@@ -565,7 +564,7 @@ class StreamAnalyser:
                 to cover more instances. Defaults to True.
 
         Returns:
-            Tuple[str, int]: Most used word and it's frequency
+            tuple[str, int]: Most used word and it's frequency
         """
 
         # return "草"    # would probably work lol
