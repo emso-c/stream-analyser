@@ -236,41 +236,63 @@ class FileHandler:
         self.logger.debug(f"cache_deletion_algorithm={cache_deletion_algorithm}")
         self.logger.debug(f"delete_root_folder={delete_root_folder}")
 
-        if not cache_deletion_algorithm:
+        if cache_deletion_algorithm:
+            dir_to_delete = self._get_cache_dir_to_delete(cache_deletion_algorithm)
+            path = os.path.join(self.cache_path, dir_to_delete)
+            try:
+                shutil.rmtree(path)
+                self.logger.debug(f"Deleted cache folder: '{self.sid_path}'")
+                if not delete_root_folder:
+                    os.makedirs(path)
+            except Exception as e:
+                self.logger.error("Could not delete cache folder:", e)
+        else:
             if self.sid_path:
                 try:
                     shutil.rmtree(self.sid_path)
-                    self.logger.debug(f"Deleted '{self.sid_path}'")
+                    self.logger.debug(f"Deleted cache folder: '{self.sid_path}'")
                     if not delete_root_folder:
                         os.makedirs(self.sid_path)
                 except Exception as e:
-                    self.logger.error(e)
-            return
+                    self.logger.error("Could not delete cache folder:", e)
 
+    def _get_cache_dir_to_delete(self, cache_deletion_algorithm:str) -> str:
+        """Returns the directory to delete according to the cache
+        deletion algorithm. Helper function for `clear_cache`.
+
+        Args:
+            cache_deletion_algorithm (str): Algorithm to
+                delete cached files. Options are as follows:
+                    - lru: Deletes least recently
+                        used cache.
+                    - mru: Deletes most recently
+                        used cache.
+                    - fifo: Deletes oldest cache.
+                    - rr: Deletes random cache. (uhh...)
+
+        Raises:
+            ValueError: If the cache deletion algorithm is not supported.
+
+        Returns:
+            str: Path of the directory to delete according to
+            the cache deletion algorithm.
+        """
+        
         if cache_deletion_algorithm == "mru":
-            dir_to_delete = self.most_recently_used_folder(self.cache_path)
+            return self.most_recently_used_folder(self.cache_path)
         elif cache_deletion_algorithm == "lru":
-            dir_to_delete = self.least_recently_used_folder(self.cache_path)
+            return self.least_recently_used_folder(self.cache_path)
         elif cache_deletion_algorithm == "fifo":
-            dir_to_delete = self.oldest_folder(self.cache_path)
+            return self.oldest_folder(self.cache_path)
         elif cache_deletion_algorithm == "rr":
-            dir_to_delete = self.random_folder(self.cache_path)
-        else:
-            self.logger.error(
-                "Invalid deletion algorithm: {}".format(cache_deletion_algorithm)
-            )
-            raise ValueError(
-                "Invalid deletion algorithm: {}".format(cache_deletion_algorithm)
-            )
-
-        path = os.path.join(self.cache_path, dir_to_delete)
-        try:
-            shutil.rmtree(path)
-            self.logger.debug(f"Deleted '{self.sid_path}'")
-            if not delete_root_folder:
-                os.makedirs(path)
-        except Exception as e:
-            self.logger.error(e)
+            return self.random_folder(self.cache_path)
+    
+        self.logger.error(
+            "Invalid deletion algorithm: {}".format(cache_deletion_algorithm)
+        )
+        raise ValueError(
+            "Invalid deletion algorithm: {}".format(cache_deletion_algorithm)
+        )
 
     def check_integrity(self, cache_path=None, autofix=False) -> Tuple[list, list]:
         """Checks integrity of the cached files.
